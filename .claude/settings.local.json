@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(where:*)",
+      "Bash(/c/Python314/python:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.bmad-method.org)",
+      "WebFetch(domain:adventist.cloud)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:acms.adventist.cloud)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:www.westjamaica.org)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:context7.com)",
+      "WebFetch(domain:til.simonwillison.net)",
+      "Bash(claude mcp:*)",
+      "mcp__sequential-thinking__sequentialthinking"
+    ]
+  }
+}

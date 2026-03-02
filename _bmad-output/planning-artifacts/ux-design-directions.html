@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDAC ST-HUBERT — Design Direction Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --indigo-50: #EEF2FF; --indigo-100: #E0E7FF; --indigo-200: #C7D2FE;
+    --indigo-500: #6366F1; --indigo-600: #4F46E5; --indigo-700: #4338CA; --indigo-900: #312E81;
+    --slate-50: #F8FAFC; --slate-100: #F1F5F9; --slate-200: #E2E8F0; --slate-300: #CBD5E1;
+    --slate-400: #94A3B8; --slate-500: #64748B; --slate-600: #475569;
+    --slate-700: #334155; --slate-800: #1E293B; --slate-900: #0F172A;
+    --emerald-500: #10B981; --emerald-600: #059669;
+    --amber-500: #F59E0B; --rose-500: #F43F5E;
+    --teal-200: #99F6E4; --violet-200: #DDD6FE; --sky-200: #BAE6FD;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #0F172A; color: #F8FAFC; min-height: 100vh; }
+
+  /* ===== CONTROLS BAR ===== */
+  .controls {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .controls h1 { font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: var(--indigo-500); white-space: nowrap; }
+  .controls .sep { width: 1px; height: 24px; background: var(--slate-700); }
+  .view-btns { display: flex; gap: 4px; }
+  .view-btn {
+    padding: 6px 14px; border-radius: 8px; border: 1px solid var(--slate-700);
+    background: transparent; color: var(--slate-400); font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .view-btn:hover { border-color: var(--indigo-500); color: var(--slate-200); }
+  .view-btn.active { background: var(--indigo-600); border-color: var(--indigo-600); color: white; }
+  .dir-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .dir-btn {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid var(--slate-700);
+    background: transparent; color: var(--slate-400); font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .dir-btn:hover { border-color: var(--indigo-500); color: white; }
+  .dir-btn.active { background: var(--indigo-600); border-color: var(--indigo-600); color: white; }
+  .compare-label { font-size: 11px; color: var(--slate-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ===== LAYOUT ===== */
+  .main { padding-top: 70px; }
+  .single-view { display: none; padding: 24px; }
+  .single-view.active { display: block; }
+  .compare-view { display: none; padding: 24px; }
+  .compare-view.active { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .compare-view .direction-panel { border: 1px solid var(--slate-800); border-radius: 16px; overflow: hidden; }
+  .compare-view .direction-label {
+    padding: 8px 16px; background: var(--slate-800); font-size: 11px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--indigo-500);
+    text-align: center;
+  }
+
+  /* ===== DIRECTION CONTAINERS ===== */
+  .direction { display: none; }
+  .direction.active { display: block; }
+
+  /* ===== MOCKUP FRAME ===== */
+  .mockup-section { margin-bottom: 32px; }
+  .mockup-section-title {
+    font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--slate-500); margin-bottom: 12px; padding-left: 4px;
+  }
+  .phone-frame {
+    width: 375px; height: 720px; border-radius: 32px; overflow: hidden;
+    border: 3px solid var(--slate-700); position: relative; margin: 0 auto;
+  }
+  .desktop-frame {
+    width: 100%; max-width: 960px; height: 600px; border-radius: 12px; overflow: hidden;
+    border: 2px solid var(--slate-700); position: relative; margin: 0 auto;
+  }
+  .frames-row { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+
+  /* ===== DIRECTION A: MOCK FAITHFUL ===== */
+  .da-public { background: white; height: 100%; overflow-y: auto; }
+  .da-hero {
+    background: var(--slate-900); color: white; padding: 48px 20px 32px;
+  }
+  .da-hero-church { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--indigo-500); margin-bottom: 4px; }
+  .da-hero-welcome { font-size: 13px; color: var(--slate-400); margin-bottom: 24px; }
+  .da-hero-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--slate-500); margin-bottom: 6px; }
+  .da-hero-title { font-size: 26px; font-weight: 900; line-height: 1.15; margin-bottom: 4px; }
+  .da-hero-meta { font-size: 13px; color: var(--slate-400); margin-bottom: 20px; }
+  .da-live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3);
+    border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--rose-500);
+  }
+  .da-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rose-500); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .da-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px; background: white; border-bottom: 1px solid var(--slate-100);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .da-nav-brand { font-size: 14px; font-weight: 900; color: var(--slate-900); }
+  .da-nav-login { font-size: 12px; font-weight: 600; color: var(--indigo-600); padding: 6px 12px; border: 1px solid var(--indigo-200); border-radius: 8px; }
+  .da-cards { padding: 20px; }
+  .da-card {
+    background: white; border: 1px solid var(--slate-200); border-radius: 2rem;
+    padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .da-card-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--slate-400); margin-bottom: 8px; }
+  .da-card-title { font-size: 16px; font-weight: 700; color: var(--slate-900); margin-bottom: 6px; }
+  .da-card-desc { font-size: 13px; color: var(--slate-600); line-height: 1.5; }
+  .da-dept-chip {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; margin-right: 6px; margin-top: 8px;
+  }
+
+  /* DA Authenticated */
+  .da-auth { background: var(--slate-50); height: 100%; display: flex; overflow: hidden; }
+  .da-sidebar {
+    width: 220px; background: white; border-right: 1px solid var(--slate-200);
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .da-sidebar-header {
+    padding: 0 16px 16px; border-bottom: 1px solid var(--slate-100);
+    margin-bottom: 12px;
+  }
+  .da-sidebar-logo { font-size: 13px; font-weight: 900; color: var(--slate-900); }
+  .da-sidebar-role { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--indigo-600); margin-top: 2px; }
+  .da-sidebar-item {
+    padding: 8px 16px; font-size: 13px; color: var(--slate-600); font-weight: 500;
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+  }
+  .da-sidebar-item.active { color: var(--indigo-600); font-weight: 700; background: var(--indigo-50); border-right: 3px solid var(--indigo-600); }
+  .da-sidebar-item .icon { width: 18px; text-align: center; font-size: 14px; }
+  .da-content { flex: 1; padding: 20px; overflow-y: auto; }
+  .da-content-header { margin-bottom: 20px; }
+  .da-breadcrumb { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--slate-400); margin-bottom: 4px; }
+  .da-content-title { font-size: 22px; font-weight: 900; color: var(--slate-900); }
+  .da-content-subtitle { font-size: 13px; color: var(--slate-600); margin-top: 2px; }
+  .da-assignment-card {
+    background: white; border: 1px solid var(--slate-200); border-radius: 2rem;
+    padding: 18px; margin-bottom: 12px;
+  }
+  .da-assignment-role { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--indigo-600); }
+  .da-assignment-date { font-size: 15px; font-weight: 700; color: var(--slate-900); margin-top: 4px; }
+  .da-assignment-detail { font-size: 12px; color: var(--slate-600); margin-top: 4px; }
+  .da-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .da-status-dot.green { background: var(--emerald-500); }
+  .da-status-dot.amber { background: var(--amber-500); }
+
+  /* ===== DIRECTION B: WARM COMMUNITY ===== */
+  .db-public { background: #FFFBF5; height: 100%; overflow-y: auto; }
+  .db-hero {
+    background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+    color: white; padding: 48px 20px 32px; border-radius: 0 0 2.5rem 2.5rem;
+  }
+  .db-hero-church { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6); margin-bottom: 2px; }
+  .db-hero-welcome { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+  .db-hero-subtitle { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 24px; }
+  .db-hero-card {
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 1.5rem; padding: 16px;
+  }
+  .db-hero-card-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+  .db-hero-card-title { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
+  .db-hero-card-meta { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .db-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; background: #FFFBF5; position: sticky; top: 0; z-index: 10;
+  }
+  .db-nav-brand { font-size: 15px; font-weight: 900; color: var(--indigo-900); }
+  .db-nav-login {
+    font-size: 12px; font-weight: 700; color: white; padding: 8px 16px;
+    background: var(--indigo-600); border-radius: 999px; border: none;
+  }
+  .db-cards { padding: 20px; }
+  .db-card {
+    background: white; border: 1px solid #F0E6D8; border-radius: 1.5rem;
+    padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(120, 80, 20, 0.04);
+  }
+  .db-card-emoji { font-size: 24px; margin-bottom: 8px; }
+  .db-card-title { font-size: 15px; font-weight: 700; color: var(--slate-900); margin-bottom: 4px; }
+  .db-card-desc { font-size: 13px; color: var(--slate-600); line-height: 1.5; }
+  .db-live {
+    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    background: white; border: 1px solid #F0E6D8; border-radius: 1.5rem;
+    margin: 0 20px 14px;
+  }
+  .db-live-icon { font-size: 20px; }
+  .db-live-text { font-size: 13px; font-weight: 600; color: var(--slate-700); }
+  .db-live-badge { font-size: 10px; font-weight: 900; color: var(--rose-500); background: rgba(244,63,94,0.1); padding: 2px 8px; border-radius: 999px; margin-left: auto; }
+
+  /* DB Authenticated */
+  .db-auth { background: #FFFBF5; height: 100%; display: flex; overflow: hidden; }
+  .db-auth-sidebar {
+    width: 220px; background: var(--indigo-900); color: white;
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .db-auth-sidebar-header { padding: 0 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+  .db-auth-sidebar-logo { font-size: 13px; font-weight: 900; color: white; }
+  .db-auth-sidebar-role { font-size: 10px; font-weight: 700; color: var(--indigo-200); margin-top: 2px; }
+  .db-auth-sidebar-item {
+    padding: 8px 16px; font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .db-auth-sidebar-item.active { color: white; font-weight: 700; background: rgba(255,255,255,0.1); border-right: 3px solid var(--indigo-500); }
+  .db-auth-content { flex: 1; padding: 20px; overflow-y: auto; }
+  .db-auth-greeting { font-size: 20px; font-weight: 900; color: var(--slate-900); margin-bottom: 4px; }
+  .db-auth-sub { font-size: 13px; color: var(--slate-600); margin-bottom: 20px; }
+  .db-auth-card {
+    background: white; border: 1px solid #F0E6D8; border-radius: 1.5rem;
+    padding: 16px; margin-bottom: 12px;
+  }
+
+  /* ===== DIRECTION C: MODERN MINIMAL ===== */
+  .dc-public { background: white; height: 100%; overflow-y: auto; }
+  .dc-hero { padding: 48px 20px 24px; }
+  .dc-hero-church { font-size: 13px; font-weight: 600; color: var(--slate-400); margin-bottom: 8px; }
+  .dc-hero-title { font-size: 28px; font-weight: 900; color: var(--slate-900); line-height: 1.15; margin-bottom: 6px; }
+  .dc-hero-subtitle { font-size: 14px; color: var(--slate-500); margin-bottom: 24px; line-height: 1.5; }
+  .dc-hero-divider { height: 1px; background: var(--slate-200); margin-bottom: 20px; }
+  .dc-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; color: var(--indigo-600);
+    background: var(--indigo-50); padding: 4px 10px; border-radius: 6px;
+    margin-bottom: 16px;
+  }
+  .dc-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; background: white; border-bottom: 1px solid var(--slate-100);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .dc-nav-brand { font-size: 15px; font-weight: 900; color: var(--slate-900); }
+  .dc-nav-login { font-size: 13px; font-weight: 600; color: var(--indigo-600); }
+  .dc-cards { padding: 20px; }
+  .dc-card {
+    border-bottom: 1px solid var(--slate-100); padding: 16px 0;
+  }
+  .dc-card:last-child { border-bottom: none; }
+  .dc-card-date { font-size: 12px; font-weight: 600; color: var(--indigo-600); margin-bottom: 4px; }
+  .dc-card-title { font-size: 15px; font-weight: 700; color: var(--slate-900); margin-bottom: 2px; }
+  .dc-card-meta { font-size: 13px; color: var(--slate-500); }
+  .dc-card-dept {
+    display: inline-block; font-size: 11px; font-weight: 600; color: var(--slate-600);
+    background: var(--slate-100); padding: 2px 8px; border-radius: 4px; margin-top: 6px;
+  }
+
+  /* DC Authenticated */
+  .dc-auth { background: white; height: 100%; display: flex; overflow: hidden; }
+  .dc-auth-sidebar {
+    width: 200px; background: var(--slate-50); border-right: 1px solid var(--slate-200);
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .dc-auth-sidebar-header { padding: 0 16px 16px; border-bottom: 1px solid var(--slate-200); margin-bottom: 8px; }
+  .dc-auth-sidebar-item {
+    padding: 8px 16px; font-size: 13px; color: var(--slate-500); font-weight: 500;
+  }
+  .dc-auth-sidebar-item.active { color: var(--slate-900); font-weight: 700; }
+  .dc-auth-content { flex: 1; padding: 24px; overflow-y: auto; }
+  .dc-auth-title { font-size: 24px; font-weight: 900; color: var(--slate-900); margin-bottom: 20px; }
+  .dc-auth-card {
+    border: 1px solid var(--slate-200); border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .dc-auth-card-label { font-size: 12px; font-weight: 600; color: var(--indigo-600); margin-bottom: 4px; }
+  .dc-auth-card-title { font-size: 15px; font-weight: 700; color: var(--slate-900); }
+  .dc-auth-card-meta { font-size: 13px; color: var(--slate-500); margin-top: 4px; }
+
+  /* ===== DIRECTION D: BOLD DASHBOARD ===== */
+  .dd-public { background: var(--slate-900); height: 100%; overflow-y: auto; color: white; }
+  .dd-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky; top: 0; z-index: 10; background: var(--slate-900);
+  }
+  .dd-nav-brand { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--indigo-500); }
+  .dd-nav-login { font-size: 12px; font-weight: 600; color: var(--indigo-400); }
+  .dd-hero { padding: 24px 20px; }
+  .dd-hero-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--indigo-500); margin-bottom: 6px; }
+  .dd-hero-title { font-size: 24px; font-weight: 900; line-height: 1.15; margin-bottom: 16px; }
+  .dd-hero-card {
+    background: var(--slate-800); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 1.5rem; padding: 16px; margin-bottom: 12px;
+  }
+  .dd-hero-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .dd-hero-card-meta { font-size: 12px; color: var(--slate-400); }
+  .dd-live-strip {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.2);
+    border-radius: 12px; padding: 10px 16px; margin: 0 20px 16px;
+  }
+  .dd-section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--slate-500); padding: 0 20px; margin-bottom: 10px; }
+  .dd-event-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .dd-event-dept { width: 6px; height: 32px; border-radius: 3px; flex-shrink: 0; }
+  .dd-event-title { font-size: 13px; font-weight: 600; }
+  .dd-event-meta { font-size: 11px; color: var(--slate-500); }
+
+  /* DD Authenticated */
+  .dd-auth { background: var(--slate-900); height: 100%; display: flex; overflow: hidden; color: white; }
+  .dd-auth-sidebar {
+    width: 220px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .dd-auth-sidebar-header { padding: 0 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px; }
+  .dd-auth-sidebar-logo { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--indigo-500); }
+  .dd-auth-sidebar-item {
+    padding: 8px 16px; font-size: 13px; color: var(--slate-500); font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dd-auth-sidebar-item.active { color: white; background: rgba(99,102,241,0.15); border-right: 3px solid var(--indigo-500); }
+  .dd-auth-content { flex: 1; padding: 20px; overflow-y: auto; }
+  .dd-auth-card {
+    background: var(--slate-800); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 1.5rem; padding: 16px; margin-bottom: 12px;
+  }
+
+  /* ===== DIRECTION E: GRADIENT GLOW ===== */
+  .de-public { background: white; height: 100%; overflow-y: auto; }
+  .de-hero {
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #6366F1 100%);
+    color: white; padding: 48px 20px 32px; position: relative; overflow: hidden;
+  }
+  .de-hero::after {
+    content: ''; position: absolute; bottom: -40px; left: -20px; right: -20px;
+    height: 80px; background: white; border-radius: 50% 50% 0 0;
+  }
+  .de-hero-church { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+  .de-hero-title { font-size: 24px; font-weight: 900; line-height: 1.15; margin-bottom: 6px; position: relative; z-index: 1; }
+  .de-hero-meta { font-size: 13px; color: rgba(255,255,255,0.7); position: relative; z-index: 1; margin-bottom: 20px; }
+  .de-hero-card {
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.25); border-radius: 1.5rem; padding: 14px;
+    position: relative; z-index: 1;
+  }
+  .de-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; position: sticky; top: 0; z-index: 10; background: white;
+    border-bottom: 1px solid var(--slate-100);
+  }
+  .de-nav-brand { font-size: 15px; font-weight: 900; color: var(--slate-900); }
+  .de-nav-login {
+    font-size: 12px; font-weight: 700; color: white; padding: 8px 16px;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED); border-radius: 10px; border: none;
+  }
+  .de-cards { padding: 20px; }
+  .de-card {
+    background: white; border: 1px solid var(--slate-200); border-radius: 1.5rem;
+    padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.06);
+  }
+  .de-card-accent { width: 100%; height: 4px; border-radius: 2px; margin-bottom: 12px; }
+  .de-card-title { font-size: 15px; font-weight: 700; color: var(--slate-900); margin-bottom: 4px; }
+  .de-card-desc { font-size: 13px; color: var(--slate-600); }
+
+  /* DE Authenticated */
+  .de-auth { background: var(--slate-50); height: 100%; display: flex; overflow: hidden; }
+  .de-auth-sidebar {
+    width: 220px; background: white; border-right: 1px solid var(--slate-200);
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .de-auth-sidebar-header {
+    padding: 0 16px 16px; margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--indigo-600), #7C3AED);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-size: 13px; font-weight: 900;
+  }
+  .de-auth-sidebar-item {
+    padding: 8px 16px; font-size: 13px; color: var(--slate-500); font-weight: 500;
+  }
+  .de-auth-sidebar-item.active {
+    color: var(--indigo-600); font-weight: 700;
+    background: linear-gradient(90deg, var(--indigo-50), transparent);
+  }
+  .de-auth-content { flex: 1; padding: 20px; overflow-y: auto; }
+  .de-auth-card {
+    background: white; border: 1px solid var(--slate-200); border-radius: 1.5rem;
+    padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.06);
+  }
+
+  /* ===== DIRECTION F: SPLIT PERSONALITY ===== */
+  .df-public { background: #FAF8F5; height: 100%; overflow-y: auto; }
+  .df-hero {
+    padding: 48px 24px 28px; background: white; border-bottom: 3px solid var(--indigo-600);
+  }
+  .df-hero-icon { font-size: 32px; margin-bottom: 8px; }
+  .df-hero-church { font-size: 18px; font-weight: 900; color: var(--slate-900); margin-bottom: 2px; }
+  .df-hero-subtitle { font-size: 13px; color: var(--slate-500); margin-bottom: 20px; }
+  .df-hero-program {
+    background: var(--slate-50); border-radius: 1rem; padding: 14px; border: 1px solid var(--slate-200);
+  }
+  .df-hero-program-label { font-size: 12px; font-weight: 600; color: var(--indigo-600); margin-bottom: 4px; }
+  .df-hero-program-title { font-size: 17px; font-weight: 900; color: var(--slate-900); }
+  .df-hero-program-meta { font-size: 12px; color: var(--slate-500); margin-top: 2px; }
+  .df-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; background: white; border-bottom: 1px solid var(--slate-200);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .df-nav-brand { font-size: 14px; font-weight: 700; color: var(--slate-800); }
+  .df-nav-login { font-size: 13px; font-weight: 600; color: var(--indigo-600); text-decoration: underline; }
+  .df-cards { padding: 20px; }
+  .df-card {
+    background: white; border: 1px solid var(--slate-200); border-radius: 12px;
+    padding: 16px; margin-bottom: 12px;
+  }
+
+  /* DF Authenticated — heavy dark operational */
+  .df-auth { background: #0A0E1A; height: 100%; display: flex; overflow: hidden; color: white; }
+  .df-auth-sidebar {
+    width: 220px; background: #060810; border-right: 1px solid rgba(99,102,241,0.2);
+    padding: 20px 0; flex-shrink: 0;
+  }
+  .df-auth-sidebar-header {
+    padding: 0 16px 16px; border-bottom: 1px solid rgba(99,102,241,0.15); margin-bottom: 12px;
+  }
+  .df-auth-sidebar-logo { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: var(--indigo-500); }
+  .df-auth-sidebar-sub { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+  .df-auth-sidebar-item {
+    padding: 8px 16px; font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .df-auth-sidebar-item.active { color: var(--indigo-400); background: rgba(99,102,241,0.08); border-left: 3px solid var(--indigo-500); }
+  .df-auth-content { flex: 1; padding: 20px; overflow-y: auto; }
+  .df-auth-header { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: var(--indigo-500); margin-bottom: 4px; }
+  .df-auth-title { font-size: 20px; font-weight: 900; margin-bottom: 16px; }
+  .df-auth-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 1rem; padding: 14px; margin-bottom: 10px;
+  }
+  .df-auth-card-glow { box-shadow: 0 0 20px rgba(99,102,241,0.08); }
+  .df-auth-card-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: var(--slate-500); }
+  .df-auth-card-value { font-size: 14px; font-weight: 700; margin-top: 4px; }
+
+  /* ===== DESCRIPTION PANELS ===== */
+  .dir-description {
+    max-width: 960px; margin: 0 auto 24px; padding: 16px 20px;
+    background: var(--slate-800); border: 1px solid var(--slate-700);
+    border-radius: 12px;
+  }
+  .dir-description h2 { font-size: 18px; font-weight: 900; color: white; margin-bottom: 4px; }
+  .dir-description .subtitle { font-size: 13px; color: var(--indigo-400); font-weight: 600; margin-bottom: 10px; }
+  .dir-description p { font-size: 13px; color: var(--slate-400); line-height: 1.6; }
+  .dir-description .pros { margin-top: 10px; }
+  .dir-description .pros span { display: inline-block; padding: 2px 8px; background: rgba(16,185,129,0.1); color: var(--emerald-500); border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 6px; margin-bottom: 4px; }
+  .dir-description .cons span { display: inline-block; padding: 2px 8px; background: rgba(245,158,11,0.1); color: var(--amber-500); border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 6px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ===== CONTROLS ===== -->
+<div class="controls">
+  <h1>SDAC Design Directions</h1>
+  <div class="sep"></div>
+  <div class="view-btns">
+    <button class="view-btn active" onclick="setView('single')">Single</button>
+    <button class="view-btn" onclick="setView('compare')">Compare</button>
+  </div>
+  <div class="sep"></div>
+  <div class="dir-btns" id="dirBtns">
+    <button class="dir-btn active" data-dir="a" onclick="selectDir('a', this)">A · Mock Faithful</button>
+    <button class="dir-btn" data-dir="b" onclick="selectDir('b', this)">B · Warm Community</button>
+    <button class="dir-btn" data-dir="c" onclick="selectDir('c', this)">C · Modern Minimal</button>
+    <button class="dir-btn" data-dir="d" onclick="selectDir('d', this)">D · Bold Dashboard</button>
+    <button class="dir-btn" data-dir="e" onclick="selectDir('e', this)">E · Gradient Glow</button>
+    <button class="dir-btn" data-dir="f" onclick="selectDir('f', this)">F · Split Personality</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ===== SINGLE VIEW ===== -->
+  <div class="single-view active" id="singleView">
+
+    <!-- DIRECTION A -->
+    <div class="direction active" id="dir-a">
+      <div class="dir-description">
+        <h2>Direction A: Mock Faithful</h2>
+        <div class="subtitle">Direct translation of the existing mock app prototype</div>
+        <p>White sidebar, indigo-600 accents, rounded-[2rem] cards, font-black micro-labels. The public layer gets a dark hero on white body. The authenticated layer uses the mock's exact sidebar and card patterns. Maximum continuity with established visual DNA.</p>
+        <div class="pros"><span>+ Proven identity</span><span>+ Consistent with mock</span><span>+ Clear hierarchy</span></div>
+        <div class="cons"><span>~ Public layer may feel too similar to authenticated</span></div>
+      </div>
+      <div class="frames-row">
+        <div>
+          <div class="mockup-section-title">Public Dashboard · Mobile</div>
+          <div class="phone-frame">
+            <div class="da-public">
+              <div class="da-nav">
+                <span class="da-nav-brand">SDAC St-Hubert</span>
+                <span class="da-nav-login">Connexion</span>
+              </div>
+              <div class="da-hero">
+                <div class="da-hero-church">Église Adventiste de Saint-Hubert</div>
+                <div class="da-hero-welcome">Bienvenue dans notre communauté</div>
+                <div class="da-hero-label">Ce Sabbat</div>
+                <div class="da-hero-title">Pasteur Vicuna prêche</div>
+                <div class="da-hero-meta">Culte d'adoration · Samedi 1er mars · 11h00</div>
+                <div class="da-live-badge"><span class="da-live-dot"></span> EN DIRECT</div>
+              </div>
+              <div class="da-cards">
+                <div class="da-card">
+                  <div class="da-card-label">Activités à venir</div>
+                  <div class="da-card-title">Sabbath School — JA</div>
+                  <div class="da-card-desc">Samedi 1er mars · 9h30 — Jeunesse Adventiste</div>
+                  <div><span class="da-dept-chip" style="background:rgba(153,246,228,0.4);color:#0D9488;">JA</span></div>
+                </div>
+                <div class="da-card">
+                  <div class="da-card-label">Prochaine activité</div>
+                  <div class="da-card-title">Réunion de prière</div>
+                  <div class="da-card-desc">Mercredi 5 mars · 19h00</div>
+                </div>
+                <div class="da-card">
+                  <div class="da-card-label">Nos départements</div>
+                  <div>
+                    <span class="da-dept-chip" style="background:rgba(153,246,228,0.4);color:#0D9488;">JA</span>
+                    <span class="da-dept-chip" style="background:rgba(221,214,254,0.6);color:#7C3AED;">MIFEM</span>
+                    <span class="da-dept-chip" style="background:rgba(186,230,253,0.6);color:#0284C7;">Diaconat</span>
+                    <span class="da-dept-chip" style="background:rgba(251,191,36,0.3);color:#D97706;">ME</span>
+                    <span class="da-dept-chip" style="background:rgba(251,113,133,0.3);color:#E11D48;">Musique</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mockup-section-title">Authenticated · Desktop (Viewer)</div>
+          <div class="desktop-frame">
+            <div class="da-auth">
+              <div class="da-sidebar">
+                <div class="da-sidebar-header">
+                  <div class="da-sidebar-logo">SDAC St-Hubert</div>
+                  <div class="da-sidebar-role">Viewer · Elisha</div>
+                </div>
+                <div class="da-sidebar-item active"><span class="icon">📊</span> Command Center</div>
+                <div class="da-sidebar-item"><span class="icon">📅</span> Ministry Roadmap</div>
+                <div class="da-sidebar-item"><span class="icon">🏛️</span> Unités Ministérielles</div>
+                <div class="da-sidebar-item"><span class="icon">📝</span> Transcripts</div>
+              </div>
+              <div class="da-content">
+                <div class="da-content-header">
+                  <div class="da-breadcrumb">Protocol Node → Command Center</div>
+                  <div class="da-content-title">Bonjour, Elisha</div>
+                  <div class="da-content-subtitle">Vos affectations pour cette semaine</div>
+                </div>
+                <div class="da-assignment-card">
+                  <div class="da-assignment-role">DIACRE</div>
+                  <div class="da-assignment-date">Samedi 1er mars 2026</div>
+                  <div class="da-assignment-detail"><span class="da-status-dot green"></span>Culte d'adoration · 11h00</div>
+                  <div class="da-assignment-detail" style="margin-top:6px;font-size:11px;color:var(--slate-500);">Équipe: Frere Jean, Soeur Claire, Elisha</div>
+                </div>
+                <div class="da-assignment-card">
+                  <div class="da-assignment-role">ACCUEIL</div>
+                  <div class="da-assignment-date">Samedi 8 mars 2026</div>
+                  <div class="da-assignment-detail"><span class="da-status-dot amber"></span>Culte d'adoration · 11h00</div>
+                  <div class="da-assignment-detail" style="margin-top:6px;font-size:11px;color:var(--slate-500);">Équipe: Elisha, Soeur Marie (1 poste à combler)</div>
+                </div>
+                <div class="da-assignment-card">
+                  <div class="da-assignment-role">PIPELINE DÉPARTEMENTAL</div>
+                  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                    <span class="da-dept-chip" style="background:rgba(186,230,253,0.6);color:#0284C7;">Diaconat <span class="da-status-dot green" style="margin-left:4px;"></span></span>
+                    <span class="da-dept-chip" style="background:rgba(153,246,228,0.4);color:#0D9488;">JA <span class="da-status-dot green" style="margin-left:4px;"></span></span>
+                    <span class="da-dept-chip" style="background:rgba(221,214,254,0.6);color:#7C3AED;">MIFEM <span class="da-status-dot amber" style="margin-left:4px;"></span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTION B -->
+    <div class="direction" id="dir-b">
+      <div class="dir-description">
+        <h2>Direction B: Warm Community</h2>
+        <div class="subtitle">Church-first warmth with rounded hero and cream tones</div>
+        <p>The public layer feels like a warm church bulletin — cream background, rounded hero corners, emoji accents, pill-shaped login button. The authenticated layer uses a deep indigo sidebar contrasting with the warm content area. Prioritizes emotional belonging over operational efficiency.</p>
+        <div class="pros"><span>+ Most welcoming public layer</span><span>+ Strong community feel</span><span>+ Clear register shift</span></div>
+        <div class="cons"><span>~ Cream tones may feel dated</span><span>~ Less "premium/modern"</span></div>
+      </div>
+      <div class="frames-row">
+        <div>
+          <div class="mockup-section-title">Public Dashboard · Mobile</div>
+          <div class="phone-frame">
+            <div class="db-public">
+              <div class="db-nav">
+                <span class="db-nav-brand">SDAC St-Hubert</span>
+                <span class="db-nav-login">Connexion</span>
+              </div>
+              <div class="db-hero">
+                <div class="db-hero-church">Église Adventiste de Saint-Hubert</div>
+                <div class="db-hero-welcome">Bienvenue chez nous 🤍</div>
+                <div class="db-hero-subtitle">Préparez votre Sabbat en un coup d'œil</div>
+                <div class="db-hero-card">
+                  <div class="db-hero-card-label">Ce Sabbat · 1er mars</div>
+                  <div class="db-hero-card-title">Pasteur Vicuna prêche</div>
+                  <div class="db-hero-card-meta">Culte d'adoration · 11h00</div>
+                </div>
+              </div>
+              <div class="db-live">
+                <span class="db-live-icon">📺</span>
+                <span class="db-live-text">Suivez le culte en direct</span>
+                <span class="db-live-badge"><span class="da-live-dot" style="width:6px;height:6px;display:inline-block;margin-right:4px;"></span>LIVE</span>
+              </div>
+              <div class="db-cards">
+                <div class="db-card">
+                  <div class="db-card-emoji">📖</div>
+                  <div class="db-card-title">École du Sabbat — JA</div>
+                  <div class="db-card-desc">Samedi 1er mars · 9h30</div>
+                </div>
+                <div class="db-card">
+                  <div class="db-card-emoji">🙏</div>
+                  <div class="db-card-title">Réunion de prière</div>
+                  <div class="db-card-desc">Mercredi 5 mars · 19h00</div>
+                </div>
+                <div class="db-card">
+                  <div class="db-card-emoji">🏛️</div>
+                  <div class="db-card-title">Nos Départements</div>
+                  <div class="db-card-desc">Jeunesse, MIFEM, Diaconat, Enfants, Musique et plus</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mockup-section-title">Authenticated · Desktop (Viewer)</div>
+          <div class="desktop-frame">
+            <div class="db-auth">
+              <div class="db-auth-sidebar">
+                <div class="db-auth-sidebar-header">
+                  <div class="db-auth-sidebar-logo">SDAC St-Hubert</div>
+                  <div class="db-auth-sidebar-role">Viewer · Elisha</div>
+                </div>
+                <div class="db-auth-sidebar-item active"><span style="margin-right:8px;">📊</span> Tableau de bord</div>
+                <div class="db-auth-sidebar-item"><span style="margin-right:8px;">📅</span> Calendrier</div>
+                <div class="db-auth-sidebar-item"><span style="margin-right:8px;">🏛️</span> Départements</div>
+                <div class="db-auth-sidebar-item"><span style="margin-right:8px;">📝</span> Transcriptions</div>
+              </div>
+              <div class="db-auth-content">
+                <div class="db-auth-greeting">Bonjour, Elisha 👋</div>
+                <div class="db-auth-sub">Voici vos prochaines affectations</div>
+                <div class="db-auth-card">
+                  <div style="font-size:12px;font-weight:700;color:var(--indigo-600);">DIACRE</div>
+                  <div style="font-size:15px;font-weight:700;color:var(--slate-900);margin-top:4px;">Samedi 1er mars · Culte d'adoration</div>
+                  <div style="font-size:12px;color:var(--slate-500);margin-top:4px;"><span class="da-status-dot green"></span>Équipe: Frere Jean, Soeur Claire, Elisha</div>
+                </div>
+                <div class="db-auth-card">
+                  <div style="font-size:12px;font-weight:700;color:var(--indigo-600);">ACCUEIL</div>
+                  <div style="font-size:15px;font-weight:700;color:var(--slate-900);margin-top:4px;">Samedi 8 mars · Culte d'adoration</div>
+                  <div style="font-size:12px;color:var(--slate-500);margin-top:4px;"><span class="da-status-dot amber"></span>Elisha, Soeur Marie (1 poste à combler)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTION C -->
+    <div class="direction" id="dir-c">
+      <div class="dir-description">
+        <h2>Direction C: Modern Minimal</h2>
+        <div class="subtitle">Notion-inspired typography-first design — maximum whitespace</div>
+        <p>No dark hero. Typography does all the heavy lifting. Content is separated by subtle lines instead of cards. The public layer is clean and scannable like a well-typeset document. The authenticated layer uses a quiet sidebar with no color accents — just weight differences. Radical simplicity.</p>
+        <div class="pros"><span>+ Cleanest reading experience</span><span>+ Timeless design</span><span>+ Fast to scan</span></div>
+        <div class="cons"><span>~ May lack distinctive identity</span><span>~ No visual drama</span><span>~ Loses mock's premium feel</span></div>
+      </div>
+      <div class="frames-row">
+        <div>
+          <div class="mockup-section-title">Public Dashboard · Mobile</div>
+          <div class="phone-frame">
+            <div class="dc-public">
+              <div class="dc-nav">
+                <span class="dc-nav-brand">SDAC St-Hubert</span>
+                <span class="dc-nav-login">Connexion →</span>
+              </div>
+              <div class="dc-hero">
+                <div class="dc-hero-church">Église Adventiste de Saint-Hubert</div>
+                <div class="dc-tag"><span class="da-live-dot" style="width:6px;height:6px;"></span> En direct maintenant</div>
+                <div class="dc-hero-title">Pasteur Vicuna prêche ce Sabbat</div>
+                <div class="dc-hero-subtitle">Culte d'adoration · Samedi 1er mars · 11h00</div>
+                <div class="dc-hero-divider"></div>
+              </div>
+              <div class="dc-cards">
+                <div class="dc-card">
+                  <div class="dc-card-date">SAM 1 MARS · 9H30</div>
+                  <div class="dc-card-title">École du Sabbat — Jeunesse Adventiste</div>
+                  <div class="dc-card-meta">Salle principale</div>
+                  <div><span class="dc-card-dept">JA</span></div>
+                </div>
+                <div class="dc-card">
+                  <div class="dc-card-date">MER 5 MARS · 19H00</div>
+                  <div class="dc-card-title">Réunion de prière</div>
+                  <div class="dc-card-meta">Salle annexe</div>
+                </div>
+                <div class="dc-card">
+                  <div class="dc-card-date">SAM 8 MARS · 11H00</div>
+                  <div class="dc-card-title">Culte d'adoration — Journée des femmes</div>
+                  <div class="dc-card-meta">MIFEM · Programme spécial</div>
+                  <div><span class="dc-card-dept">MIFEM</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mockup-section-title">Authenticated · Desktop (Viewer)</div>
+          <div class="desktop-frame">
+            <div class="dc-auth">
+              <div class="dc-auth-sidebar">
+                <div class="dc-auth-sidebar-header">
+                  <div style="font-size:13px;font-weight:900;color:var(--slate-900);">SDAC</div>
+                  <div style="font-size:11px;color:var(--slate-400);margin-top:2px;">Elisha · Viewer</div>
+                </div>
+                <div class="dc-auth-sidebar-item active">Tableau de bord</div>
+                <div class="dc-auth-sidebar-item">Calendrier</div>
+                <div class="dc-auth-sidebar-item">Départements</div>
+                <div class="dc-auth-sidebar-item">Transcriptions</div>
+              </div>
+              <div class="dc-auth-content">
+                <div class="dc-auth-title">Mes affectations</div>
+                <div class="dc-auth-card">
+                  <div class="dc-auth-card-label">Diacre · 1er mars</div>
+                  <div class="dc-auth-card-title">Culte d'adoration — 11h00</div>
+                  <div class="dc-auth-card-meta"><span class="da-status-dot green"></span>Frere Jean, Soeur Claire, Elisha</div>
+                </div>
+                <div class="dc-auth-card">
+                  <div class="dc-auth-card-label">Accueil · 8 mars</div>
+                  <div class="dc-auth-card-title">Culte d'adoration — 11h00</div>
+                  <div class="dc-auth-card-meta"><span class="da-status-dot amber"></span>Elisha, Soeur Marie (1 poste à combler)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTION D -->
+    <div class="direction" id="dir-d">
+      <div class="dir-description">
+        <h2>Direction D: Bold Dashboard</h2>
+        <div class="subtitle">Full dark mode public layer — maximum operational gravity</div>
+        <p>The entire app lives in dark mode — public AND authenticated. Dense data rows replace spacious cards on the public layer. Department colors appear as left-border accents. The feel is a mission control terminal. Bold choice — distinctive but may feel cold for the church community.</p>
+        <div class="pros"><span>+ Most distinctive</span><span>+ Strong brand identity</span><span>+ Data-dense</span></div>
+        <div class="cons"><span>~ Public layer may feel unwelcoming</span><span>~ Less accessible for older users</span><span>~ No warm/cold register shift</span></div>
+      </div>
+      <div class="frames-row">
+        <div>
+          <div class="mockup-section-title">Public Dashboard · Mobile</div>
+          <div class="phone-frame">
+            <div class="dd-public">
+              <div class="dd-nav">
+                <span class="dd-nav-brand">SDAC St-Hubert</span>
+                <span class="dd-nav-login">Connexion</span>
+              </div>
+              <div class="dd-hero">
+                <div class="dd-hero-label">Ce Sabbat · 1er Mars</div>
+                <div class="dd-hero-title">Pasteur Vicuna prêche</div>
+                <div class="dd-hero-card">
+                  <div class="dd-hero-card-title">Culte d'adoration</div>
+                  <div class="dd-hero-card-meta">11h00 · Salle principale</div>
+                </div>
+              </div>
+              <div class="dd-live-strip">
+                <span class="da-live-dot"></span>
+                <span style="font-size:12px;font-weight:700;color:var(--rose-500);">EN DIRECT</span>
+                <span style="font-size:12px;color:var(--slate-400);margin-left:auto;">Regarder →</span>
+              </div>
+              <div class="dd-section-label">Activités à venir</div>
+              <div class="dd-event-row">
+                <div class="dd-event-dept" style="background:rgba(153,246,228,0.6);"></div>
+                <div>
+                  <div class="dd-event-title">École du Sabbat — JA</div>
+                  <div class="dd-event-meta">Sam 1 mars · 9h30</div>
+                </div>
+              </div>
+              <div class="dd-event-row">
+                <div class="dd-event-dept" style="background:rgba(221,214,254,0.6);"></div>
+                <div>
+                  <div class="dd-event-title">Journée des femmes — MIFEM</div>
+                  <div class="dd-event-meta">Sam 8 mars · 11h00</div>
+                </div>
+              </div>
+              <div class="dd-event-row">
+                <div class="dd-event-dept" style="background:rgba(226,232,240,0.3);"></div>
+                <div>
+                  <div class="dd-event-title">Réunion de prière</div>
+                  <div class="dd-event-meta">Mer 5 mars · 19h00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mockup-section-title">Authenticated · Desktop (Admin)</div>
+          <div class="desktop-frame">
+            <div class="dd-auth">
+              <div class="dd-auth-sidebar">
+                <div class="dd-auth-sidebar-header">
+                  <div class="dd-auth-sidebar-logo">SDAC Operations</div>
+                  <div style="font-size:10px;color:var(--slate-600);margin-top:2px;">Admin · Soeur Ketsia</div>
+                </div>
+                <div class="dd-auth-sidebar-item active"><span style="margin-right:8px;">📊</span> Command Center</div>
+                <div class="dd-auth-sidebar-item"><span style="margin-right:8px;">📅</span> Ministry Roadmap</div>
+                <div class="dd-auth-sidebar-item"><span style="margin-right:8px;">🏛️</span> Unités Ministérielles</div>
+                <div class="dd-auth-sidebar-item"><span style="margin-right:8px;">👥</span> Registre Personnel</div>
+              </div>
+              <div class="dd-auth-content">
+                <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em;color:var(--indigo-500);margin-bottom:4px;">Command Center</div>
+                <div style="font-size:20px;font-weight:900;margin-bottom:16px;">MIFEM — Status opérationnel</div>
+                <div class="dd-auth-card">
+                  <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em;color:var(--slate-500);">Prochain programme</div>
+                  <div style="font-size:14px;font-weight:700;margin-top:6px;">Journée des femmes</div>
+                  <div style="font-size:12px;color:var(--slate-400);margin-top:2px;">Samedi 8 mars · 11h00</div>
+                  <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                    <span style="padding:2px 8px;background:rgba(16,185,129,0.15);color:var(--emerald-500);border-radius:4px;font-size:11px;font-weight:600;">Predicateur ✓</span>
+                    <span style="padding:2px 8px;background:rgba(16,185,129,0.15);color:var(--emerald-500);border-radius:4px;font-size:11px;font-weight:600;">Musique ✓</span>
+                    <span style="padding:2px 8px;background:rgba(245,158,11,0.15);color:var(--amber-500);border-radius:4px;font-size:11px;font-weight:600;">Diacres (2/3)</span>
+                  </div>
+                </div>
+                <div class="dd-auth-card">
+                  <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.15em;color:var(--slate-500);">Activités ce mois</div>
+                  <div style="font-size:28px;font-weight:900;color:var(--indigo-500);margin-top:4px;">4</div>
+                  <div style="font-size:12px;color:var(--slate-500);margin-top:2px;">3 confirmées · 1 en planification</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTION E -->
+    <div class="direction" id="dir-e">
+      <div class="dir-description">
+        <h2>Direction E: Gradient Glow</h2>
+        <div class="subtitle">Indigo-to-violet gradient hero — modern web trend, premium feel</div>
+        <p>The public hero uses a vivid indigo-to-violet gradient with a curved bottom edge. Cards have subtle indigo shadow glow. The authenticated layer stays clean on white/slate-50 but uses gradient accents in the sidebar. Feels modern and polished — a step beyond the mock's flat indigo.</p>
+        <div class="pros"><span>+ Most visually striking</span><span>+ Modern premium feel</span><span>+ Strong hero impact</span></div>
+        <div class="cons"><span>~ Gradient may feel trendy/dated later</span><span>~ Violet shift diverges from mock's pure indigo</span></div>
+      </div>
+      <div class="frames-row">
+        <div>
+          <div class="mockup-section-title">Public Dashboard · Mobile</div>
+          <div class="phone-frame">
+            <div class="de-public">
+              <div class="de-nav">
+                <span class="de-nav-brand">SDAC St-Hubert</span>
+                <span class="de-nav-login">Connexion</span>
+              </div>
+              <div class="de-hero">
+                <div class="de-hero-church">Église Adventiste de Saint-Hubert</div>
+                <div class="de-hero-title">Pasteur Vicuna prêche ce Sabbat</div>
+                <div class="de-hero-meta">Culte d'adoration · 1er mars · 11h00</div>
+                <div class="de-hero-card">
+                  <div style="font-size:12px;font-weight:700;">📺 Suivez en direct</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px;">YouTube · <span style="color:var(--rose-500);">● EN DIRECT</span></div>
+                </div>
+              </div>
+              <div class="de-cards" style="padding-top:28px;">
+                <div class="de-card">
+                  <div class="de-card-accent" style="background:linear-gradient(90deg,rgba(153,246,228,0.6),rgba(153,246,228,0.1));"></div>
+                  <div class="de-card-title">École du Sabbat — JA</div>
+                  <div class="de-card-desc">Samedi 1er mars · 9h30</div>
+                </div>
+                <div class="de-card">
+                  <div class="de-card-accent" style="background:linear-gradient(90deg,rgba(226,232,240,0.6),rgba(226,232,240,0.1));"></div>
+                  <div class="de-card-title">Réunion de prière</div>
+                  <div class="de-card-desc">Mercredi 5 mars · 19h00</div>
+                </div>
+                <div class="de-card">
+                  <div class="de-card-accent" style="background:linear-gradient(90deg,rgba(221,214,254,0.6),rgba(221,214,254,0.1));"></div>
+                  <div class="de-card-title">Journée des femmes — MIFEM</div>
+                  <div class="de-card-desc">Samedi 8 mars · 11h00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mockup-section-title">Authenticated · Desktop (Viewer)</div>
+          <div class="desktop-frame">
+            <div class="de-auth">
+              <div class="de-auth-sidebar">
+                <div class="de-auth-sidebar-header">SDAC St-Hubert</div>
+                <div style="font-size:11px;color:var(--slate-400);padding:0 16px;margin-bottom:16px;">Viewer · Elisha</div>
+                <div class="de-auth-sidebar-item active">📊 Tableau de bord</div>
+                <div class="de-auth-sidebar-item">📅 Calendrier</div>
+                <div class="de-auth-sidebar-item">🏛️ Départements</div>
+                <div class="de-auth-sidebar-item">📝 Transcriptions</div>
+              </div>
+              <div class="de-auth-content">
+                <div style="font-size:22px;font-weight:900;color:var(--slate-900);margin-bottom:4px;">Bonjour, Elisha</div>
+                <div style="font-size:13px;color:var(--slate-500);margin-bottom:20px;">Vos prochaines affectations</div>
+                <div class="de-auth-card">
+                  <div style="font-size:12px;font-weight:700;background:linear-gradient(90deg,var(--indigo-600),#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">DIACRE</div>
+                  <div style="font-size:15px;font-weight:700;color:var(--slate-900);margin-top:4px;">Samedi 1er mars · Culte d'adoration</div>
+                  <div style="font-size:12px;color:var(--slate-500);margin-top:4px;"><span class="da-status-dot green"></span>Frere Jean, Soeur Claire, Elisha</div>
+                </div>
+                <div class="de-auth-card">
+                  <div style="font-size:12px;font-weight:700;background:linear-gradient(90deg,var(--indigo-600),#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ACCUEIL</div>
+                  <div style="font-size:15px;font-weight:700;color:var(--slate-900);margin-top:4px;">Samedi 8 mars · Culte d'adoration</div>
+                  <div style="font-size:12px;color:var(--slate-500);margin-top:4px;"><span class="da-status-dot amber"></span>Elisha, Soeur Marie (1 poste à combler)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIRECTION F -->
+    <div class="direction" id="dir-f">
+      <div class="dir-description">
+        <h2>Direction F: Split Personality</h2>
+        <div class="subtitle">Maximum contrast between warm public and dark operational</div>
+        <p>The public layer is light, warm, and church-bulletin styled — white hero with a bold indigo bottom border, structured but friendly. The authenticated layer is the darkest, most operational interpretation — near-black background, indigo glow effects, uppercase everything, military command terminal feel. The biggest register gap of all directions.</p>
+        <div class="pros"><span>+ Strongest dual-register identity</span><span>+ Public feels approachable</span><span>+ Operational feels powerful</span></div>
+        <div class="cons"><span>~ Transition may feel jarring</span><span>~ Two very different aesthetics to maintain</span></div>
+      </div>
+      <div class="frames-row">
+        <div>
+          <div class="mockup-section-title">Public Dashboard · Mobile</div>
+          <div class="phone-frame">
+            <div class="df-public">
+              <div class="df-nav">
+                <span class="df-nav-brand">SDAC St-Hubert</span>
+                <span class="df-nav-login">Connexion</span>
+              </div>
+              <div class="df-hero">
+                <div class="df-hero-icon">⛪</div>
+                <div class="df-hero-church">Église Adventiste de Saint-Hubert</div>
+                <div class="df-hero-subtitle">Bienvenue dans notre communauté</div>
+                <div class="df-hero-program">
+                  <div class="df-hero-program-label">Ce Sabbat · 1er mars</div>
+                  <div class="df-hero-program-title">Pasteur Vicuna prêche</div>
+                  <div class="df-hero-program-meta">Culte d'adoration · 11h00</div>
+                </div>
+              </div>
+              <div class="df-cards">
+                <div class="df-card">
+                  <div style="font-size:12px;font-weight:600;color:var(--indigo-600);margin-bottom:4px;">📺 En direct</div>
+                  <div style="font-size:14px;font-weight:600;color:var(--slate-800);">Suivez le culte sur YouTube</div>
+                </div>
+                <div class="df-card">
+                  <div style="font-size:14px;font-weight:700;color:var(--slate-900);margin-bottom:4px;">Activités à venir</div>
+                  <div style="font-size:13px;color:var(--slate-600);line-height:1.6;">
+                    <div style="padding:6px 0;border-bottom:1px solid var(--slate-100);">📖 École du Sabbat — JA · Sam 9h30</div>
+                    <div style="padding:6px 0;border-bottom:1px solid var(--slate-100);">🙏 Réunion de prière · Mer 19h00</div>
+                    <div style="padding:6px 0;">👩 Journée des femmes · Sam 8 mars</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mockup-section-title">Authenticated · Desktop (Admin)</div>
+          <div class="desktop-frame">
+            <div class="df-auth">
+              <div class="df-auth-sidebar">
+                <div class="df-auth-sidebar-header">
+                  <div class="df-auth-sidebar-logo">SDAC OPERATIONS</div>
+                  <div class="df-auth-sidebar-sub">COMMAND · SOEUR KETSIA</div>
+                </div>
+                <div class="df-auth-sidebar-item active">◆ COMMAND CENTER</div>
+                <div class="df-auth-sidebar-item">◇ MINISTRY ROADMAP</div>
+                <div class="df-auth-sidebar-item">◇ UNITÉS MINISTÉRIELLES</div>
+                <div class="df-auth-sidebar-item">◇ REGISTRE PERSONNEL</div>
+                <div class="df-auth-sidebar-item">◇ SIGNAL DIFFUSION</div>
+              </div>
+              <div class="df-auth-content">
+                <div class="df-auth-header">PROTOCOL NODE → COMMAND CENTER</div>
+                <div class="df-auth-title">MIFEM — Tableau de bord</div>
+                <div class="df-auth-card df-auth-card-glow">
+                  <div class="df-auth-card-label">PROCHAIN PROGRAMME</div>
+                  <div class="df-auth-card-value">Journée des femmes</div>
+                  <div style="font-size:12px;color:var(--slate-500);margin-top:2px;">SAM 8 MARS · 11H00</div>
+                  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+                    <span style="padding:3px 10px;background:rgba(16,185,129,0.15);color:var(--emerald-500);border-radius:6px;font-size:10px;font-weight:900;letter-spacing:0.05em;">PREDICATEUR ✓</span>
+                    <span style="padding:3px 10px;background:rgba(16,185,129,0.15);color:var(--emerald-500);border-radius:6px;font-size:10px;font-weight:900;letter-spacing:0.05em;">MUSIQUE ✓</span>
+                    <span style="padding:3px 10px;background:rgba(245,158,11,0.15);color:var(--amber-500);border-radius:6px;font-size:10px;font-weight:900;letter-spacing:0.05em;">DIACRES 2/3</span>
+                  </div>
+                </div>
+                <div class="df-auth-card">
+                  <div class="df-auth-card-label">ACTIVITÉS CE MOIS</div>
+                  <div style="font-size:32px;font-weight:900;color:var(--indigo-500);margin-top:4px;">4</div>
+                  <div style="font-size:11px;color:var(--slate-500);margin-top:2px;">3 CONFIRMÉES · 1 EN PLANIFICATION</div>
+                </div>
+                <div class="df-auth-card">
+                  <div class="df-auth-card-label">ÉQUIPE MIFEM</div>
+                  <div style="display:flex;gap:8px;margin-top:8px;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--indigo-900);border:2px solid var(--indigo-500);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">SK</div>
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--indigo-900);border:2px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">MC</div>
+                    <div style="width:32px;height:32px;border-radius:50%;background:var(--indigo-900);border:2px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">SJ</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== COMPARE VIEW ===== -->
+  <div class="compare-view" id="compareView">
+    <div class="direction-panel" id="compareLeft">
+      <div class="direction-label" id="compareLabelLeft">Direction A</div>
+      <div id="compareContentLeft"></div>
+    </div>
+    <div class="direction-panel" id="compareRight">
+      <div class="direction-label" id="compareLabelRight">Direction B</div>
+      <div id="compareContentRight"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentView = 'single';
+  let selectedDirs = ['a'];
+  const dirNames = { a:'A · Mock Faithful', b:'B · Warm Community', c:'C · Modern Minimal', d:'D · Bold Dashboard', e:'E · Gradient Glow', f:'F · Split Personality' };
+
+  function setView(view) {
+    currentView = view;
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.view-btn[onclick*="${view}"]`).classList.add('active');
+
+    if (view === 'single') {
+      document.getElementById('singleView').classList.add('active');
+      document.getElementById('compareView').classList.remove('active');
+      // Re-enable single select
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.dir-btn[data-dir="${selectedDirs[0]}"]`).classList.add('active');
+      showSingleDir(selectedDirs[0]);
+    } else {
+      document.getElementById('singleView').classList.remove('active');
+      document.getElementById('compareView').classList.add('active');
+      if (selectedDirs.length < 2) selectedDirs.push(selectedDirs[0] === 'a' ? 'b' : 'a');
+      updateCompare();
+    }
+  }
+
+  function selectDir(dir, btn) {
+    if (currentView === 'single') {
+      selectedDirs = [dir];
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showSingleDir(dir);
+    } else {
+      // Toggle selection for compare mode (max 2)
+      const idx = selectedDirs.indexOf(dir);
+      if (idx >= 0) {
+        if (selectedDirs.length > 1) selectedDirs.splice(idx, 1);
+      } else {
+        if (selectedDirs.length >= 2) selectedDirs.shift();
+        selectedDirs.push(dir);
+      }
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+      selectedDirs.forEach(d => document.querySelector(`.dir-btn[data-dir="${d}"]`).classList.add('active'));
+      updateCompare();
+    }
+  }
+
+  function showSingleDir(dir) {
+    document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+    document.getElementById('dir-' + dir).classList.add('active');
+  }
+
+  function updateCompare() {
+    const left = selectedDirs[0] || 'a';
+    const right = selectedDirs[1] || 'b';
+    document.getElementById('compareLabelLeft').textContent = dirNames[left];
+    document.getElementById('compareLabelRight').textContent = dirNames[right];
+    const leftContent = document.getElementById('dir-' + left);
+    const rightContent = document.getElementById('dir-' + right);
+    document.getElementById('compareContentLeft').innerHTML = leftContent ? leftContent.querySelector('.frames-row').outerHTML : '';
+    document.getElementById('compareContentRight').innerHTML = rightContent ? rightContent.querySelector('.frames-row').outerHTML : '';
+    // Fix frame sizes for compare view
+    document.querySelectorAll('#compareView .phone-frame').forEach(f => { f.style.width = '100%'; f.style.maxWidth = '375px'; });
+    document.querySelectorAll('#compareView .desktop-frame').forEach(f => { f.style.display = 'none'; });
+    document.querySelectorAll('#compareView .frames-row').forEach(f => { f.style.flexDirection = 'column'; f.style.alignItems = 'center'; });
+  }
+
+  // Initialize
+  showSingleDir('a');
+</script>
+
+</body>
+</html>

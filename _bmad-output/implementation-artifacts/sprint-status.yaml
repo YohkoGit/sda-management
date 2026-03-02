@@ -1,0 +1,121 @@
+# generated: 2026-03-02
+# project: sda-management
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-02
+project: sda-management
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Project Foundation & Authentication
+  epic-1: backlog
+  1-1-project-scaffolding-and-development-infrastructure: backlog
+  1-2-integration-test-infrastructure: backlog
+  1-3-user-entity-owner-seed-and-core-auth-backend: backlog
+  1-4-google-oauth-sign-in-flow: backlog
+  1-5-email-password-sign-in-and-first-login-password-set: backlog
+  1-6-application-shell-dual-navigation-and-i18n: backlog
+  1-7-sign-out-and-session-cleanup: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Church Configuration & First-Time Setup
+  epic-2: backlog
+  2-1-church-identity-settings: backlog
+  2-2-department-crud-and-sub-ministries: backlog
+  2-3-activity-template-management: backlog
+  2-4-recurring-program-schedule-configuration: backlog
+  2-5-system-health-dashboard: backlog
+  2-6-guided-first-time-setup-experience: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: User & Role Administration
+  epic-3: backlog
+  3-1-single-user-account-creation: backlog
+  3-2-bulk-user-creation: backlog
+  3-3-user-role-and-department-management: backlog
+  3-4-owner-user-management-full-access: backlog
+  3-5-avatar-upload-and-display: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Activity Scheduling & Role Assignment
+  epic-4: backlog
+  4-1-activity-data-model-and-basic-crud: backlog
+  4-2-activity-creation-from-templates: backlog
+  4-3-role-roster-customization: backlog
+  4-4-role-assignment-via-contact-picker: backlog
+  4-5-special-activity-tagging-and-visibility-control: backlog
+  4-6-inline-guest-speaker-creation: backlog
+  4-7-activity-roster-view-and-staffing-indicators: backlog
+  4-8-concurrent-edit-detection: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Public Dashboard & Anonymous Experience
+  epic-5: backlog
+  5-1-public-dashboard-hero-section-and-next-activity: backlog
+  5-2-youtube-live-stream-embed: backlog
+  5-3-upcoming-activities-and-program-times: backlog
+  5-4-public-department-overview: backlog
+  5-5-public-calendar-view: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Authenticated Dashboard & Personal Assignments
+  epic-6: backlog
+  6-1-personal-assignments-view-my-assignments: backlog
+  6-2-full-activity-roster-view: backlog
+  6-3-authenticated-dashboard: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Calendar
+  epic-7: backlog
+  7-1-calendar-core-sunday-first-with-multiple-views: backlog
+  7-2-calendar-visibility-and-department-filtering: backlog
+  7-3-admin-quick-create-from-calendar: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: Department Management
+  epic-8: backlog
+  8-1-department-list-and-detail-view: backlog
+  8-2-department-activity-and-meeting-management: backlog
+  8-3-sub-ministry-management: backlog
+  8-4-owner-full-department-access: backlog
+  epic-8-retrospective: optional
+
+  # Epic 9: Real-Time Updates & Live Experience
+  epic-9: backlog
+  9-1-signalr-hub-and-connection-lifecycle: backlog
+  9-2-real-time-activity-update-broadcasting: backlog
+  9-3-modifie-badge-for-recent-changes: backlog
+  epic-9-retrospective: optional
