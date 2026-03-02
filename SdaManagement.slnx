@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SdaManagement.Api/SdaManagement.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SdaManagement.Api.IntegrationTests/SdaManagement.Api.IntegrationTests.csproj" />
+    <Project Path="tests/SdaManagement.Api.UnitTests/SdaManagement.Api.UnitTests.csproj" />
+  </Folder>
+</Solution>
