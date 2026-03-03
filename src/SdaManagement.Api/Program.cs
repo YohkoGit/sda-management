@@ -1,3 +1,5 @@
+using SdaManagement.Api.Auth;
+using SdaManagement.Api.Data;
 using SdaManagement.Api.Extensions;
 using SdaManagement.Api.Hubs;
 using Serilog;
@@ -14,6 +16,13 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
+
+// Seed database on startup (OWNER account)
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAsync();
+}
 
 // OpenAPI in development
 if (app.Environment.IsDevelopment())
@@ -37,6 +46,9 @@ app.UseRateLimiter();
 
 // 5. Authentication
 app.UseAuthentication();
+
+// Populate ICurrentUserContext from JWT claims + DB lookup
+app.UseMiddleware<CurrentUserContextMiddleware>();
 
 // 6. Authorization
 app.UseAuthorization();

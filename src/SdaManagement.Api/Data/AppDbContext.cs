@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SdaManagement.Api.Data.Entities;
 
 namespace SdaManagement.Api.Data;
 
@@ -6,5 +7,55 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
+    }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Department> Departments => Set<Department>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // User
+        modelBuilder.Entity<User>(e =>
+        {
+            e.HasKey(u => u.Id);
+            e.HasIndex(u => u.Email).IsUnique();
+            e.Property(u => u.Role).HasConversion<int>();
+            e.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(u => u.UpdatedAt).HasDefaultValueSql("now()");
+        });
+
+        // RefreshToken — cascade delete when user deleted
+        modelBuilder.Entity<RefreshToken>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
+            e.HasOne(r => r.User)
+             .WithMany(u => u.RefreshTokens)
+             .HasForeignKey(r => r.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Department
+        modelBuilder.Entity<Department>(e =>
+        {
+            e.HasKey(d => d.Id);
+            e.Property(d => d.CreatedAt).HasDefaultValueSql("now()");
+        });
+
+        // UserDepartment — composite PK, cascade delete on user/dept removal
+        modelBuilder.Entity<UserDepartment>(e =>
+        {
+            e.ToTable("user_departments");
+            e.HasKey(ud => new { ud.UserId, ud.DepartmentId });
+            e.HasOne(ud => ud.User)
+             .WithMany(u => u.UserDepartments)
+             .HasForeignKey(ud => ud.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(ud => ud.Department)
+             .WithMany(d => d.UserDepartments)
+             .HasForeignKey(ud => ud.DepartmentId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +18,20 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         UrlEncoder encoder)
         : base(options, logger, encoder)
     {
+    }
+
+    // AC 5: Return ProblemDetails with custom type on auth challenge (mirrors JWT Bearer OnChallenge)
+    protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = 401;
+        Response.ContentType = "application/problem+json";
+        await Response.WriteAsJsonAsync(new
+        {
+            type = "urn:sdac:unauthenticated",
+            title = "Unauthorized",
+            status = 401,
+            detail = "Authentication is required to access this resource."
+        });
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()

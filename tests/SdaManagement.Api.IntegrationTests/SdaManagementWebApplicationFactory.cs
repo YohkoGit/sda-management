@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -32,12 +33,26 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
         // which creates an undisposed second IServiceProvider.
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        // Use EnsureCreatedAsync() for now — switch to MigrateAsync() in Story 1.3 when first migration exists
-        await dbContext.Database.EnsureCreatedAsync();
+        // Story 1.3: use MigrateAsync() so all migration code runs
+        await dbContext.Database.MigrateAsync();
+
+        // Story 1.3: run OWNER seeder (gracefully skips if OWNER_EMAIL not configured)
+        var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+        await seeder.SeedAsync();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Provide required config values for the test host
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                // JWT Bearer requires a secret — use a fixed test secret (min 32 chars)
+                ["Jwt:Secret"] = "test-jwt-secret-key-for-integration-tests-only-32chars",
+            });
+        });
+
         builder.ConfigureServices(services =>
         {
             var connectionString = _postgresContainer.GetConnectionString();

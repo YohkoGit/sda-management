@@ -1,6 +1,10 @@
+using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 
 namespace SdaManagement.Api.Extensions;
@@ -15,6 +19,9 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
                    .UseSnakeCaseNamingConvention());
+
+        // Database seeder (OWNER seed)
+        services.AddScoped<DatabaseSeeder>();
 
         // Health checks
         services.AddHealthChecks()
@@ -71,9 +78,52 @@ public static class ServiceCollectionExtensions
         // OpenAPI
         services.AddOpenApi();
 
-        // Authentication + Authorization placeholders (JWT logic in Story 1.3)
-        services.AddAuthentication();
+        // JWT Bearer Authentication — reads from access_token httpOnly cookie
+        var jwtSecret = configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("Jwt:Secret is required");
+        var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = jwtKey,
+                    ClockSkew = TimeSpan.Zero,
+                };
+                // Read JWT from httpOnly cookie (not Authorization header)
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = ctx =>
+                    {
+                        ctx.Token = ctx.Request.Cookies["access_token"];
+                        return Task.CompletedTask;
+                    },
+                    // AC 5: Return ProblemDetails with custom type on auth challenge
+                    OnChallenge = async ctx =>
+                    {
+                        ctx.HandleResponse();
+                        ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        ctx.Response.ContentType = "application/problem+json";
+                        await ctx.Response.WriteAsJsonAsync(new
+                        {
+                            type = "urn:sdac:unauthenticated",
+                            title = "Unauthorized",
+                            status = 401,
+                            detail = "Authentication is required to access this resource."
+                        });
+                    },
+                };
+            });
+
         services.AddAuthorization();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddScoped<Auth.IAuthorizationService, Auth.AuthorizationService>();
 
         return services;
     }

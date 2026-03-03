@@ -1,6 +1,9 @@
 using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Respawn;
+using SdaManagement.Api.Data;
+using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.IntegrationTests.Auth;
 
 namespace SdaManagement.Api.IntegrationTests;
@@ -16,6 +19,8 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     protected HttpClient AdminClient { get; }
     protected HttpClient OwnerClient { get; }
 
+    protected string ConnectionString => _factory.ConnectionString;
+
     protected IntegrationTestBase(SdaManagementWebApplicationFactory factory)
     {
         _factory = factory;
@@ -29,13 +34,11 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Initialize Respawn AFTER database schema exists (EnsureCreatedAsync already ran in factory)
+        // Initialize Respawn AFTER database schema exists (MigrateAsync already ran in factory)
         await using var connection = new NpgsqlConnection(_factory.ConnectionString);
         await connection.OpenAsync();
 
-        // Explicitly check for tables instead of catching InvalidOperationException broadly.
-        // A broad catch would swallow real connection errors if they happen to be InvalidOperationException.
-        // AppDbContext has no entities until Story 1.3, so the schema is initially empty.
+        // Check for tables; if schema has tables (it does from Story 1.3), initialize Respawn
         await using var countCmd = connection.CreateCommand();
         countCmd.CommandText =
             "SELECT COUNT(*) FROM information_schema.tables " +
@@ -48,9 +51,9 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             {
                 SchemasToInclude = ["public"],
                 DbAdapter = DbAdapter.Postgres,
+                TablesToIgnore = [new Respawn.Graph.Table("__EFMigrationsHistory")],
             });
         }
-        // _respawner remains null until Story 1.3 adds the first entity
 
         await SeedTestData();
     }
@@ -58,7 +61,6 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     public async Task DisposeAsync()
     {
         // Reset database after each test method to ensure test isolation.
-        // Guard avoids opening a connection when no tables exist (Story 1.2 — empty schema).
         if (_respawner is not null)
         {
             await using var connection = new NpgsqlConnection(_factory.ConnectionString);
@@ -66,8 +68,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             await _respawner.ResetAsync(connection);
         }
 
-        // Dispose role clients. WebApplicationFactory also tracks and disposes its created clients,
-        // but explicit disposal here is cleaner and avoids relying on factory cleanup order.
+        // Dispose role clients.
         AnonymousClient.Dispose();
         ViewerClient.Dispose();
         AdminClient.Dispose();
@@ -77,7 +78,6 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     /// <summary>
     /// Override to seed initial test data after the database is reset.
     /// Called at the end of InitializeAsync() after Respawn is configured.
-    /// Implement in Story 1.3+ when entities exist.
     /// </summary>
     protected virtual Task SeedTestData() => Task.CompletedTask;
 
@@ -91,11 +91,26 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
-    /// Placeholder — requires User entity (Story 1.3).
+    /// Inserts a User record directly via AppDbContext for test setup.
+    /// The email should match the TestAuthHandler email pattern: test-{role}@test.local
     /// </summary>
-    protected Task CreateTestUser(string email, string role)
+    protected async Task<User> CreateTestUser(string email, UserRole role)
     {
-        throw new NotImplementedException("Requires Story 1.3 — User entity does not exist yet");
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var user = new User
+        {
+            Email = email,
+            FirstName = "Test",
+            LastName = role.ToString(),
+            Role = role,
+            IsGuest = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync();
+        return user;
     }
 
     /// <summary>
