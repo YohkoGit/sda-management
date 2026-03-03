@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Department> Departments => Set<Department>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -34,6 +35,18 @@ public class AppDbContext : DbContext
             e.HasOne(r => r.User)
              .WithMany(u => u.RefreshTokens)
              .HasForeignKey(r => r.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // PasswordResetToken — cascade delete when user deleted
+        modelBuilder.Entity<PasswordResetToken>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.HasIndex(p => p.TokenHash);
+            e.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+            e.HasOne(p => p.User)
+             .WithMany()
+             .HasForeignKey(p => p.UserId)
              .OnDelete(DeleteBehavior.Cascade);
         });
 

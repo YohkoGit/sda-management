@@ -45,6 +45,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
+    "jsdom": "^28.1.0",
     "msw": "^2.12.10",
     "playwright": "^1.58.2",
     "shadcn": "^3.8.5",

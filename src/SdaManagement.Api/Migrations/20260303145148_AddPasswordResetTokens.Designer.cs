@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SdaManagement.Api.Data;
@@ -11,9 +12,11 @@ using SdaManagement.Api.Data;
 namespace SdaManagement.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303145148_AddPasswordResetTokens")]
+    partial class AddPasswordResetTokens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,9 +85,6 @@ namespace SdaManagement.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_password_reset_tokens");
-
-                    b.HasIndex("TokenHash")
-                        .HasDatabaseName("ix_password_reset_tokens_token_hash");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_password_reset_tokens_user_id");

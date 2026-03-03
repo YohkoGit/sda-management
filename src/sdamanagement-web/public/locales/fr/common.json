@@ -1,5 +1,58 @@
 {
   "app": {
     "title": "SDAC ST-HUBERT — Commandement des Opérations"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "Adresse courriel",
+      "password": "Mot de passe",
+      "continue": "Continuer",
+      "submit": "Se connecter",
+      "back": "Retour",
+      "or": "Ou",
+      "googleButton": "Continuer avec Google",
+      "forgotPassword": "Mot de passe oublié?",
+      "error": {
+        "invalidCredentials": "Identifiants invalides"
+      }
+    },
+    "setPassword": {
+      "title": "Définir votre mot de passe",
+      "helper": "Ceci est votre première connexion. Veuillez définir un mot de passe sécurisé.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "submit": "Définir le mot de passe",
+      "success": "Mot de passe défini avec succès. Bienvenue!",
+      "strength": {
+        "label": "Exigences du mot de passe",
+        "minLength": "Minimum 8 caractères",
+        "uppercase": "Majuscules",
+        "lowercase": "Minuscules",
+        "digit": "Chiffres"
+      }
+    },
+    "resetPassword": {
+      "title": "Mot de passe oublié",
+      "helper": "Entrez votre adresse courriel pour réinitialiser votre mot de passe.",
+      "request": "Réinitialiser le mot de passe",
+      "requestSuccess": "Si l'adresse courriel existe, un lien de réinitialisation a été envoyé.",
+      "confirmTitle": "Nouveau mot de passe",
+      "confirmHelper": "Entrez votre nouveau mot de passe.",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "confirmSuccess": "Mot de passe réinitialisé avec succès. Veuillez vous connecter.",
+      "error": {
+        "invalidToken": "Le lien de réinitialisation est invalide, expiré ou a déjà été utilisé.",
+        "noToken": "Aucun jeton de réinitialisation fourni. Veuillez utiliser le lien envoyé."
+      }
+    },
+    "error": {
+      "generic": "Une erreur est survenue. Veuillez réessayer.",
+      "invalid-credentials": "Identifiants invalides",
+      "validation-error": "Erreur de validation",
+      "not-found": "Utilisateur introuvable",
+      "password-already-set": "Le mot de passe a déjà été défini. Utilisez la connexion.",
+      "invalid-reset-token": "Le lien de réinitialisation est invalide ou expiré."
+    }
   }
 }

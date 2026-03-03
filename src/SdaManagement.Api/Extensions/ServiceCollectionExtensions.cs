@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Services;
+using SdaManagement.Api.Validators;
 
 namespace SdaManagement.Api.Extensions;
 
@@ -147,6 +149,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<Auth.IAuthorizationService, Auth.AuthorizationService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IPasswordService, PasswordService>();
+
+        // FluentValidation — auto-register all validators from assembly
+        services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();
 
         return services;
     }

@@ -1,5 +1,58 @@
 {
   "app": {
     "title": "SDAC ST-HUBERT — Operations Command"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "email": "Email Address",
+      "password": "Password",
+      "continue": "Continue",
+      "submit": "Sign In",
+      "back": "Back",
+      "or": "Or",
+      "googleButton": "Continue with Google",
+      "forgotPassword": "Forgot password?",
+      "error": {
+        "invalidCredentials": "Invalid credentials"
+      }
+    },
+    "setPassword": {
+      "title": "Set Your Password",
+      "helper": "This is your first login. Please set a secure password.",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Set Password",
+      "success": "Password set successfully. Welcome!",
+      "strength": {
+        "label": "Password requirements",
+        "minLength": "Minimum 8 characters",
+        "uppercase": "Uppercase letters",
+        "lowercase": "Lowercase letters",
+        "digit": "Digits"
+      }
+    },
+    "resetPassword": {
+      "title": "Forgot Password",
+      "helper": "Enter your email address to reset your password.",
+      "request": "Reset Password",
+      "requestSuccess": "If the email exists, a reset link has been sent.",
+      "confirmTitle": "New Password",
+      "confirmHelper": "Enter your new password.",
+      "confirm": "Confirm New Password",
+      "confirmSuccess": "Password reset successfully. Please sign in.",
+      "error": {
+        "invalidToken": "The reset link is invalid, expired, or has already been used.",
+        "noToken": "No reset token provided. Please use the link sent to you."
+      }
+    },
+    "error": {
+      "generic": "An error occurred. Please try again.",
+      "invalid-credentials": "Invalid credentials",
+      "validation-error": "Validation error",
+      "not-found": "User not found",
+      "password-already-set": "Password has already been set. Use sign in.",
+      "invalid-reset-token": "The reset link is invalid or expired."
+    }
   }
 }
