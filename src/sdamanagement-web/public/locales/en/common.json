@@ -1,6 +1,73 @@
 {
   "app": {
-    "title": "SDAC ST-HUBERT — Operations Command"
+    "title": "SDAC ST-HUBERT — Operations Command",
+    "churchName": "Seventh-day Adventist Church of Saint-Hubert",
+    "churchInitials": "SD"
+  },
+  "nav": {
+    "public": {
+      "home": "Home",
+      "calendar": "Calendar",
+      "departments": "Departments",
+      "live": "Live",
+      "signIn": "Sign In",
+      "menu": "Menu"
+    },
+    "auth": {
+      "navigation": "Navigation",
+      "dashboard": "Dashboard",
+      "calendar": "Calendar",
+      "departments": "Departments",
+      "admin": "Administration",
+      "settings": "Settings",
+      "signOut": "Sign Out"
+    },
+    "language": {
+      "switchTo": "Switch to {{lang}}",
+      "currentLang": "Current language",
+      "fr": "Fran\u00e7ais",
+      "en": "English"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Home",
+      "subtitle": "Welcome to the Seventh-day Adventist Church of Saint-Hubert"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome, {{name}}"
+    },
+    "calendar": {
+      "title": "Calendar"
+    },
+    "departments": {
+      "title": "Departments"
+    },
+    "live": {
+      "title": "Live"
+    },
+    "admin": {
+      "title": "Administration"
+    },
+    "settings": {
+      "title": "Settings"
+    },
+    "notFound": {
+      "title": "Page Not Found",
+      "message": "The page you are looking for does not exist.",
+      "backHome": "Back to Home"
+    }
+  },
+  "layout": {
+    "skipToContent": "Skip to main content",
+    "loading": "Loading...",
+    "churchName": "SDAC Saint-Hubert"
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Administrator",
+    "viewer": "Member"
   },
   "auth": {
     "login": {

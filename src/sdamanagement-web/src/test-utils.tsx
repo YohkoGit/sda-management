@@ -1,7 +1,9 @@
 import type { ReactElement } from "react";
 import { render, type RenderOptions } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, MemoryRouter, type MemoryRouterProps } from "react-router-dom";
 import { I18nextProvider } from "react-i18next";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -17,6 +19,56 @@ testI18n.use(initReactI18next).init({
   resources: {
     fr: {
       common: {
+        app: {
+          title: "SDAC ST-HUBERT — Commandement des Opérations",
+          churchName: "Eglise Adventiste du 7e Jour de Saint-Hubert",
+          churchInitials: "SD",
+        },
+        nav: {
+          public: {
+            home: "Accueil",
+            calendar: "Calendrier",
+            departments: "Départements",
+            live: "En Direct",
+            signIn: "Connexion",
+            menu: "Menu",
+          },
+          auth: {
+            navigation: "Navigation",
+            dashboard: "Tableau de Bord",
+            calendar: "Calendrier",
+            departments: "Départements",
+            admin: "Administration",
+            settings: "Paramètres",
+            signOut: "Terminer la Session",
+          },
+          language: {
+            switchTo: "Changer en {{lang}}",
+            currentLang: "Langue actuelle",
+            fr: "Français",
+            en: "English",
+          },
+        },
+        pages: {
+          home: { title: "Accueil", subtitle: "Bienvenue à l'Eglise Adventiste du 7e Jour de Saint-Hubert" },
+          dashboard: { title: "Tableau de Bord", welcome: "Bienvenue, {{name}}" },
+          calendar: { title: "Calendrier" },
+          departments: { title: "Départements" },
+          live: { title: "En Direct" },
+          admin: { title: "Administration" },
+          settings: { title: "Paramètres" },
+          notFound: { title: "Page introuvable", message: "La page que vous recherchez n'existe pas.", backHome: "Retour à l'accueil" },
+        },
+        layout: {
+          skipToContent: "Aller au contenu principal",
+          loading: "Chargement...",
+          churchName: "SDAC Saint-Hubert",
+        },
+        roles: {
+          owner: "Propriétaire",
+          admin: "Administrateur",
+          viewer: "Membre",
+        },
         auth: {
           login: {
             title: "Connexion",
@@ -32,8 +84,7 @@ testI18n.use(initReactI18next).init({
           },
           setPassword: {
             title: "Définir votre mot de passe",
-            helper:
-              "Ceci est votre première connexion. Veuillez définir un mot de passe sécurisé.",
+            helper: "Ceci est votre première connexion. Veuillez définir un mot de passe sécurisé.",
             newPassword: "Nouveau mot de passe",
             confirmPassword: "Confirmer le mot de passe",
             submit: "Définir le mot de passe",
@@ -48,19 +99,15 @@ testI18n.use(initReactI18next).init({
           },
           resetPassword: {
             title: "Mot de passe oublié",
-            helper:
-              "Entrez votre adresse courriel pour réinitialiser votre mot de passe.",
+            helper: "Entrez votre adresse courriel pour réinitialiser votre mot de passe.",
             request: "Réinitialiser le mot de passe",
             confirmTitle: "Nouveau mot de passe",
             confirmHelper: "Entrez votre nouveau mot de passe.",
             confirm: "Confirmer le nouveau mot de passe",
-            confirmSuccess:
-              "Mot de passe réinitialisé avec succès. Veuillez vous connecter.",
+            confirmSuccess: "Mot de passe réinitialisé avec succès. Veuillez vous connecter.",
             error: {
-              invalidToken:
-                "Le lien de réinitialisation est invalide, expiré ou a déjà été utilisé.",
-              noToken:
-                "Aucun jeton de réinitialisation fourni. Veuillez utiliser le lien envoyé.",
+              invalidToken: "Le lien de réinitialisation est invalide, expiré ou a déjà été utilisé.",
+              noToken: "Aucun jeton de réinitialisation fourni. Veuillez utiliser le lien envoyé.",
             },
           },
           error: {
@@ -69,21 +116,94 @@ testI18n.use(initReactI18next).init({
         },
       },
     },
+    en: {
+      common: {
+        nav: {
+          public: {
+            home: "Home",
+            calendar: "Calendar",
+            departments: "Departments",
+            live: "Live",
+            signIn: "Sign In",
+          },
+          auth: {
+            dashboard: "Dashboard",
+            calendar: "Calendar",
+            departments: "Departments",
+            admin: "Administration",
+            settings: "Settings",
+            signOut: "Sign Out",
+          },
+          language: {
+            switchTo: "Switch to {{lang}}",
+          },
+        },
+        layout: {
+          churchName: "SDAC Saint-Hubert",
+          loading: "Loading...",
+          skipToContent: "Skip to main content",
+        },
+        roles: {
+          owner: "Owner",
+          admin: "Administrator",
+          viewer: "Member",
+        },
+      },
+    },
   },
 });
 
+export { testI18n };
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
+}
+
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
+  routerProps?: MemoryRouterProps;
+}
+
+/**
+ * Default wrapper uses BrowserRouter (backward compatible with pre-existing tests).
+ * Pass routerProps to use MemoryRouter instead (for controlled route testing).
+ */
 function AllProviders({ children }: { children: React.ReactNode }) {
   return (
     <I18nextProvider i18n={testI18n}>
-      <BrowserRouter>
-        <AuthProvider>{children}</AuthProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={createTestQueryClient()}>
+        <TooltipProvider>
+          <BrowserRouter>
+            <AuthProvider>{children}</AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
     </I18nextProvider>
   );
 }
 
-function customRender(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) {
-  return render(ui, { wrapper: AllProviders, ...options });
+function customRender(ui: ReactElement, options?: CustomRenderOptions) {
+  const { routerProps, ...renderOptions } = options ?? {};
+
+  if (routerProps) {
+    const CustomWrapper = ({ children }: { children: React.ReactNode }) => (
+      <I18nextProvider i18n={testI18n}>
+        <QueryClientProvider client={createTestQueryClient()}>
+          <TooltipProvider>
+            <MemoryRouter {...routerProps}>
+              <AuthProvider>{children}</AuthProvider>
+            </MemoryRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </I18nextProvider>
+    );
+    return render(ui, { wrapper: CustomWrapper, ...renderOptions });
+  }
+
+  return render(ui, { wrapper: AllProviders, ...renderOptions });
 }
 
 export * from "@testing-library/react";

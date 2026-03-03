@@ -1,6 +1,73 @@
 {
   "app": {
-    "title": "SDAC ST-HUBERT — Commandement des Opérations"
+    "title": "SDAC ST-HUBERT — Commandement des Op\u00e9rations",
+    "churchName": "Eglise Adventiste du 7e Jour de Saint-Hubert",
+    "churchInitials": "SD"
+  },
+  "nav": {
+    "public": {
+      "home": "Accueil",
+      "calendar": "Calendrier",
+      "departments": "D\u00e9partements",
+      "live": "En Direct",
+      "signIn": "Connexion",
+      "menu": "Menu"
+    },
+    "auth": {
+      "navigation": "Navigation",
+      "dashboard": "Tableau de Bord",
+      "calendar": "Calendrier",
+      "departments": "D\u00e9partements",
+      "admin": "Administration",
+      "settings": "Param\u00e8tres",
+      "signOut": "Terminer la Session"
+    },
+    "language": {
+      "switchTo": "Changer en {{lang}}",
+      "currentLang": "Langue actuelle",
+      "fr": "Fran\u00e7ais",
+      "en": "English"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Accueil",
+      "subtitle": "Bienvenue \u00e0 l\u2019Eglise Adventiste du 7e Jour de Saint-Hubert"
+    },
+    "dashboard": {
+      "title": "Tableau de Bord",
+      "welcome": "Bienvenue, {{name}}"
+    },
+    "calendar": {
+      "title": "Calendrier"
+    },
+    "departments": {
+      "title": "D\u00e9partements"
+    },
+    "live": {
+      "title": "En Direct"
+    },
+    "admin": {
+      "title": "Administration"
+    },
+    "settings": {
+      "title": "Param\u00e8tres"
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "message": "La page que vous recherchez n\u2019existe pas.",
+      "backHome": "Retour \u00e0 l\u2019accueil"
+    }
+  },
+  "layout": {
+    "skipToContent": "Aller au contenu principal",
+    "loading": "Chargement...",
+    "churchName": "SDAC Saint-Hubert"
+  },
+  "roles": {
+    "owner": "Propri\u00e9taire",
+    "admin": "Administrateur",
+    "viewer": "Membre"
   },
   "auth": {
     "login": {
@@ -12,47 +79,47 @@
       "back": "Retour",
       "or": "Ou",
       "googleButton": "Continuer avec Google",
-      "forgotPassword": "Mot de passe oublié?",
+      "forgotPassword": "Mot de passe oubli\u00e9?",
       "error": {
         "invalidCredentials": "Identifiants invalides"
       }
     },
     "setPassword": {
-      "title": "Définir votre mot de passe",
-      "helper": "Ceci est votre première connexion. Veuillez définir un mot de passe sécurisé.",
+      "title": "D\u00e9finir votre mot de passe",
+      "helper": "Ceci est votre premi\u00e8re connexion. Veuillez d\u00e9finir un mot de passe s\u00e9curis\u00e9.",
       "newPassword": "Nouveau mot de passe",
       "confirmPassword": "Confirmer le mot de passe",
-      "submit": "Définir le mot de passe",
-      "success": "Mot de passe défini avec succès. Bienvenue!",
+      "submit": "D\u00e9finir le mot de passe",
+      "success": "Mot de passe d\u00e9fini avec succ\u00e8s. Bienvenue!",
       "strength": {
         "label": "Exigences du mot de passe",
-        "minLength": "Minimum 8 caractères",
+        "minLength": "Minimum 8 caract\u00e8res",
         "uppercase": "Majuscules",
         "lowercase": "Minuscules",
         "digit": "Chiffres"
       }
     },
     "resetPassword": {
-      "title": "Mot de passe oublié",
-      "helper": "Entrez votre adresse courriel pour réinitialiser votre mot de passe.",
-      "request": "Réinitialiser le mot de passe",
-      "requestSuccess": "Si l'adresse courriel existe, un lien de réinitialisation a été envoyé.",
+      "title": "Mot de passe oubli\u00e9",
+      "helper": "Entrez votre adresse courriel pour r\u00e9initialiser votre mot de passe.",
+      "request": "R\u00e9initialiser le mot de passe",
+      "requestSuccess": "Si l\u2019adresse courriel existe, un lien de r\u00e9initialisation a \u00e9t\u00e9 envoy\u00e9.",
       "confirmTitle": "Nouveau mot de passe",
       "confirmHelper": "Entrez votre nouveau mot de passe.",
       "confirm": "Confirmer le nouveau mot de passe",
-      "confirmSuccess": "Mot de passe réinitialisé avec succès. Veuillez vous connecter.",
+      "confirmSuccess": "Mot de passe r\u00e9initialis\u00e9 avec succ\u00e8s. Veuillez vous connecter.",
       "error": {
-        "invalidToken": "Le lien de réinitialisation est invalide, expiré ou a déjà été utilisé.",
-        "noToken": "Aucun jeton de réinitialisation fourni. Veuillez utiliser le lien envoyé."
+        "invalidToken": "Le lien de r\u00e9initialisation est invalide, expir\u00e9 ou a d\u00e9j\u00e0 \u00e9t\u00e9 utilis\u00e9.",
+        "noToken": "Aucun jeton de r\u00e9initialisation fourni. Veuillez utiliser le lien envoy\u00e9."
       }
     },
     "error": {
-      "generic": "Une erreur est survenue. Veuillez réessayer.",
+      "generic": "Une erreur est survenue. Veuillez r\u00e9essayer.",
       "invalid-credentials": "Identifiants invalides",
       "validation-error": "Erreur de validation",
       "not-found": "Utilisateur introuvable",
-      "password-already-set": "Le mot de passe a déjà été défini. Utilisez la connexion.",
-      "invalid-reset-token": "Le lien de réinitialisation est invalide ou expiré."
+      "password-already-set": "Le mot de passe a d\u00e9j\u00e0 \u00e9t\u00e9 d\u00e9fini. Utilisez la connexion.",
+      "invalid-reset-token": "Le lien de r\u00e9initialisation est invalide ou expir\u00e9."
     }
   }
 }
