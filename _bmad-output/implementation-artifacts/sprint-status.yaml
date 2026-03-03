@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Project Foundation & Authentication
   epic-1: in-progress
   1-1-project-scaffolding-and-development-infrastructure: done
-  1-2-integration-test-infrastructure: backlog
+  1-2-integration-test-infrastructure: done
   1-3-user-entity-owner-seed-and-core-auth-backend: backlog
   1-4-google-oauth-sign-in-flow: backlog
   1-5-email-password-sign-in-and-first-login-password-set: backlog

@@ -16,7 +16,17 @@
       "WebFetch(domain:context7.com)",
       "WebFetch(domain:til.simonwillison.net)",
       "Bash(claude mcp:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(dotnet:*)",
+      "Bash(cmd:*)",
+      "Bash(export:*)",
+      "Bash(where.exe dotnet:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(npx:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
     ]
   }
 }
