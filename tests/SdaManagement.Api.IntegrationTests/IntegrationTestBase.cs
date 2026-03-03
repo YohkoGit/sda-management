@@ -19,6 +19,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     protected HttpClient AdminClient { get; }
     protected HttpClient OwnerClient { get; }
 
+    protected SdaManagementWebApplicationFactory Factory => _factory;
     protected string ConnectionString => _factory.ConnectionString;
 
     protected IntegrationTestBase(SdaManagementWebApplicationFactory factory)

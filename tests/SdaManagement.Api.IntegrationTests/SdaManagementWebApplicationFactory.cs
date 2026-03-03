@@ -50,6 +50,12 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
             {
                 // JWT Bearer requires a secret — use a fixed test secret (min 32 chars)
                 ["Jwt:Secret"] = "test-jwt-secret-key-for-integration-tests-only-32chars",
+                // Story 1.4: Google OAuth requires these at startup (fake values for tests)
+                ["Google:ClientId"] = "fake-test-client-id.apps.googleusercontent.com",
+                ["Google:ClientSecret"] = "fake-test-client-secret",
+                // Story 1.4: Higher rate limit for tests so functional tests don't
+                // interfere with each other via shared rate limit budget
+                ["RateLimiting:AuthPermitLimit"] = "200",
             });
         });
 
@@ -81,6 +87,7 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
             })
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                 TestAuthHandler.SchemeName, null);
+
         });
     }
 

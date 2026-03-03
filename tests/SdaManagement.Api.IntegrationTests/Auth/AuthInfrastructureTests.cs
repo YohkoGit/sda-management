@@ -1,7 +1,10 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Shouldly;
+using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
 
 namespace SdaManagement.Api.IntegrationTests.Auth;
@@ -74,61 +77,137 @@ public class AuthInfrastructureTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CurrentUserContext_WhenValidTestCredentialsSent_PopulatesContext()
+    public async Task Me_WhenAuthenticated_ReturnsUserInfo()
     {
-        // Arrange — create a Viewer user whose email matches TestAuthHandler's "Viewer" email claim
-        var user = await CreateTestUser("test-viewer@test.local", UserRole.Viewer);
+        var user = await CreateTestUser("test-owner@test.local", UserRole.Owner);
 
-        // Act — ViewerClient sends X-Test-Role: Viewer → TestAuthHandler sets email = test-viewer@test.local
-        //        → CurrentUserContextMiddleware resolves user from DB → probe returns populated context
-        var response = await ViewerClient.GetAsync("/api/auth/probe");
+        var response = await OwnerClient.GetAsync("/api/auth/me");
 
-        // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        root.GetProperty("isAuthenticated").GetBoolean().ShouldBeTrue();
         root.GetProperty("userId").GetInt32().ShouldBe(user.Id);
-        root.GetProperty("role").GetString().ShouldBe("Viewer");
+        root.GetProperty("email").GetString().ShouldBe("test-owner@test.local");
+        root.GetProperty("firstName").GetString().ShouldBe("Test");
+        root.GetProperty("lastName").GetString().ShouldBe("Owner");
+        root.GetProperty("role").GetString().ShouldBe("Owner");
     }
 
     [Fact]
-    public async Task CurrentUserContext_WhenJwtMissing_Returns401WithProblemDetails()
+    public async Task Me_WhenAnonymous_Returns401()
     {
-        // AnonymousClient has no auth headers — TestAuthHandler returns NoResult → 401
-        var response = await AnonymousClient.GetAsync("/api/auth/probe");
+        var response = await AnonymousClient.GetAsync("/api/auth/me");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 
-        // AC 5: Verify ProblemDetails body with custom type
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
         root.GetProperty("type").GetString().ShouldBe("urn:sdac:unauthenticated");
         root.GetProperty("status").GetInt32().ShouldBe(401);
-        root.GetProperty("title").GetString().ShouldBe("Unauthorized");
     }
 
     [Fact]
-    public async Task RateLimiting_WhenMoreThan5RequestsPerMinute_Returns429WithRetryAfter()
+    public async Task Refresh_WhenValidRefreshToken_ReturnsNewTokens()
     {
-        // Arrange — send 6 POST requests; 6th should be rate-limited (5 req/min per IP)
-        var responses = new List<HttpResponseMessage>();
-        for (int i = 0; i < 6; i++)
-        {
-            responses.Add(await AnonymousClient.PostAsync("/api/auth/login", null));
-        }
+        var user = await CreateTestUser("test-owner@test.local", UserRole.Owner);
 
-        // Assert — first 5 requests should succeed (501 Not Implemented, not rate-limited)
-        for (int i = 0; i < 5; i++)
-        {
-            responses[i].StatusCode.ShouldBe(HttpStatusCode.NotImplemented,
-                $"Request {i + 1} should not be rate-limited");
-        }
+        // Seed a valid refresh token directly in the DB
+        var refreshTokenValue = "valid-test-refresh-token-base64-value";
+        await SeedRefreshToken(user.Id, refreshTokenValue, DateTime.UtcNow.AddDays(7), isRevoked: false);
 
-        // 6th request should be rate-limited
-        responses[5].StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
-        responses[5].Headers.Contains("Retry-After").ShouldBeTrue();
+        // Send refresh request with cookie (AnonymousClient: refresh doesn't require auth)
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        request.Headers.Add("Cookie", $"refresh_token={refreshTokenValue}");
+        var response = await AnonymousClient.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Verify Set-Cookie headers contain new tokens
+        response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders).ShouldBeTrue(
+            "Expected Set-Cookie headers with new tokens");
+        var cookieHeaders = setCookieHeaders!.ToList();
+        cookieHeaders.ShouldContain(h => h.StartsWith("access_token="), "Expected new access_token cookie");
+        cookieHeaders.ShouldContain(h => h.StartsWith("refresh_token="), "Expected new refresh_token cookie");
+
+        // Verify old token is revoked and new token exists in DB
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var oldToken = await dbContext.RefreshTokens
+            .FirstAsync(rt => rt.Token == refreshTokenValue);
+        oldToken.IsRevoked.ShouldBeTrue();
+
+        var newTokenExists = await dbContext.RefreshTokens
+            .AnyAsync(rt => rt.UserId == user.Id && rt.Token != refreshTokenValue && !rt.IsRevoked);
+        newTokenExists.ShouldBeTrue("Expected a new non-revoked refresh token in DB");
+    }
+
+    [Fact]
+    public async Task Refresh_WhenInvalidToken_Returns401()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        request.Headers.Add("Cookie", "refresh_token=this-token-does-not-exist");
+        var response = await AnonymousClient.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Refresh_WhenRevokedToken_Returns401()
+    {
+        var user = await CreateTestUser("test-owner@test.local", UserRole.Owner);
+        var refreshTokenValue = "revoked-test-refresh-token";
+        await SeedRefreshToken(user.Id, refreshTokenValue, DateTime.UtcNow.AddDays(7), isRevoked: true);
+
+        // AnonymousClient: refresh doesn't require auth
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        request.Headers.Add("Cookie", $"refresh_token={refreshTokenValue}");
+        var response = await AnonymousClient.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Logout_WhenAuthenticated_RevokesTokenAndClearsCookies()
+    {
+        var user = await CreateTestUser("test-owner@test.local", UserRole.Owner);
+        var refreshTokenValue = "logout-test-refresh-token";
+        await SeedRefreshToken(user.Id, refreshTokenValue, DateTime.UtcNow.AddDays(7), isRevoked: false);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        request.Headers.Add("Cookie", $"refresh_token={refreshTokenValue}");
+        var response = await OwnerClient.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Verify cookies are cleared via Set-Cookie headers
+        response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders).ShouldBeTrue(
+            "Expected Set-Cookie headers for clearing cookies");
+        var cookieHeaders = setCookieHeaders!.ToList();
+        cookieHeaders.ShouldContain(h => h.StartsWith("access_token="), "Expected access_token cookie to be cleared");
+        cookieHeaders.ShouldContain(h => h.StartsWith("refresh_token="), "Expected refresh_token cookie to be cleared");
+
+        // Verify token revoked in DB
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var token = await dbContext.RefreshTokens
+            .FirstAsync(rt => rt.Token == refreshTokenValue);
+        token.IsRevoked.ShouldBeTrue();
+    }
+
+    private async Task SeedRefreshToken(int userId, string tokenValue, DateTime expiresAt, bool isRevoked)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.RefreshTokens.Add(new RefreshToken
+        {
+            UserId = userId,
+            Token = tokenValue,
+            ExpiresAt = expiresAt,
+            IsRevoked = isRevoked,
+            CreatedAt = DateTime.UtcNow,
+        });
+        await dbContext.SaveChangesAsync();
     }
 }

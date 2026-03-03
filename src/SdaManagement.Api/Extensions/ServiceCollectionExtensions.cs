@@ -1,11 +1,14 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
+using SdaManagement.Api.Services;
 
 namespace SdaManagement.Api.Extensions;
 
@@ -55,9 +58,10 @@ public static class ServiceCollectionExtensions
                         ((int)retryAfter.TotalSeconds).ToString();
                 return ValueTask.CompletedTask;
             };
+            var authRateLimit = configuration.GetValue("RateLimiting:AuthPermitLimit", 5);
             options.AddFixedWindowLimiter("auth", limiterOptions =>
             {
-                limiterOptions.PermitLimit = 5;
+                limiterOptions.PermitLimit = authRateLimit;
                 limiterOptions.Window = TimeSpan.FromMinutes(1);
             });
         });
@@ -118,12 +122,31 @@ public static class ServiceCollectionExtensions
                         });
                     },
                 };
+            })
+            .AddCookie("GoogleOAuthTemp", options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+            })
+            .AddGoogle(options =>
+            {
+                options.SignInScheme = "GoogleOAuthTemp";
+                options.ClientId = configuration["Google:ClientId"]
+                    ?? throw new InvalidOperationException("Google:ClientId is required");
+                options.ClientSecret = configuration["Google:ClientSecret"]
+                    ?? throw new InvalidOperationException("Google:ClientSecret is required");
+                options.CallbackPath = "/signin-google";
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
             });
 
         services.AddAuthorization();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<Auth.IAuthorizationService, Auth.AuthorizationService>();
+        services.AddScoped<ITokenService, TokenService>();
 
         return services;
     }

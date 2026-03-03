@@ -29,6 +29,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<RefreshToken>(e =>
         {
             e.HasKey(r => r.Id);
+            e.HasIndex(r => r.Token).IsUnique();
             e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
             e.HasOne(r => r.User)
              .WithMany(u => u.RefreshTokens)
