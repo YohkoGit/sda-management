@@ -150,6 +150,10 @@ export const authHandlers = [
     });
   }),
 
+  http.post("/api/auth/logout", () => {
+    return HttpResponse.json(null, { status: 200 });
+  }),
+
   http.get("/api/auth/me", () => {
     return HttpResponse.json(
       { type: "urn:sdac:unauthenticated", status: 401 },

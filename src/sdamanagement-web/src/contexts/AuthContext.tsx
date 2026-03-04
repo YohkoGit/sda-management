@@ -8,6 +8,8 @@ import {
 } from "react";
 import { isAxiosError } from "axios";
 import api from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
+import { stopConnection } from "@/lib/signalr";
 
 interface AuthUser {
   userId: number;
@@ -57,7 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await api.post("/api/auth/logout");
+    } catch (error) {
+      console.warn("Logout API call failed:", error);
     } finally {
+      queryClient.clear();
+      await stopConnection();
       setUser(null);
       setError(null);
       window.location.href = "/";

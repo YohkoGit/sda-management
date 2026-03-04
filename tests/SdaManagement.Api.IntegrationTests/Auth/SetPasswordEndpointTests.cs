@@ -1,9 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
 
 namespace SdaManagement.Api.IntegrationTests.Auth;
@@ -72,14 +70,5 @@ public class SetPasswordEndpointTests : IntegrationTestBase
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.GetProperty("type").GetString().ShouldBe("urn:sdac:validation-error");
-    }
-
-    private async Task SetUserPassword(int userId, string password)
-    {
-        using var scope = Factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var user = await dbContext.Users.FindAsync(userId);
-        user!.PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(password, 12);
-        await dbContext.SaveChangesAsync();
     }
 }

@@ -115,6 +115,18 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
+    /// Sets a BCrypt password hash for the given user. Used by auth tests (login, logout, password reset).
+    /// </summary>
+    protected async Task SetUserPassword(int userId, string password)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var user = await dbContext.Users.FindAsync(userId);
+        user!.PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(password, 12);
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Placeholder — requires Activity entity (Epic 4).
     /// </summary>
     protected Task CreateTestActivity()

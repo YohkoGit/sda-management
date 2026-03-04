@@ -123,13 +123,4 @@ public class PasswordResetEndpointTests : IntegrationTestBase
             new { token, newPassword = "AnotherPassword1" });
         secondResponse.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
-
-    private async Task SetUserPassword(int userId, string password)
-    {
-        using var scope = Factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var user = await dbContext.Users.FindAsync(userId);
-        user!.PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(password, 12);
-        await dbContext.SaveChangesAsync();
-    }
 }

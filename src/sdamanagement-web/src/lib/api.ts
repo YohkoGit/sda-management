@@ -35,7 +35,8 @@ api.interceptors.response.use(
     if (
       error.response?.status !== 401 ||
       originalRequest.url?.includes("/api/auth/refresh") ||
-      originalRequest.url?.includes("/api/auth/google-login")
+      originalRequest.url?.includes("/api/auth/google-login") ||
+      originalRequest.url?.includes("/api/auth/logout")
     ) {
       return Promise.reject(error);
     }
