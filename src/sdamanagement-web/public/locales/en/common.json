@@ -20,7 +20,8 @@
       "departments": "Departments",
       "admin": "Administration",
       "settings": "Settings",
-      "signOut": "Sign Out"
+      "signOut": "Sign Out",
+      "adminDepartments": "Department Management"
     },
     "language": {
       "switchTo": "Switch to {{lang}}",
@@ -74,6 +75,51 @@
         "saveError": "Error saving church settings"
       },
       "noSettingsForRole": "No settings available for your role."
+    },
+    "adminDepartments": {
+      "title": "Department Management",
+      "emptyState": "Create your departments \u2014 they structure the entire application",
+      "emptyStateHelper": "Departments organize activities, members, and responsibilities.",
+      "createButton": "Create a department",
+      "form": {
+        "createTitle": "New Department",
+        "editTitle": "Edit Department",
+        "name": "Department Name",
+        "namePlaceholder": "Adventist Youth",
+        "abbreviation": "Abbreviation",
+        "abbreviationPlaceholder": "AY",
+        "abbreviationHint": "If empty, the uppercased name will be used.",
+        "color": "Color",
+        "colorPlaceholder": "#4F46E5",
+        "description": "Description",
+        "descriptionPlaceholder": "Youth activities and programs...",
+        "subMinistries": "Sub-Ministries",
+        "addSubMinistry": "Add a sub-ministry",
+        "subMinistryPlaceholder": "Pathfinders",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+      "createSuccess": "Department created successfully",
+      "updateSuccess": "Department updated successfully",
+      "deleteSuccess": "Department deleted",
+      "deleteError": "Failed to delete department.",
+      "deleteConfirmTitle": "Delete Department",
+      "deleteConfirmMessage": "This action is irreversible. Associated sub-ministries will also be deleted.",
+      "deleteConfirmAction": "Delete",
+      "conflictError": "A department with this abbreviation or color already exists.",
+      "subMinistry": {
+        "addSuccess": "Sub-ministry added",
+        "updateSuccess": "Sub-ministry updated",
+        "deleteSuccess": "Sub-ministry deleted",
+        "deleteError": "Failed to delete sub-ministry."
+      },
+      "card": {
+        "subMinistries": "sub-ministry(ies)",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "noAccess": "Access reserved for the system owner."
     },
     "notFound": {
       "title": "Page Not Found",

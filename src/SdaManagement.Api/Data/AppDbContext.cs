@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Department> Departments => Set<Department>();
+    public DbSet<SubMinistry> SubMinistries => Set<SubMinistry>();
     public DbSet<ChurchConfig> ChurchConfigs => Set<ChurchConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,7 +56,28 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Department>(e =>
         {
             e.HasKey(d => d.Id);
+            e.HasIndex(d => d.Abbreviation).IsUnique();
+            e.HasIndex(d => d.Color).IsUnique();
+            e.Property(d => d.Name).HasMaxLength(100);
+            e.Property(d => d.Abbreviation).HasMaxLength(10);
+            e.Property(d => d.Color).HasMaxLength(9);  // "#" + 6 hex chars
+            e.Property(d => d.Description).HasMaxLength(500);
             e.Property(d => d.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(d => d.UpdatedAt).HasDefaultValueSql("now()");
+        });
+
+        // SubMinistry
+        modelBuilder.Entity<SubMinistry>(e =>
+        {
+            e.HasKey(s => s.Id);
+            e.Property(s => s.Name).HasMaxLength(100);
+            e.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(s => s.UpdatedAt).HasDefaultValueSql("now()");
+            e.HasOne(s => s.Department)
+             .WithMany(d => d.SubMinistries)
+             .HasForeignKey(s => s.DepartmentId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(s => new { s.DepartmentId, s.Name }).IsUnique();
         });
 
         // ChurchConfig — singleton settings entity

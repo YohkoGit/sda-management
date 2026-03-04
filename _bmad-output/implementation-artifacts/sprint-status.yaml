@@ -54,7 +54,7 @@ development_status:
   # Epic 2: Church Configuration & First-Time Setup
   epic-2: in-progress
   2-1-church-identity-settings: done
-  2-2-department-crud-and-sub-ministries: backlog
+  2-2-department-crud-and-sub-ministries: done
   2-3-activity-template-management: backlog
   2-4-recurring-program-schedule-configuration: backlog
   2-5-system-health-dashboard: backlog

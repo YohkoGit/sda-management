@@ -56,6 +56,8 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
                 // Story 1.4: Higher rate limit for tests so functional tests don't
                 // interfere with each other via shared rate limit budget
                 ["RateLimiting:AuthPermitLimit"] = "200",
+                // Prevent Program.cs seeder from querying DB before migrations are applied
+                ["OwnerEmail"] = "",
             });
         });
 

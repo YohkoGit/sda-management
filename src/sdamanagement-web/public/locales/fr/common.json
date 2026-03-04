@@ -20,7 +20,8 @@
       "departments": "D\u00e9partements",
       "admin": "Administration",
       "settings": "Param\u00e8tres",
-      "signOut": "Terminer la Session"
+      "signOut": "Terminer la Session",
+      "adminDepartments": "Gestion des d\u00e9partements"
     },
     "language": {
       "switchTo": "Changer en {{lang}}",
@@ -74,6 +75,51 @@
         "saveError": "Erreur lors de la sauvegarde des param\u00e8tres"
       },
       "noSettingsForRole": "Aucun param\u00e8tre disponible pour votre r\u00f4le."
+    },
+    "adminDepartments": {
+      "title": "Gestion des d\u00e9partements",
+      "emptyState": "Cr\u00e9ez vos d\u00e9partements \u2014 ils structurent toute l\u2019application",
+      "emptyStateHelper": "Les d\u00e9partements organisent les activit\u00e9s, les membres et les responsabilit\u00e9s.",
+      "createButton": "Cr\u00e9er un d\u00e9partement",
+      "form": {
+        "createTitle": "Nouveau d\u00e9partement",
+        "editTitle": "Modifier le d\u00e9partement",
+        "name": "Nom du d\u00e9partement",
+        "namePlaceholder": "Jeunesse Adventiste",
+        "abbreviation": "Abr\u00e9viation",
+        "abbreviationPlaceholder": "JA",
+        "abbreviationHint": "Si vide, le nom en majuscules sera utilis\u00e9.",
+        "color": "Couleur",
+        "colorPlaceholder": "#4F46E5",
+        "description": "Description",
+        "descriptionPlaceholder": "Activit\u00e9s et programmes pour la jeunesse...",
+        "subMinistries": "Sous-minist\u00e8res",
+        "addSubMinistry": "Ajouter un sous-minist\u00e8re",
+        "subMinistryPlaceholder": "\u00c9claireurs",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "cancel": "Annuler"
+      },
+      "createSuccess": "D\u00e9partement cr\u00e9\u00e9 avec succ\u00e8s",
+      "updateSuccess": "D\u00e9partement modifi\u00e9 avec succ\u00e8s",
+      "deleteSuccess": "D\u00e9partement supprim\u00e9",
+      "deleteError": "\u00c9chec de la suppression du d\u00e9partement.",
+      "deleteConfirmTitle": "Supprimer le d\u00e9partement",
+      "deleteConfirmMessage": "Cette action est irr\u00e9versible. Les sous-minist\u00e8res associ\u00e9s seront \u00e9galement supprim\u00e9s.",
+      "deleteConfirmAction": "Supprimer",
+      "conflictError": "Un d\u00e9partement avec cette abr\u00e9viation ou couleur existe d\u00e9j\u00e0.",
+      "subMinistry": {
+        "addSuccess": "Sous-minist\u00e8re ajout\u00e9",
+        "updateSuccess": "Sous-minist\u00e8re modifi\u00e9",
+        "deleteSuccess": "Sous-minist\u00e8re supprim\u00e9",
+        "deleteError": "\u00c9chec de la suppression du sous-minist\u00e8re."
+      },
+      "card": {
+        "subMinistries": "sous-minist\u00e8re(s)",
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      },
+      "noAccess": "Acc\u00e8s r\u00e9serv\u00e9 au propri\u00e9taire du syst\u00e8me."
     },
     "notFound": {
       "title": "Page introuvable",

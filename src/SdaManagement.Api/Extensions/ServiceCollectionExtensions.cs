@@ -152,6 +152,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddSingleton<ISanitizationService, SanitizationService>();
         services.AddScoped<IConfigService, ConfigService>();
+        services.AddScoped<IDepartmentService, DepartmentService>();
 
         // FluentValidation — auto-register all validators from assembly
         services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();

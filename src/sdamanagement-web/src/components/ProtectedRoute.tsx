@@ -9,7 +9,7 @@ const ROLE_HIERARCHY: Record<string, number> = {
 };
 
 export function hasRole(userRole: string, requiredRole: string): boolean {
-  return (ROLE_HIERARCHY[userRole] ?? 0) >= (ROLE_HIERARCHY[requiredRole] ?? 0);
+  return (ROLE_HIERARCHY[userRole.toUpperCase()] ?? 0) >= (ROLE_HIERARCHY[requiredRole.toUpperCase()] ?? 0);
 }
 
 interface ProtectedRouteProps {

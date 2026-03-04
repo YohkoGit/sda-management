@@ -22,6 +22,7 @@ const AuthCalendarPage = lazy(() => import("@/pages/AuthCalendarPage"));
 const AuthDepartmentsPage = lazy(() => import("@/pages/AuthDepartmentsPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const AdminDepartmentsPage = lazy(() => import("@/pages/AdminDepartmentsPage"));
 
 function App() {
   return (
@@ -57,7 +58,7 @@ function App() {
               </Route>
             </Route>
 
-            {/* Admin routes — role-gated */}
+            {/* Admin routes — ADMIN+ */}
             <Route element={<ProtectedRoute requiredRole="ADMIN" />}>
               <Route
                 element={
@@ -67,7 +68,20 @@ function App() {
                 }
               >
                 <Route path="admin" element={<AdminPage />} />
+              </Route>
+            </Route>
+
+            {/* Owner-only admin routes */}
+            <Route element={<ProtectedRoute requiredRole="OWNER" />}>
+              <Route
+                element={
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <AuthenticatedLayout />
+                  </Suspense>
+                }
+              >
                 <Route path="admin/settings" element={<SettingsPage />} />
+                <Route path="admin/departments" element={<AdminDepartmentsPage />} />
               </Route>
             </Route>
 

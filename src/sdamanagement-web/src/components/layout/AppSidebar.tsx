@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Calendar,
   Building2,
+  FolderTree,
   Shield,
   Settings,
   LogOut,
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
   { to: "/my-calendar", labelKey: "nav.auth.calendar", icon: Calendar },
   { to: "/my-departments", labelKey: "nav.auth.departments", icon: Building2 },
   { to: "/admin", labelKey: "nav.auth.admin", icon: Shield, minRole: "ADMIN" },
+  { to: "/admin/departments", labelKey: "nav.auth.adminDepartments", icon: FolderTree, minRole: "OWNER" },
   { to: "/admin/settings", labelKey: "nav.auth.settings", icon: Settings, minRole: "OWNER" },
 ];
 
