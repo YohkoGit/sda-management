@@ -51,7 +51,29 @@
       "title": "Administration"
     },
     "settings": {
-      "title": "Param\u00e8tres"
+      "title": "Param\u00e8tres",
+      "churchIdentity": {
+        "title": "Identit\u00e9 de l\u2019\u00e9glise",
+        "emptyState": "Configurez l\u2019identit\u00e9 de votre \u00e9glise",
+        "emptyStateHelper": "Ces informations appara\u00eetront sur la page publique de votre \u00e9glise.",
+        "churchName": "Nom de l\u2019\u00e9glise",
+        "churchNamePlaceholder": "Eglise Adventiste du 7e Jour de Saint-Hubert",
+        "address": "Adresse",
+        "addressPlaceholder": "1234 Rue de l\u2019Eglise, Saint-Hubert, QC",
+        "youtubeChannelUrl": "URL de la cha\u00eene YouTube",
+        "youtubeChannelUrlPlaceholder": "https://www.youtube.com/@votre-chaine",
+        "phoneNumber": "Num\u00e9ro de t\u00e9l\u00e9phone",
+        "phoneNumberPlaceholder": "+1 (450) 555-0100",
+        "welcomeMessage": "Message de bienvenue",
+        "welcomeMessagePlaceholder": "Bienvenue \u00e0 l\u2019Eglise Adventiste de Saint-Hubert...",
+        "defaultLocale": "Langue par d\u00e9faut",
+        "localeFr": "Fran\u00e7ais",
+        "localeEn": "English",
+        "save": "Sauvegarder",
+        "saveSuccess": "Param\u00e8tres de l\u2019\u00e9glise sauvegard\u00e9s avec succ\u00e8s",
+        "saveError": "Erreur lors de la sauvegarde des param\u00e8tres"
+      },
+      "noSettingsForRole": "Aucun param\u00e8tre disponible pour votre r\u00f4le."
     },
     "notFound": {
       "title": "Page introuvable",

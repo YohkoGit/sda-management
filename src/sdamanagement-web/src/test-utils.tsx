@@ -4,6 +4,7 @@ import { BrowserRouter, MemoryRouter, type MemoryRouterProps } from "react-route
 import { I18nextProvider } from "react-i18next";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -56,7 +57,31 @@ testI18n.use(initReactI18next).init({
           departments: { title: "Départements" },
           live: { title: "En Direct" },
           admin: { title: "Administration" },
-          settings: { title: "Paramètres" },
+          settings: {
+            title: "Paramètres",
+            churchIdentity: {
+              title: "Identité de l'église",
+              emptyState: "Configurez l'identité de votre église",
+              emptyStateHelper: "Ces informations apparaîtront sur la page publique de votre église.",
+              churchName: "Nom de l'église",
+              churchNamePlaceholder: "Eglise Adventiste du 7e Jour de Saint-Hubert",
+              address: "Adresse",
+              addressPlaceholder: "1234 Rue de l'Eglise, Saint-Hubert, QC",
+              youtubeChannelUrl: "URL de la chaîne YouTube",
+              youtubeChannelUrlPlaceholder: "https://www.youtube.com/@votre-chaine",
+              phoneNumber: "Numéro de téléphone",
+              phoneNumberPlaceholder: "+1 (450) 555-0100",
+              welcomeMessage: "Message de bienvenue",
+              welcomeMessagePlaceholder: "Bienvenue à l'Eglise Adventiste de Saint-Hubert...",
+              defaultLocale: "Langue par défaut",
+              localeFr: "Français",
+              localeEn: "English",
+              save: "Sauvegarder",
+              saveSuccess: "Paramètres de l'église sauvegardés avec succès",
+              saveError: "Erreur lors de la sauvegarde des paramètres",
+            },
+            noSettingsForRole: "Aucun paramètre disponible pour votre rôle.",
+          },
           notFound: { title: "Page introuvable", message: "La page que vous recherchez n'existe pas.", backHome: "Retour à l'accueil" },
         },
         layout: {
@@ -179,6 +204,7 @@ function AllProviders({ children }: { children: React.ReactNode }) {
           <BrowserRouter>
             <AuthProvider>{children}</AuthProvider>
           </BrowserRouter>
+          <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
     </I18nextProvider>
@@ -196,6 +222,7 @@ function customRender(ui: ReactElement, options?: CustomRenderOptions) {
             <MemoryRouter {...routerProps}>
               <AuthProvider>{children}</AuthProvider>
             </MemoryRouter>
+            <Toaster />
           </TooltipProvider>
         </QueryClientProvider>
       </I18nextProvider>

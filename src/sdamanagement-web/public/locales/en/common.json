@@ -51,7 +51,29 @@
       "title": "Administration"
     },
     "settings": {
-      "title": "Settings"
+      "title": "Settings",
+      "churchIdentity": {
+        "title": "Church Identity",
+        "emptyState": "Configure your church's identity",
+        "emptyStateHelper": "This information will appear on your church's public page.",
+        "churchName": "Church Name",
+        "churchNamePlaceholder": "Seventh-day Adventist Church of Saint-Hubert",
+        "address": "Address",
+        "addressPlaceholder": "1234 Church Street, Saint-Hubert, QC",
+        "youtubeChannelUrl": "YouTube Channel URL",
+        "youtubeChannelUrlPlaceholder": "https://www.youtube.com/@your-channel",
+        "phoneNumber": "Phone Number",
+        "phoneNumberPlaceholder": "+1 (450) 555-0100",
+        "welcomeMessage": "Welcome Message",
+        "welcomeMessagePlaceholder": "Welcome to the Adventist Church of Saint-Hubert...",
+        "defaultLocale": "Default Language",
+        "localeFr": "French",
+        "localeEn": "English",
+        "save": "Save",
+        "saveSuccess": "Church settings saved successfully",
+        "saveError": "Error saving church settings"
+      },
+      "noSettingsForRole": "No settings available for your role."
     },
     "notFound": {
       "title": "Page Not Found",

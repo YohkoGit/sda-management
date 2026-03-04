@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<Department> Departments => Set<Department>();
+    public DbSet<ChurchConfig> ChurchConfigs => Set<ChurchConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,6 +56,20 @@ public class AppDbContext : DbContext
         {
             e.HasKey(d => d.Id);
             e.Property(d => d.CreatedAt).HasDefaultValueSql("now()");
+        });
+
+        // ChurchConfig — singleton settings entity
+        modelBuilder.Entity<ChurchConfig>(e =>
+        {
+            e.HasKey(c => c.Id);
+            e.Property(c => c.ChurchName).HasMaxLength(150);
+            e.Property(c => c.Address).HasMaxLength(300);
+            e.Property(c => c.YouTubeChannelUrl).HasMaxLength(500);
+            e.Property(c => c.PhoneNumber).HasMaxLength(30);
+            e.Property(c => c.WelcomeMessage).HasMaxLength(1000);
+            e.Property(c => c.DefaultLocale).HasMaxLength(5);
+            e.Property(c => c.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(c => c.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         // UserDepartment — composite PK, cascade delete on user/dept removal

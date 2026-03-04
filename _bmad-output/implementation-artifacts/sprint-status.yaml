@@ -48,12 +48,12 @@ development_status:
   1-4-google-oauth-sign-in-flow: done
   1-5-email-password-sign-in-and-first-login-password-set: done
   1-6-application-shell-dual-navigation-and-i18n: done
-  1-7-sign-out-and-session-cleanup: backlog
+  1-7-sign-out-and-session-cleanup: done
   epic-1-retrospective: optional
 
   # Epic 2: Church Configuration & First-Time Setup
-  epic-2: backlog
-  2-1-church-identity-settings: backlog
+  epic-2: in-progress
+  2-1-church-identity-settings: done
   2-2-department-crud-and-sub-ministries: backlog
   2-3-activity-template-management: backlog
   2-4-recurring-program-schedule-configuration: backlog
