@@ -22,6 +22,48 @@ namespace SdaManagement.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("SdaManagement.Api.Data.Entities.ActivityTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_activity_templates");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_activity_templates_name");
+
+                    b.ToTable("activity_templates", (string)null);
+                });
+
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.ChurchConfig", b =>
                 {
                     b.Property<int>("Id")
@@ -184,6 +226,67 @@ namespace SdaManagement.Api.Migrations
                     b.ToTable("password_reset_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("SdaManagement.Api.Data.Entities.ProgramSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_week");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("department_id");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<string>("HostName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("host_name");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_program_schedules");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_program_schedules_department_id");
+
+                    b.HasIndex("Title", "DayOfWeek")
+                        .IsUnique()
+                        .HasDatabaseName("ix_program_schedules_title_day_of_week");
+
+                    b.ToTable("program_schedules", (string)null);
+                });
+
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -268,6 +371,55 @@ namespace SdaManagement.Api.Migrations
                         .HasDatabaseName("ix_sub_ministries_department_id_name");
 
                     b.ToTable("sub_ministries", (string)null);
+                });
+
+            modelBuilder.Entity("SdaManagement.Api.Data.Entities.TemplateRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActivityTemplateId")
+                        .HasColumnType("integer")
+                        .HasColumnName("activity_template_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("DefaultHeadcount")
+                        .HasColumnType("integer")
+                        .HasColumnName("default_headcount");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("role_name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_template_roles");
+
+                    b.HasIndex("ActivityTemplateId", "RoleName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_template_roles_activity_template_id_role_name");
+
+                    b.ToTable("template_roles", (string)null);
                 });
 
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.User", b =>
@@ -359,6 +511,17 @@ namespace SdaManagement.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SdaManagement.Api.Data.Entities.ProgramSchedule", b =>
+                {
+                    b.HasOne("SdaManagement.Api.Data.Entities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_program_schedules_departments_department_id");
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.RefreshToken", b =>
                 {
                     b.HasOne("SdaManagement.Api.Data.Entities.User", "User")
@@ -383,6 +546,18 @@ namespace SdaManagement.Api.Migrations
                     b.Navigation("Department");
                 });
 
+            modelBuilder.Entity("SdaManagement.Api.Data.Entities.TemplateRole", b =>
+                {
+                    b.HasOne("SdaManagement.Api.Data.Entities.ActivityTemplate", "ActivityTemplate")
+                        .WithMany("Roles")
+                        .HasForeignKey("ActivityTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_template_roles_activity_templates_activity_template_id");
+
+                    b.Navigation("ActivityTemplate");
+                });
+
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.UserDepartment", b =>
                 {
                     b.HasOne("SdaManagement.Api.Data.Entities.Department", "Department")
@@ -402,6 +577,11 @@ namespace SdaManagement.Api.Migrations
                     b.Navigation("Department");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SdaManagement.Api.Data.Entities.ActivityTemplate", b =>
+                {
+                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.Department", b =>

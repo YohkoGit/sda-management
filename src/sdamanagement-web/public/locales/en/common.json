@@ -21,7 +21,10 @@
       "admin": "Administration",
       "settings": "Settings",
       "signOut": "Sign Out",
-      "adminDepartments": "Department Management"
+      "adminDepartments": "Department Management",
+      "adminActivityTemplates": "Activity Templates",
+      "adminProgramSchedules": "Program Schedules",
+      "adminSystemHealth": "System Health"
     },
     "language": {
       "switchTo": "Switch to {{lang}}",
@@ -121,6 +124,115 @@
       },
       "noAccess": "Access reserved for the system owner."
     },
+    "adminActivityTemplates": {
+      "title": "Activity Templates",
+      "emptyState": "Define your activity templates \u2014 Sabbath, Communion, Meeting...",
+      "emptyStateHelper": "Templates allow you to quickly create activities with predefined roles.",
+      "createButton": "Create a template",
+      "form": {
+        "createTitle": "New Activity Template",
+        "editTitle": "Edit Template",
+        "name": "Template Name",
+        "namePlaceholder": "Sabbath Service",
+        "description": "Description",
+        "descriptionPlaceholder": "Main Saturday service...",
+        "roles": "Default Roles",
+        "addRole": "Add a role",
+        "roleName": "Role Name",
+        "roleNamePlaceholder": "Preacher",
+        "headcount": "Headcount",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+      "createSuccess": "Template created successfully",
+      "updateSuccess": "Template updated successfully",
+      "deleteSuccess": "Template deleted",
+      "deleteError": "Failed to delete template.",
+      "conflictError": "A template with this name already exists.",
+      "deleteConfirmTitle": "Delete Template",
+      "deleteConfirmMessage": "This action is irreversible. Associated roles will also be deleted.",
+      "deleteConfirmAction": "Delete",
+      "card": {
+        "edit": "Edit",
+        "delete": "Delete",
+        "roles": "role(s)"
+      },
+      "noAccess": "Access reserved for the system owner."
+    },
+    "adminProgramSchedules": {
+      "title": "Program Schedules",
+      "emptyState": "Set up your recurring schedules \u2014 Sabbath School, Divine Service, AY...",
+      "emptyStateHelper": "Recurring schedules define your church's weekly programs.",
+      "createButton": "Create a schedule",
+      "form": {
+        "createTitle": "New Program Schedule",
+        "editTitle": "Edit Schedule",
+        "title": "Title",
+        "titlePlaceholder": "Divine Service",
+        "dayOfWeek": "Day of the Week",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "hostName": "Host",
+        "hostNamePlaceholder": "Pastor Smith",
+        "department": "Department",
+        "departmentNone": "None",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+      "createSuccess": "Schedule created successfully",
+      "updateSuccess": "Schedule updated successfully",
+      "deleteSuccess": "Schedule deleted",
+      "deleteError": "Failed to delete schedule.",
+      "conflictError": "A schedule with this title and day already exists.",
+      "deleteConfirmTitle": "Delete Schedule",
+      "deleteConfirmMessage": "This action is irreversible.",
+      "deleteConfirmAction": "Delete",
+      "card": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "noAccess": "Access reserved for the system owner."
+    },
+    "adminSystemHealth": {
+      "title": "System Health",
+      "refreshButton": "Refresh",
+      "refreshing": "Refreshing...",
+      "noAccess": "Access reserved for the system owner.",
+      "database": {
+        "title": "Database",
+        "healthy": "Healthy",
+        "unhealthy": "Unhealthy",
+        "degraded": "Degraded",
+        "duration": "Duration"
+      },
+      "system": {
+        "title": "System Information",
+        "version": "Version",
+        "uptime": "Uptime",
+        "environment": "Environment"
+      },
+      "setup": {
+        "title": "Setup Status",
+        "churchConfig": "Church Configuration",
+        "departments": "Departments",
+        "templates": "Activity Templates",
+        "schedules": "Program Schedules",
+        "users": "Users",
+        "configured": "Configured",
+        "notConfigured": "Not Configured"
+      },
+      "uptime": {
+        "days": "{{count}} day",
+        "days_other": "{{count}} days",
+        "hours": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "minutes": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "lessThanMinute": "Less than 1 minute"
+      }
+    },
     "notFound": {
       "title": "Page Not Found",
       "message": "The page you are looking for does not exist.",
@@ -189,5 +301,14 @@
       "password-already-set": "Password has already been set. Use sign in.",
       "invalid-reset-token": "The reset link is invalid or expired."
     }
+  },
+  "days": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
   }
 }

@@ -15,6 +15,9 @@ public class AppDbContext : DbContext
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<SubMinistry> SubMinistries => Set<SubMinistry>();
     public DbSet<ChurchConfig> ChurchConfigs => Set<ChurchConfig>();
+    public DbSet<ActivityTemplate> ActivityTemplates => Set<ActivityTemplate>();
+    public DbSet<TemplateRole> TemplateRoles => Set<TemplateRole>();
+    public DbSet<ProgramSchedule> ProgramSchedules => Set<ProgramSchedule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -92,6 +95,46 @@ public class AppDbContext : DbContext
             e.Property(c => c.DefaultLocale).HasMaxLength(5);
             e.Property(c => c.CreatedAt).HasDefaultValueSql("now()");
             e.Property(c => c.UpdatedAt).HasDefaultValueSql("now()");
+        });
+
+        // ActivityTemplate
+        modelBuilder.Entity<ActivityTemplate>(e =>
+        {
+            e.HasKey(t => t.Id);
+            e.HasIndex(t => t.Name).IsUnique();
+            e.Property(t => t.Name).HasMaxLength(100);
+            e.Property(t => t.Description).HasMaxLength(500);
+            e.Property(t => t.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(t => t.UpdatedAt).HasDefaultValueSql("now()");
+        });
+
+        // TemplateRole
+        modelBuilder.Entity<TemplateRole>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.RoleName).HasMaxLength(100);
+            e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(r => r.UpdatedAt).HasDefaultValueSql("now()");
+            e.HasOne(r => r.ActivityTemplate)
+             .WithMany(t => t.Roles)
+             .HasForeignKey(r => r.ActivityTemplateId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(r => new { r.ActivityTemplateId, r.RoleName }).IsUnique();
+        });
+
+        // ProgramSchedule
+        modelBuilder.Entity<ProgramSchedule>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.HasIndex(p => new { p.Title, p.DayOfWeek }).IsUnique();
+            e.Property(p => p.Title).HasMaxLength(100);
+            e.Property(p => p.HostName).HasMaxLength(100);
+            e.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(p => p.UpdatedAt).HasDefaultValueSql("now()");
+            e.HasOne(p => p.Department)
+             .WithMany()
+             .HasForeignKey(p => p.DepartmentId)
+             .OnDelete(DeleteBehavior.SetNull);
         });
 
         // UserDepartment — composite PK, cascade delete on user/dept removal

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const isOwner = user?.role === "OWNER";
+  const isOwner = user?.role?.toUpperCase() === "OWNER";
 
   const { data: configData, isLoading } = useQuery<ChurchConfigResponse | null>({
     queryKey: ["config"],

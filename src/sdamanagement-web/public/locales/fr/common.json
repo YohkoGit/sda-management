@@ -21,7 +21,10 @@
       "admin": "Administration",
       "settings": "Param\u00e8tres",
       "signOut": "Terminer la Session",
-      "adminDepartments": "Gestion des d\u00e9partements"
+      "adminDepartments": "Gestion des d\u00e9partements",
+      "adminActivityTemplates": "Mod\u00e8les d\u2019activit\u00e9s",
+      "adminProgramSchedules": "Horaires r\u00e9currents",
+      "adminSystemHealth": "Sant\u00e9 du syst\u00e8me"
     },
     "language": {
       "switchTo": "Changer en {{lang}}",
@@ -121,6 +124,115 @@
       },
       "noAccess": "Acc\u00e8s r\u00e9serv\u00e9 au propri\u00e9taire du syst\u00e8me."
     },
+    "adminActivityTemplates": {
+      "title": "Mod\u00e8les d\u2019activit\u00e9s",
+      "emptyState": "D\u00e9finissez vos mod\u00e8les d\u2019activit\u00e9s \u2014 Sabbat, Sainte-C\u00e8ne, R\u00e9union...",
+      "emptyStateHelper": "Les mod\u00e8les permettent de cr\u00e9er rapidement des activit\u00e9s avec des r\u00f4les pr\u00e9d\u00e9finis.",
+      "createButton": "Cr\u00e9er un mod\u00e8le",
+      "form": {
+        "createTitle": "Nouveau mod\u00e8le d\u2019activit\u00e9",
+        "editTitle": "Modifier le mod\u00e8le",
+        "name": "Nom du mod\u00e8le",
+        "namePlaceholder": "Culte du Sabbat",
+        "description": "Description",
+        "descriptionPlaceholder": "Service principal du samedi...",
+        "roles": "R\u00f4les par d\u00e9faut",
+        "addRole": "Ajouter un r\u00f4le",
+        "roleName": "Nom du r\u00f4le",
+        "roleNamePlaceholder": "Pr\u00e9dicateur",
+        "headcount": "Effectif",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "cancel": "Annuler"
+      },
+      "createSuccess": "Mod\u00e8le cr\u00e9\u00e9 avec succ\u00e8s",
+      "updateSuccess": "Mod\u00e8le modifi\u00e9 avec succ\u00e8s",
+      "deleteSuccess": "Mod\u00e8le supprim\u00e9",
+      "deleteError": "\u00c9chec de la suppression du mod\u00e8le.",
+      "conflictError": "Un mod\u00e8le avec ce nom existe d\u00e9j\u00e0.",
+      "deleteConfirmTitle": "Supprimer le mod\u00e8le",
+      "deleteConfirmMessage": "Cette action est irr\u00e9versible. Les r\u00f4les associ\u00e9s seront \u00e9galement supprim\u00e9s.",
+      "deleteConfirmAction": "Supprimer",
+      "card": {
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "roles": "r\u00f4le(s)"
+      },
+      "noAccess": "Acc\u00e8s r\u00e9serv\u00e9 au propri\u00e9taire du syst\u00e8me."
+    },
+    "adminProgramSchedules": {
+      "title": "Horaires r\u00e9currents",
+      "emptyState": "Configurez vos horaires r\u00e9currents \u2014 \u00c9cole du Sabbat, Culte Divin, JA...",
+      "emptyStateHelper": "Les horaires r\u00e9currents d\u00e9finissent les programmes hebdomadaires de votre \u00e9glise.",
+      "createButton": "Cr\u00e9er un horaire",
+      "form": {
+        "createTitle": "Nouvel horaire r\u00e9current",
+        "editTitle": "Modifier l\u2019horaire",
+        "title": "Titre",
+        "titlePlaceholder": "Culte Divin",
+        "dayOfWeek": "Jour de la semaine",
+        "startTime": "Heure de d\u00e9but",
+        "endTime": "Heure de fin",
+        "hostName": "Responsable",
+        "hostNamePlaceholder": "Pasteur Dupont",
+        "department": "D\u00e9partement",
+        "departmentNone": "Aucun",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "cancel": "Annuler"
+      },
+      "createSuccess": "Horaire cr\u00e9\u00e9 avec succ\u00e8s",
+      "updateSuccess": "Horaire modifi\u00e9 avec succ\u00e8s",
+      "deleteSuccess": "Horaire supprim\u00e9",
+      "deleteError": "\u00c9chec de la suppression de l\u2019horaire.",
+      "conflictError": "Un horaire avec ce titre et ce jour existe d\u00e9j\u00e0.",
+      "deleteConfirmTitle": "Supprimer l\u2019horaire",
+      "deleteConfirmMessage": "Cette action est irr\u00e9versible.",
+      "deleteConfirmAction": "Supprimer",
+      "card": {
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      },
+      "noAccess": "Acc\u00e8s r\u00e9serv\u00e9 au propri\u00e9taire du syst\u00e8me."
+    },
+    "adminSystemHealth": {
+      "title": "Sant\u00e9 du syst\u00e8me",
+      "refreshButton": "Actualiser",
+      "refreshing": "Actualisation...",
+      "noAccess": "Acc\u00e8s r\u00e9serv\u00e9 au propri\u00e9taire du syst\u00e8me.",
+      "database": {
+        "title": "Base de donn\u00e9es",
+        "healthy": "Fonctionnel",
+        "unhealthy": "D\u00e9faillant",
+        "degraded": "D\u00e9grad\u00e9",
+        "duration": "Dur\u00e9e"
+      },
+      "system": {
+        "title": "Informations syst\u00e8me",
+        "version": "Version",
+        "uptime": "Temps de fonctionnement",
+        "environment": "Environnement"
+      },
+      "setup": {
+        "title": "\u00c9tat de la configuration",
+        "churchConfig": "Configuration de l\u2019\u00e9glise",
+        "departments": "D\u00e9partements",
+        "templates": "Mod\u00e8les d\u2019activit\u00e9s",
+        "schedules": "Horaires r\u00e9currents",
+        "users": "Utilisateurs",
+        "configured": "Configur\u00e9",
+        "notConfigured": "Non configur\u00e9"
+      },
+      "uptime": {
+        "days": "{{count}} jour",
+        "days_other": "{{count}} jours",
+        "hours": "{{count}} heure",
+        "hours_other": "{{count}} heures",
+        "minutes": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "lessThanMinute": "Moins d\u2019une minute"
+      }
+    },
     "notFound": {
       "title": "Page introuvable",
       "message": "La page que vous recherchez n\u2019existe pas.",
@@ -189,5 +301,14 @@
       "password-already-set": "Le mot de passe a d\u00e9j\u00e0 \u00e9t\u00e9 d\u00e9fini. Utilisez la connexion.",
       "invalid-reset-token": "Le lien de r\u00e9initialisation est invalide ou expir\u00e9."
     }
+  },
+  "days": {
+    "0": "Dimanche",
+    "1": "Lundi",
+    "2": "Mardi",
+    "3": "Mercredi",
+    "4": "Jeudi",
+    "5": "Vendredi",
+    "6": "Samedi"
   }
 }

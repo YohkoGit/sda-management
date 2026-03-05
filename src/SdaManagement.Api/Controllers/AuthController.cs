@@ -277,7 +277,7 @@ public class AuthController(
                 Email = u.Email,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
-                Role = u.Role.ToString(),
+                Role = u.Role.ToString().ToUpper(),
             })
             .FirstOrDefaultAsync();
 
@@ -290,7 +290,7 @@ public class AuthController(
         Email = user.Email,
         FirstName = user.FirstName,
         LastName = user.LastName,
-        Role = user.Role.ToString(),
+        Role = user.Role.ToString().ToUpperInvariant(),
     };
 
     private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>

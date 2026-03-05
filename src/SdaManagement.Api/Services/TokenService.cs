@@ -80,8 +80,26 @@ public class TokenService(AppDbContext dbContext, IConfiguration configuration) 
 
     public void ClearTokenCookies(HttpContext context)
     {
-        context.Response.Cookies.Delete("access_token", new CookieOptions { Path = "/api" });
-        context.Response.Cookies.Delete("refresh_token", new CookieOptions { Path = "/api/auth" });
+        var accessOpts = new CookieOptions
+        {
+            Path = "/api",
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            MaxAge = TimeSpan.Zero,
+            Expires = DateTimeOffset.UnixEpoch,
+        };
+        var refreshOpts = new CookieOptions
+        {
+            Path = "/api/auth",
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            MaxAge = TimeSpan.Zero,
+            Expires = DateTimeOffset.UnixEpoch,
+        };
+        context.Response.Cookies.Append("access_token", string.Empty, accessOpts);
+        context.Response.Cookies.Append("refresh_token", string.Empty, refreshOpts);
     }
 
     private string GenerateAccessToken(User user)
@@ -98,7 +116,7 @@ public class TokenService(AppDbContext dbContext, IConfiguration configuration) 
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString().ToUpperInvariant()),
             ]),
             Expires = DateTime.UtcNow.AddMinutes(15),
             SigningCredentials = credentials,

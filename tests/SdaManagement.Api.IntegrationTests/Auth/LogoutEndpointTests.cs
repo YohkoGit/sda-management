@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -10,6 +11,13 @@ namespace SdaManagement.Api.IntegrationTests.Auth;
 
 public class LogoutEndpointTests : IntegrationTestBase
 {
+    // Login sets Secure cookies — the test client must use HTTPS so the
+    // CookieContainer stores and re-sends them on subsequent requests.
+    private static readonly WebApplicationFactoryClientOptions HttpsClientOptions = new()
+    {
+        BaseAddress = new Uri("https://localhost"),
+    };
+
     public LogoutEndpointTests(SdaManagementWebApplicationFactory factory) : base(factory) { }
 
     [Fact]
@@ -19,7 +27,7 @@ public class LogoutEndpointTests : IntegrationTestBase
         var user = await CreateTestUser("logout-valid@test.local", UserRole.Viewer);
         await SetUserPassword(user.Id, "LogoutTest1");
 
-        using var client = Factory.CreateClient();
+        using var client = Factory.CreateClient(HttpsClientOptions);
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new { email = "logout-valid@test.local", password = "LogoutTest1" });
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -56,7 +64,7 @@ public class LogoutEndpointTests : IntegrationTestBase
     public async Task Logout_WithoutRefreshToken_Returns200()
     {
         // Act: logout without any cookies (fresh anonymous client)
-        using var client = Factory.CreateClient();
+        using var client = Factory.CreateClient(HttpsClientOptions);
         var response = await client.PostAsync("/api/auth/logout", null);
 
         // Assert: idempotent — 200 even without cookies
@@ -70,7 +78,7 @@ public class LogoutEndpointTests : IntegrationTestBase
         var user = await CreateTestUser("logout-revoked@test.local", UserRole.Viewer);
         await SetUserPassword(user.Id, "LogoutTest1");
 
-        using var client = Factory.CreateClient();
+        using var client = Factory.CreateClient(HttpsClientOptions);
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new { email = "logout-revoked@test.local", password = "LogoutTest1" });
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -101,7 +109,7 @@ public class LogoutEndpointTests : IntegrationTestBase
         var user = await CreateTestUser("logout-refresh@test.local", UserRole.Viewer);
         await SetUserPassword(user.Id, "LogoutTest1");
 
-        using var client = Factory.CreateClient();
+        using var client = Factory.CreateClient(HttpsClientOptions);
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new { email = "logout-refresh@test.local", password = "LogoutTest1" });
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);

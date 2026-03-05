@@ -91,7 +91,7 @@ public class AuthInfrastructureTests : IntegrationTestBase
         root.GetProperty("email").GetString().ShouldBe("test-owner@test.local");
         root.GetProperty("firstName").GetString().ShouldBe("Test");
         root.GetProperty("lastName").GetString().ShouldBe("Owner");
-        root.GetProperty("role").GetString().ShouldBe("Owner");
+        root.GetProperty("role").GetString().ShouldBe("OWNER");
     }
 
     [Fact]

@@ -61,7 +61,7 @@ public class TokenServiceTests : IDisposable
         principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value.ShouldBe(user.Id.ToString());
         principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value.ShouldBe("test@example.com");
         principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value.ShouldNotBeNullOrEmpty();
-        principal.FindFirst(ClaimTypes.Role)?.Value.ShouldBe("Viewer");
+        principal.FindFirst(ClaimTypes.Role)?.Value.ShouldBe("VIEWER");
 
         // Verify expiry is ~15 minutes from now
         var jwt = validatedToken as JwtSecurityToken;

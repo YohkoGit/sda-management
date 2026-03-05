@@ -55,9 +55,9 @@ development_status:
   epic-2: in-progress
   2-1-church-identity-settings: done
   2-2-department-crud-and-sub-ministries: done
-  2-3-activity-template-management: backlog
-  2-4-recurring-program-schedule-configuration: backlog
-  2-5-system-health-dashboard: backlog
+  2-3-activity-template-management: done
+  2-4-recurring-program-schedule-configuration: done
+  2-5-system-health-dashboard: done
   2-6-guided-first-time-setup-experience: backlog
   epic-2-retrospective: optional
 

@@ -5,8 +5,11 @@ import {
   Calendar,
   Building2,
   FolderTree,
+  FileText,
+  Clock,
   Shield,
   Settings,
+  HeartPulse,
   LogOut,
 } from "lucide-react";
 import {
@@ -39,6 +42,9 @@ const navItems: NavItem[] = [
   { to: "/my-departments", labelKey: "nav.auth.departments", icon: Building2 },
   { to: "/admin", labelKey: "nav.auth.admin", icon: Shield, minRole: "ADMIN" },
   { to: "/admin/departments", labelKey: "nav.auth.adminDepartments", icon: FolderTree, minRole: "OWNER" },
+  { to: "/admin/activity-templates", labelKey: "nav.auth.adminActivityTemplates", icon: FileText, minRole: "OWNER" },
+  { to: "/admin/program-schedules", labelKey: "nav.auth.adminProgramSchedules", icon: Clock, minRole: "OWNER" },
+  { to: "/admin/system-health", labelKey: "nav.auth.adminSystemHealth", icon: HeartPulse, minRole: "OWNER" },
   { to: "/admin/settings", labelKey: "nav.auth.settings", icon: Settings, minRole: "OWNER" },
 ];
 

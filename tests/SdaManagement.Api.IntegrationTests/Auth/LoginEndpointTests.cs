@@ -25,7 +25,7 @@ public class LoginEndpointTests : IntegrationTestBase
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.GetProperty("email").GetString().ShouldBe("login-user@test.local");
-        doc.RootElement.GetProperty("role").GetString().ShouldBe("Viewer");
+        doc.RootElement.GetProperty("role").GetString().ShouldBe("VIEWER");
 
         // Verify JWT cookies set
         response.Headers.TryGetValues("Set-Cookie", out var cookies).ShouldBeTrue();

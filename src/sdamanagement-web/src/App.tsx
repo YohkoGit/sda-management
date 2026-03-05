@@ -23,6 +23,9 @@ const AuthDepartmentsPage = lazy(() => import("@/pages/AuthDepartmentsPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const AdminDepartmentsPage = lazy(() => import("@/pages/AdminDepartmentsPage"));
+const AdminActivityTemplatesPage = lazy(() => import("@/pages/AdminActivityTemplatesPage"));
+const AdminProgramSchedulesPage = lazy(() => import("@/pages/AdminProgramSchedulesPage"));
+const AdminSystemHealthPage = lazy(() => import("@/pages/AdminSystemHealthPage"));
 
 function App() {
   return (
@@ -82,6 +85,9 @@ function App() {
               >
                 <Route path="admin/settings" element={<SettingsPage />} />
                 <Route path="admin/departments" element={<AdminDepartmentsPage />} />
+                <Route path="admin/activity-templates" element={<AdminActivityTemplatesPage />} />
+                <Route path="admin/program-schedules" element={<AdminProgramSchedulesPage />} />
+                <Route path="admin/system-health" element={<AdminSystemHealthPage />} />
               </Route>
             </Route>
 
