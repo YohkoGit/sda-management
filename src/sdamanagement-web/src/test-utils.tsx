@@ -295,6 +295,18 @@ testI18n.use(initReactI18next).init({
             generic: "Une erreur est survenue. Veuillez réessayer.",
           },
         },
+        setup: {
+          title: "Configuration initiale",
+          ariaLabel: "Configuration initiale",
+          startHere: "Commencez ici",
+          steps: {
+            churchSettings: "Paramètres",
+            departments: "Départements",
+            templates: "Modèles d\u2019activités",
+            schedules: "Horaires récurrents",
+          },
+          complete: "Configuration terminée \u2014 votre système est prêt!",
+        },
         days: {
           "0": "Dimanche",
           "1": "Lundi",

@@ -302,6 +302,18 @@
       "invalid-reset-token": "The reset link is invalid or expired."
     }
   },
+  "setup": {
+    "title": "Initial Setup",
+    "ariaLabel": "Initial setup navigation",
+    "startHere": "Start here",
+    "steps": {
+      "churchSettings": "Church Settings",
+      "departments": "Departments",
+      "templates": "Activity Templates",
+      "schedules": "Program Schedules"
+    },
+    "complete": "Setup complete \u2014 your system is ready!"
+  },
   "days": {
     "0": "Sunday",
     "1": "Monday",

@@ -21,7 +21,8 @@ public class AuthController(
     AppDbContext dbContext,
     ITokenService tokenService,
     IPasswordService passwordService,
-    ICurrentUserContext currentUserContext) : ControllerBase
+    ICurrentUserContext currentUserContext,
+    IConfiguration configuration) : ControllerBase
 {
     [HttpPost("initiate")]
     public async Task<IActionResult> Initiate(
@@ -204,17 +205,17 @@ public class AuthController(
     {
         var authResult = await HttpContext.AuthenticateAsync("GoogleOAuthTemp");
         if (!authResult.Succeeded || authResult.Principal is null)
-            return Redirect("/?error=auth_failed");
+            return RedirectToFrontend("/?error=auth_failed");
 
         var email = authResult.Principal.FindFirstValue(ClaimTypes.Email);
         if (string.IsNullOrEmpty(email))
-            return Redirect("/?error=auth_failed");
+            return RedirectToFrontend("/?error=auth_failed");
 
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user is null)
         {
             await HttpContext.SignOutAsync("GoogleOAuthTemp");
-            return Redirect("/?error=user_not_found");
+            return RedirectToFrontend("/?error=user_not_found");
         }
 
         var googleFirstName = authResult.Principal.FindFirstValue(ClaimTypes.GivenName);
@@ -232,7 +233,7 @@ public class AuthController(
 
         await HttpContext.SignOutAsync("GoogleOAuthTemp");
 
-        return Url.IsLocalUrl(returnUrl) ? Redirect(returnUrl) : Redirect("/");
+        return RedirectToFrontend(Url.IsLocalUrl(returnUrl) ? returnUrl : "/");
     }
 
     [HttpPost("refresh")]
@@ -292,6 +293,14 @@ public class AuthController(
         LastName = user.LastName,
         Role = user.Role.ToString().ToUpperInvariant(),
     };
+
+    private IActionResult RedirectToFrontend(string path)
+    {
+        var frontendUrl = configuration["FrontendUrl"];
+        return !string.IsNullOrEmpty(frontendUrl)
+            ? Redirect($"{frontendUrl}{path}")
+            : Redirect(path);
+    }
 
     private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
         BadRequest(new ValidationProblemDetails(validation.ToDictionary())

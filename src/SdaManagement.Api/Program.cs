@@ -6,6 +6,11 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load optional local overrides (gitignored) for secrets like Google OAuth credentials
+builder.Configuration.AddJsonFile(
+    $"appsettings.{builder.Environment.EnvironmentName}.local.json",
+    optional: true, reloadOnChange: true);
+
 // Serilog
 builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig

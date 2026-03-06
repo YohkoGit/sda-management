@@ -58,7 +58,7 @@ development_status:
   2-3-activity-template-management: done
   2-4-recurring-program-schedule-configuration: done
   2-5-system-health-dashboard: done
-  2-6-guided-first-time-setup-experience: backlog
+  2-6-guided-first-time-setup-experience: review
   epic-2-retrospective: optional
 
   # Epic 3: User & Role Administration

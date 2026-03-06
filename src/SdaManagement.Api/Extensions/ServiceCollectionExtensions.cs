@@ -142,6 +142,13 @@ public static class ServiceCollectionExtensions
                 options.CallbackPath = "/signin-google";
                 options.Scope.Add("profile");
                 options.Scope.Add("email");
+                options.Events.OnRemoteFailure = context =>
+                {
+                    var frontendUrl = configuration["FrontendUrl"] ?? "";
+                    context.Response.Redirect($"{frontendUrl}/?error=auth_failed");
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                };
             });
 
         services.AddAuthorization();
@@ -156,6 +163,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IActivityTemplateService, ActivityTemplateService>();
         services.AddScoped<IProgramScheduleService, ProgramScheduleService>();
         services.AddScoped<ISystemHealthService, SystemHealthService>();
+        services.AddScoped<ISetupProgressService, SetupProgressService>();
 
         // FluentValidation — auto-register all validators from assembly
         services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();

@@ -302,6 +302,18 @@
       "invalid-reset-token": "Le lien de r\u00e9initialisation est invalide ou expir\u00e9."
     }
   },
+  "setup": {
+    "title": "Configuration initiale",
+    "ariaLabel": "Configuration initiale",
+    "startHere": "Commencez ici",
+    "steps": {
+      "churchSettings": "Param\u00e8tres",
+      "departments": "D\u00e9partements",
+      "templates": "Mod\u00e8les d\u2019activit\u00e9s",
+      "schedules": "Horaires r\u00e9currents"
+    },
+    "complete": "Configuration termin\u00e9e \u2014 votre syst\u00e8me est pr\u00eat!"
+  },
   "days": {
     "0": "Dimanche",
     "1": "Lundi",
