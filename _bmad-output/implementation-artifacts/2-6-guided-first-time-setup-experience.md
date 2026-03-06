@@ -1,6 +1,6 @@
 # Story 2.6: Guided First-Time Setup Experience
 
-Status: review
+Status: done
 
 ## Prerequisites
 
@@ -377,6 +377,7 @@ No blocking issues encountered during implementation.
 ### Change Log
 
 - 2026-03-04: Story 2.6 implemented — Guided first-time setup experience with backend endpoint and frontend checklist component
+- 2026-03-05: Code review fixes — H1: AC4 completion message now reachable (DashboardPage delegates display logic to SetupChecklist); H2: File List updated with 5 undocumented changes; M1: dead export removed, AC3 progressive unlock test added; M2: checkmark test now verifies SVG icon; M3: error state handling added to hook+component; M4: personal email moved to gitignored .local.json; L1: redundant role attr removed; L2: integration tests use typed deserialization; L3: overlapping test removed
 
 ### File List
 
@@ -397,6 +398,11 @@ No blocking issues encountered during implementation.
 
 **Modified files:**
 - src/SdaManagement.Api/Extensions/ServiceCollectionExtensions.cs
+- src/SdaManagement.Api/Controllers/AuthController.cs (OAuth redirect to FrontendUrl + OnRemoteFailure handler)
+- src/SdaManagement.Api/Program.cs (added .local.json config override loading)
+- src/SdaManagement.Api/appsettings.json (added FrontendUrl key)
+- src/SdaManagement.Api/appsettings.Development.json (added RateLimiting.AuthPermitLimit: 100)
+- tests/SdaManagement.Api.IntegrationTests/SdaManagementWebApplicationFactory.cs (bumped test rate limit 200 → 10000)
 - src/sdamanagement-web/src/pages/DashboardPage.tsx
 - src/sdamanagement-web/public/locales/fr/common.json
 - src/sdamanagement-web/public/locales/en/common.json

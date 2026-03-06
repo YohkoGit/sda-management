@@ -1,0 +1,178 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using SdaManagement.Api.Auth;
+using SdaManagement.Api.Data.Entities;
+using SdaManagement.Api.Dtos.User;
+using SdaManagement.Api.Services;
+using SdacAuth = SdaManagement.Api.Auth;
+
+namespace SdaManagement.Api.Controllers;
+
+[Route("api/users")]
+[ApiController]
+[Authorize]
+[EnableRateLimiting("auth")]
+public class UsersController(
+    IUserService userService,
+    SdacAuth.IAuthorizationService auth,
+    ICurrentUserContext currentUser) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? cursor = null,
+        [FromQuery] int limit = 20)
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        limit = Math.Clamp(limit, 1, 100);
+
+        // Validate cursor format before passing to service (H1 fix)
+        if (cursor is not null && !UserService.IsValidCursor(cursor))
+            return BadRequest(new ProblemDetails
+            {
+                Type = "urn:sdac:validation-error",
+                Title = "Invalid Cursor",
+                Status = 400,
+                Detail = "The cursor parameter is malformed.",
+            });
+
+        IReadOnlyList<int>? departmentFilter = currentUser.Role switch
+        {
+            UserRole.Owner => null,
+            UserRole.Admin => currentUser.DepartmentIds,
+            _ => null, // VIEWER sees all users (read-only)
+        };
+
+        var result = await userService.GetUsersAsync(cursor, limit, departmentFilter);
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        var user = await userService.GetByIdAsync(id);
+        if (user is null)
+            return NotFound();
+
+        // ADMIN: verify user shares at least one department
+        if (currentUser.Role == UserRole.Admin)
+        {
+            var sharesDepartment = user.Departments.Any(d => currentUser.DepartmentIds.Contains(d.Id));
+            if (!sharesDepartment)
+                return Forbid();
+        }
+
+        return Ok(user);
+    }
+
+    [HttpPost("bulk")]
+    public async Task<IActionResult> BulkCreate(
+        [FromBody] BulkCreateUsersRequest request,
+        [FromServices] IValidator<BulkCreateUsersRequest> validator)
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        if (currentUser.Role < UserRole.Admin)
+            return Forbid();
+
+        var validation = await validator.ValidateAsync(request);
+        if (!validation.IsValid)
+            return ValidationError(validation);
+
+        // ADMIN-specific restrictions applied to ALL rows
+        if (!auth.IsOwner())
+        {
+            if (request.Users.Any(u => u.Role.Equals("Owner", StringComparison.OrdinalIgnoreCase)))
+                return Forbid();
+            if (request.Users.Any(u => u.DepartmentIds.Any(dId => !currentUser.DepartmentIds.Contains(dId))))
+                return Forbid();
+        }
+
+        try
+        {
+            var created = await userService.BulkCreateAsync(request.Users);
+            return StatusCode(201, new BulkCreateUsersResponse { Created = created, Count = created.Count });
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" } pgEx)
+        {
+            var conflictingEmail = ExtractConflictingEmail(pgEx.Detail);
+            return Conflict(new ProblemDetails
+            {
+                Type = "urn:sdac:conflict",
+                Title = "Resource Conflict",
+                Status = 409,
+                Detail = conflictingEmail is not null
+                    ? $"A user with email '{conflictingEmail}' already exists."
+                    : "One or more emails already exist.",
+                Extensions = { ["conflictingEmail"] = conflictingEmail },
+            });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateUserRequest request,
+        [FromServices] IValidator<CreateUserRequest> validator)
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        if (currentUser.Role < UserRole.Admin)
+            return Forbid();
+
+        var validation = await validator.ValidateAsync(request);
+        if (!validation.IsValid)
+            return ValidationError(validation);
+
+        // ADMIN-specific restrictions
+        if (!auth.IsOwner())
+        {
+            // Cannot assign OWNER role
+            if (request.Role.Equals("Owner", StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+            // Can only assign departments they manage
+            if (request.DepartmentIds.Any(dId => !currentUser.DepartmentIds.Contains(dId)))
+                return Forbid();
+        }
+
+        try
+        {
+            var user = await userService.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            return Conflict(new ProblemDetails
+            {
+                Type = "urn:sdac:conflict",
+                Title = "Resource Conflict",
+                Status = 409,
+                Detail = "A user with this email already exists.",
+            });
+        }
+    }
+
+    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
+        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
+        {
+            Type = "urn:sdac:validation-error",
+            Title = "Validation Error",
+            Status = 400,
+        });
+
+    private static string? ExtractConflictingEmail(string? detail)
+    {
+        if (detail is null) return null;
+        var match = System.Text.RegularExpressions.Regex.Match(detail, @"\(email\)=\((.+?)\)");
+        return match.Success ? match.Groups[1].Value : null;
+    }
+}

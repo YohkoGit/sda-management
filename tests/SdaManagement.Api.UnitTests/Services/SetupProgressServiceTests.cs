@@ -26,7 +26,7 @@ public class SetupProgressServiceTests : IDisposable
     {
         var result = await _sut.GetSetupProgressAsync(CancellationToken.None);
 
-        result.Steps.Count.ShouldBe(4);
+        result.Steps.Count.ShouldBe(5);
         result.Steps[0].Id.ShouldBe("church-config");
         result.Steps[0].Status.ShouldBe("current");
         result.Steps[1].Id.ShouldBe("departments");
@@ -35,6 +35,8 @@ public class SetupProgressServiceTests : IDisposable
         result.Steps[2].Status.ShouldBe("pending");
         result.Steps[3].Id.ShouldBe("schedules");
         result.Steps[3].Status.ShouldBe("pending");
+        result.Steps[4].Id.ShouldBe("members");
+        result.Steps[4].Status.ShouldBe("pending");
         result.IsSetupComplete.ShouldBeFalse();
     }
 
@@ -56,6 +58,7 @@ public class SetupProgressServiceTests : IDisposable
         result.Steps[1].Status.ShouldBe("current");
         result.Steps[2].Status.ShouldBe("pending");
         result.Steps[3].Status.ShouldBe("pending");
+        result.Steps[4].Status.ShouldBe("pending");
         result.IsSetupComplete.ShouldBeFalse();
     }
 
@@ -85,6 +88,7 @@ public class SetupProgressServiceTests : IDisposable
         result.Steps[1].Status.ShouldBe("complete");
         result.Steps[2].Status.ShouldBe("current");
         result.Steps[3].Status.ShouldBe("pending");
+        result.Steps[4].Status.ShouldBe("pending");
         result.IsSetupComplete.ShouldBeFalse();
     }
 
@@ -120,6 +124,7 @@ public class SetupProgressServiceTests : IDisposable
         result.Steps[1].Status.ShouldBe("complete");
         result.Steps[2].Status.ShouldBe("complete");
         result.Steps[3].Status.ShouldBe("current");
+        result.Steps[4].Status.ShouldBe("pending");
         result.IsSetupComplete.ShouldBeFalse();
     }
 
@@ -156,14 +161,26 @@ public class SetupProgressServiceTests : IDisposable
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         });
+        _db.Users.Add(new User
+        {
+            Email = "member@test.local",
+            FirstName = "Test",
+            LastName = "Member",
+            Role = UserRole.Viewer,
+            IsGuest = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        });
         await _db.SaveChangesAsync();
 
         var result = await _sut.GetSetupProgressAsync(CancellationToken.None);
 
+        result.Steps.Count.ShouldBe(5);
         result.Steps[0].Status.ShouldBe("complete");
         result.Steps[1].Status.ShouldBe("complete");
         result.Steps[2].Status.ShouldBe("complete");
         result.Steps[3].Status.ShouldBe("complete");
+        result.Steps[4].Status.ShouldBe("complete");
         result.IsSetupComplete.ShouldBeTrue();
     }
 

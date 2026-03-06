@@ -11,6 +11,7 @@ const mockUsers = new Map([
       lastName: "Viewer",
       role: "VIEWER",
       hasPassword: true,
+      departmentIds: [] as number[],
     },
   ],
   [
@@ -22,6 +23,7 @@ const mockUsers = new Map([
       lastName: "Admin",
       role: "ADMIN",
       hasPassword: true,
+      departmentIds: [1],
     },
   ],
   [
@@ -33,6 +35,7 @@ const mockUsers = new Map([
       lastName: "Owner",
       role: "OWNER",
       hasPassword: true,
+      departmentIds: [] as number[],
     },
   ],
   [
@@ -44,6 +47,7 @@ const mockUsers = new Map([
       lastName: "Login",
       role: "VIEWER",
       hasPassword: false,
+      departmentIds: [] as number[],
     },
   ],
 ]);
@@ -98,6 +102,7 @@ export const authHandlers = [
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      departmentIds: user.departmentIds,
     });
   }),
 
@@ -121,6 +126,7 @@ export const authHandlers = [
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      departmentIds: user.departmentIds,
     });
   }),
 

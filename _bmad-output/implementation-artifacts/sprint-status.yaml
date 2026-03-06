@@ -58,13 +58,13 @@ development_status:
   2-3-activity-template-management: done
   2-4-recurring-program-schedule-configuration: done
   2-5-system-health-dashboard: done
-  2-6-guided-first-time-setup-experience: review
+  2-6-guided-first-time-setup-experience: done
   epic-2-retrospective: optional
 
   # Epic 3: User & Role Administration
-  epic-3: backlog
-  3-1-single-user-account-creation: backlog
-  3-2-bulk-user-creation: backlog
+  epic-3: in-progress
+  3-1-single-user-account-creation: done
+  3-2-bulk-user-creation: done
   3-3-user-role-and-department-management: backlog
   3-4-owner-user-management-full-access: backlog
   3-5-avatar-upload-and-display: backlog

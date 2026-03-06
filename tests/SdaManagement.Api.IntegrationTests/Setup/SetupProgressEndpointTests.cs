@@ -1,8 +1,10 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
+using SdaManagement.Api.Dtos.Setup;
 using Shouldly;
 
 namespace SdaManagement.Api.IntegrationTests.Setup;
@@ -18,19 +20,10 @@ public class SetupProgressEndpointTests : IntegrationTestBase
         await CreateTestUser("test-viewer@test.local", UserRole.Viewer);
     }
 
-    [Fact]
-    public async Task GetSetupProgress_AsOwner_Returns200WithValidResponse()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        var response = await OwnerClient.GetAsync("/api/setup-progress");
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-
-        var json = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-
-        root.GetProperty("steps").GetArrayLength().ShouldBe(4);
-        root.GetProperty("isSetupComplete").GetBoolean().ShouldBeFalse();
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
     [Fact]
     public async Task GetSetupProgress_AsAdmin_Returns403()
@@ -59,15 +52,18 @@ public class SetupProgressEndpointTests : IntegrationTestBase
         var response = await OwnerClient.GetAsync("/api/setup-progress");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var json = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        var steps = doc.RootElement.GetProperty("steps");
+        var result = await response.Content.ReadFromJsonAsync<SetupProgressResponse>(JsonOptions);
+        result.ShouldNotBeNull();
 
-        steps[0].GetProperty("id").GetString().ShouldBe("church-config");
-        steps[0].GetProperty("status").GetString().ShouldBe("current");
-        steps[1].GetProperty("status").GetString().ShouldBe("pending");
-        steps[2].GetProperty("status").GetString().ShouldBe("pending");
-        steps[3].GetProperty("status").GetString().ShouldBe("pending");
+        result.Steps.Count.ShouldBe(5);
+        result.Steps[0].Id.ShouldBe("church-config");
+        result.Steps[0].Status.ShouldBe("current");
+        result.Steps[1].Status.ShouldBe("pending");
+        result.Steps[2].Status.ShouldBe("pending");
+        result.Steps[3].Status.ShouldBe("pending");
+        result.Steps[4].Id.ShouldBe("members");
+        // SeedTestData creates Admin + Viewer users, so members step is already complete
+        result.Steps[4].Status.ShouldBe("complete");
     }
 
     [Fact]
@@ -87,12 +83,10 @@ public class SetupProgressEndpointTests : IntegrationTestBase
         var response = await OwnerClient.GetAsync("/api/setup-progress");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var json = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        var steps = doc.RootElement.GetProperty("steps");
-
-        steps[0].GetProperty("status").GetString().ShouldBe("complete");
-        steps[1].GetProperty("status").GetString().ShouldBe("current");
+        var result = await response.Content.ReadFromJsonAsync<SetupProgressResponse>(JsonOptions);
+        result.ShouldNotBeNull();
+        result.Steps[0].Status.ShouldBe("complete");
+        result.Steps[1].Status.ShouldBe("current");
     }
 
     [Fact]
@@ -130,19 +124,26 @@ public class SetupProgressEndpointTests : IntegrationTestBase
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         });
+        // Need a non-owner, non-guest member for the "members" step
+        db.Users.Add(new User
+        {
+            Email = "member@test.local",
+            FirstName = "Test",
+            LastName = "Member",
+            Role = UserRole.Viewer,
+            IsGuest = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        });
         await db.SaveChangesAsync();
 
         var response = await OwnerClient.GetAsync("/api/setup-progress");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var json = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        doc.RootElement.GetProperty("isSetupComplete").GetBoolean().ShouldBeTrue();
-
-        var steps = doc.RootElement.GetProperty("steps");
-        for (var i = 0; i < steps.GetArrayLength(); i++)
-        {
-            steps[i].GetProperty("status").GetString().ShouldBe("complete");
-        }
+        var result = await response.Content.ReadFromJsonAsync<SetupProgressResponse>(JsonOptions);
+        result.ShouldNotBeNull();
+        result.Steps.Count.ShouldBe(5);
+        result.IsSetupComplete.ShouldBeTrue();
+        result.Steps.ShouldAllBe(s => s.Status == "complete");
     }
 }

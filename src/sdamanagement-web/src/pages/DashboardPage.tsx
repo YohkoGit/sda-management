@@ -1,17 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSetupProgress } from "@/hooks/useSetupProgress";
 import { SetupChecklist } from "@/components/setup";
 
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const isOwner = user?.role?.toUpperCase() === "OWNER";
-  const { isSetupComplete } = useSetupProgress();
 
   return (
     <div>
-      {isOwner && !isSetupComplete && (
+      {isOwner && (
         <div className="mb-6">
           <SetupChecklist />
         </div>

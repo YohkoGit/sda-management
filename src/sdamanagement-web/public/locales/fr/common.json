@@ -24,7 +24,8 @@
       "adminDepartments": "Gestion des d\u00e9partements",
       "adminActivityTemplates": "Mod\u00e8les d\u2019activit\u00e9s",
       "adminProgramSchedules": "Horaires r\u00e9currents",
-      "adminSystemHealth": "Sant\u00e9 du syst\u00e8me"
+      "adminSystemHealth": "Sant\u00e9 du syst\u00e8me",
+      "adminUsers": "Membres"
     },
     "language": {
       "switchTo": "Changer en {{lang}}",
@@ -233,6 +234,42 @@
         "lessThanMinute": "Moins d\u2019une minute"
       }
     },
+    "adminUsers": {
+      "title": "Gestion des membres",
+      "createButton": "Ajouter un utilisateur",
+      "emptyState": "Aucun membre. Ajoutez votre premier membre.",
+      "loadMore": "Charger plus",
+      "form": {
+        "title": "Nouvel utilisateur",
+        "firstName": "Pr\u00e9nom",
+        "lastName": "Nom de famille",
+        "email": "Courriel",
+        "role": "R\u00f4le",
+        "departments": "D\u00e9partements",
+        "selectDepartments": "S\u00e9lectionner des d\u00e9partements",
+        "submit": "Cr\u00e9er",
+        "cancel": "Annuler"
+      },
+      "bulkCreateButton": "Cr\u00e9ation en lot",
+      "bulkForm": {
+        "title": "Cr\u00e9ation en lot",
+        "addRow": "Ajouter une ligne",
+        "removeRow": "Supprimer la ligne",
+        "rowCount": "{{current}} / {{max}} lignes",
+        "submit": "Cr\u00e9er tous",
+        "cancel": "Annuler"
+      },
+      "toast": {
+        "created": "Utilisateur cr\u00e9\u00e9",
+        "bulkCreated": "{{count}} utilisateurs cr\u00e9\u00e9s",
+        "error": {
+          "duplicate": "Cet email est d\u00e9j\u00e0 utilis\u00e9",
+          "forbidden": "Acc\u00e8s refus\u00e9",
+          "bulkValidation": "Corrigez les erreurs avant de soumettre",
+          "duplicateInBatch": "Emails en double dans le lot"
+        }
+      }
+    },
     "notFound": {
       "title": "Page introuvable",
       "message": "La page que vous recherchez n\u2019existe pas.",
@@ -310,7 +347,8 @@
       "churchSettings": "Param\u00e8tres",
       "departments": "D\u00e9partements",
       "templates": "Mod\u00e8les d\u2019activit\u00e9s",
-      "schedules": "Horaires r\u00e9currents"
+      "schedules": "Horaires r\u00e9currents",
+      "members": "Membres"
     },
     "complete": "Configuration termin\u00e9e \u2014 votre syst\u00e8me est pr\u00eat!"
   },

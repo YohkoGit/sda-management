@@ -7,16 +7,7 @@ const mockEmptyDbResponse: SetupProgressResponse = {
     { id: "departments", status: "pending" },
     { id: "templates", status: "pending" },
     { id: "schedules", status: "pending" },
-  ],
-  isSetupComplete: false,
-};
-
-const mockStep2CurrentResponse: SetupProgressResponse = {
-  steps: [
-    { id: "church-config", status: "complete" },
-    { id: "departments", status: "current" },
-    { id: "templates", status: "pending" },
-    { id: "schedules", status: "pending" },
+    { id: "members", status: "pending" },
   ],
   isSetupComplete: false,
 };
@@ -27,6 +18,7 @@ const mockAllCompleteResponse: SetupProgressResponse = {
     { id: "departments", status: "complete" },
     { id: "templates", status: "complete" },
     { id: "schedules", status: "complete" },
+    { id: "members", status: "complete" },
   ],
   isSetupComplete: true,
 };
@@ -36,13 +28,6 @@ export const setupProgressHandlers = [
     return HttpResponse.json(mockEmptyDbResponse);
   }),
 ];
-
-export const setupProgressStep2Handler = http.get(
-  "/api/setup-progress",
-  () => {
-    return HttpResponse.json(mockStep2CurrentResponse);
-  }
-);
 
 export const setupProgressAllCompleteHandler = http.get(
   "/api/setup-progress",

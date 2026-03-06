@@ -10,8 +10,8 @@ const STEP_CONFIG: Record<string, { route: string; labelKey: string }> = {
   "departments": { route: "/admin/departments", labelKey: "setup.steps.departments" },
   "templates": { route: "/admin/activity-templates", labelKey: "setup.steps.templates" },
   "schedules": { route: "/admin/program-schedules", labelKey: "setup.steps.schedules" },
+  "members": { route: "/admin/users", labelKey: "setup.steps.members" },
 };
-// TODO(story-3.1): Add "members" step
 // TODO(story-4.1): Add "first-activity" step
 
 export interface EnrichedSetupStep {
@@ -25,7 +25,7 @@ export function useSetupProgress() {
   const { user } = useAuth();
   const isOwner = user?.role?.toUpperCase() === "OWNER";
 
-  const { data, isLoading } = useQuery<SetupProgressResponse>({
+  const { data, isLoading, isError } = useQuery<SetupProgressResponse>({
     queryKey: ["setup-progress"],
     queryFn: setupProgressService.getSetupProgress,
     enabled: isOwner,
@@ -42,5 +42,6 @@ export function useSetupProgress() {
     steps,
     isSetupComplete: data?.isSetupComplete ?? false,
     isLoading,
+    isError,
   };
 }

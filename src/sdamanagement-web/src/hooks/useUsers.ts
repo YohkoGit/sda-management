@@ -1,0 +1,38 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { userService } from "@/services/userService";
+
+export function useUsers() {
+  const { user, isAuthenticated } = useAuth();
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: ["users"],
+    queryFn: ({ pageParam }) =>
+      userService.getUsers(pageParam).then((res) => res.data),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: isAuthenticated,
+  });
+
+  const users = data?.pages.flatMap((page) => page.items) ?? [];
+  const isAdminOrOwner =
+    user?.role?.toUpperCase() === "OWNER" ||
+    user?.role?.toUpperCase() === "ADMIN";
+
+  return {
+    users,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    isAdminOrOwner,
+  };
+}

@@ -279,6 +279,7 @@ public class AuthController(
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Role = u.Role.ToString().ToUpper(),
+                DepartmentIds = u.UserDepartments.Select(ud => ud.DepartmentId).ToList(),
             })
             .FirstOrDefaultAsync();
 

@@ -52,10 +52,14 @@ function StepIndicator({ step }: { step: EnrichedSetupStep }) {
 
 export function SetupChecklist() {
   const { t } = useTranslation();
-  const { steps, isSetupComplete, isLoading } = useSetupProgress();
+  const { steps, isSetupComplete, isLoading, isError } = useSetupProgress();
 
   if (isLoading) {
     return <Skeleton className="h-48" />;
+  }
+
+  if (isError) {
+    return null;
   }
 
   if (steps.length === 0) {
@@ -78,7 +82,7 @@ export function SetupChecklist() {
         <CardTitle>{t("setup.title")}</CardTitle>
       </CardHeader>
       <CardContent>
-        <nav role="navigation" aria-label={t("setup.ariaLabel")}>
+        <nav aria-label={t("setup.ariaLabel")}>
           <ol className="space-y-1">
             {steps.map((step) => (
               <li key={step.id}>

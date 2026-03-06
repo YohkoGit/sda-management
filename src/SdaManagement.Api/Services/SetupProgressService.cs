@@ -4,7 +4,6 @@ using SdaManagement.Api.Dtos.Setup;
 
 namespace SdaManagement.Api.Services;
 
-// TODO(story-3.1): Add "members" step — see Story 2.6 setup checklist
 // TODO(story-4.1): Add "first-activity" step
 public class SetupProgressService(AppDbContext db) : ISetupProgressService
 {
@@ -14,6 +13,7 @@ public class SetupProgressService(AppDbContext db) : ISetupProgressService
         var departmentCount = await db.Departments.CountAsync(cancellationToken);
         var templateCount = await db.ActivityTemplates.CountAsync(cancellationToken);
         var scheduleCount = await db.ProgramSchedules.CountAsync(cancellationToken);
+        var memberExists = await db.Users.AnyAsync(u => !u.IsGuest && u.Role != Data.Entities.UserRole.Owner, cancellationToken);
 
         var completions = new[]
         {
@@ -21,9 +21,10 @@ public class SetupProgressService(AppDbContext db) : ISetupProgressService
             departmentCount > 0,
             templateCount > 0,
             scheduleCount > 0,
+            memberExists,
         };
 
-        var stepIds = new[] { "church-config", "departments", "templates", "schedules" };
+        var stepIds = new[] { "church-config", "departments", "templates", "schedules", "members" };
 
         var steps = new List<SetupStepItem>();
         var foundCurrent = false;

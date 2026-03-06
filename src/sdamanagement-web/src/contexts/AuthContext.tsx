@@ -17,6 +17,7 @@ interface AuthUser {
   firstName: string;
   lastName: string;
   role: string;
+  departmentIds?: number[];
 }
 
 interface AuthContextType {

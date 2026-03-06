@@ -24,7 +24,8 @@
       "adminDepartments": "Department Management",
       "adminActivityTemplates": "Activity Templates",
       "adminProgramSchedules": "Program Schedules",
-      "adminSystemHealth": "System Health"
+      "adminSystemHealth": "System Health",
+      "adminUsers": "Members"
     },
     "language": {
       "switchTo": "Switch to {{lang}}",
@@ -233,6 +234,42 @@
         "lessThanMinute": "Less than 1 minute"
       }
     },
+    "adminUsers": {
+      "title": "Member Management",
+      "createButton": "Add User",
+      "emptyState": "No members yet. Add your first member.",
+      "loadMore": "Load More",
+      "form": {
+        "title": "New User",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "role": "Role",
+        "departments": "Departments",
+        "selectDepartments": "Select departments",
+        "submit": "Create",
+        "cancel": "Cancel"
+      },
+      "bulkCreateButton": "Bulk Create",
+      "bulkForm": {
+        "title": "Bulk User Creation",
+        "addRow": "Add Row",
+        "removeRow": "Remove Row",
+        "rowCount": "{{current}} / {{max}} rows",
+        "submit": "Create All",
+        "cancel": "Cancel"
+      },
+      "toast": {
+        "created": "User created",
+        "bulkCreated": "{{count}} users created",
+        "error": {
+          "duplicate": "This email is already in use",
+          "forbidden": "Access denied",
+          "bulkValidation": "Fix errors before submitting",
+          "duplicateInBatch": "Duplicate emails in batch"
+        }
+      }
+    },
     "notFound": {
       "title": "Page Not Found",
       "message": "The page you are looking for does not exist.",
@@ -310,7 +347,8 @@
       "churchSettings": "Church Settings",
       "departments": "Departments",
       "templates": "Activity Templates",
-      "schedules": "Program Schedules"
+      "schedules": "Program Schedules",
+      "members": "Members"
     },
     "complete": "Setup complete \u2014 your system is ready!"
   },

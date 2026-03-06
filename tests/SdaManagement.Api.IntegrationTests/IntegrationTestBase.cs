@@ -127,6 +127,22 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
+    /// Assigns a user to a department via UserDepartment junction record.
+    /// Reusable across all Epic 3+ tests.
+    /// </summary>
+    protected async Task AssignDepartmentToUser(int userId, int departmentId)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.Set<UserDepartment>().Add(new UserDepartment
+        {
+            UserId = userId,
+            DepartmentId = departmentId,
+        });
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Placeholder — requires Activity entity (Epic 4).
     /// </summary>
     protected Task CreateTestActivity()
