@@ -351,6 +351,222 @@ public class UserEndpointTests : IntegrationTestBase
         result.Steps[4].Status.ShouldBe("complete");
     }
 
+    // --- PUT /api/users/{id} ---
+
+    private object ValidUpdatePayload(
+        string firstName = "Marie-Claire",
+        string lastName = "Legault-Updated",
+        string role = "Viewer",
+        int[]? departmentIds = null) => new
+    {
+        firstName,
+        lastName,
+        role,
+        departmentIds = departmentIds ?? [_deptJaId],
+    };
+
+    private async Task<int> CreateUserViaApi(string email = "target@test.com", string role = "Viewer", int[]? departmentIds = null)
+    {
+        var response = await OwnerClient.PostAsJsonAsync("/api/users",
+            ValidUserPayload(email: email, role: role, departmentIds: departmentIds ?? [_deptJaId]));
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.GetProperty("id").GetInt32();
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsOwner_ChangesRoleAndDepartments_Returns200()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(role: "Admin", departmentIds: [_deptJaId, _deptMifemId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("role").GetString().ShouldBe("Admin");
+        doc.RootElement.GetProperty("departments").GetArrayLength().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_ChangesUserInOwnDepartment_Returns200()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(firstName: "Updated-Name", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("firstName").GetString().ShouldBe("Updated-Name");
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_PromotesViewerToAdmin_Returns200()
+    {
+        var userId = await CreateUserViaApi(role: "Viewer");
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(role: "Admin", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("role").GetString().ShouldBe("Admin");
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_DemotesAdminToViewer_Returns200()
+    {
+        var userId = await CreateUserViaApi(email: "other-admin@test.com", role: "Admin");
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(role: "Viewer", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("role").GetString().ShouldBe("Viewer");
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_WithOwnerRole_Returns403()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(role: "Owner", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_EditingUserOutsideDepartments_Returns403()
+    {
+        // Create user only in MIFEM (admin has JA)
+        var userId = await CreateUserViaApi(email: "mifem-only@test.com", departmentIds: [_deptMifemId]);
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_AssigningOutOfScopeDepartment_Returns403()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(departmentIds: [_deptMifemId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_ChangingOwnRole_Returns403()
+    {
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{_adminUserId}",
+            ValidUpdatePayload(role: "Viewer", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsViewer_Returns403()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await ViewerClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload());
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAnonymous_Returns401()
+    {
+        var response = await AnonymousClient.PutAsJsonAsync("/api/users/1",
+            ValidUpdatePayload());
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task UpdateUser_WithInvalidData_Returns400()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/users/{userId}", new
+        {
+            firstName = "",
+            lastName = "",
+            role = "SuperAdmin",
+            departmentIds = Array.Empty<int>(),
+        });
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("type").GetString().ShouldBe("urn:sdac:validation-error");
+    }
+
+    [Fact]
+    public async Task UpdateUser_WithNonExistentId_Returns404()
+    {
+        var response = await OwnerClient.PutAsJsonAsync("/api/users/99999",
+            ValidUpdatePayload());
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateUser_DepartmentReplacement_IsAtomic()
+    {
+        // Create user in JA
+        var userId = await CreateUserViaApi(departmentIds: [_deptJaId]);
+
+        // Replace departments: JA → MIFEM (as owner, no restrictions)
+        var response = await OwnerClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(departmentIds: [_deptMifemId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var depts = doc.RootElement.GetProperty("departments");
+        depts.GetArrayLength().ShouldBe(1);
+        depts[0].GetProperty("abbreviation").GetString().ShouldBe("MIFEM");
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsOwner_CanAssignOwnerRole_Returns200()
+    {
+        var userId = await CreateUserViaApi();
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(role: "Owner"));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("role").GetString().ShouldBe("Owner");
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsOwner_ChangingOwnRole_Returns403()
+    {
+        var response = await OwnerClient.PutAsJsonAsync($"/api/users/{_ownerUserId}",
+            ValidUpdatePayload(role: "Admin", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateUser_AsAdmin_EditingUserInSharedDepartment_Returns200()
+    {
+        // Create user in JA + MIFEM (admin has JA — shares JA)
+        var userId = await CreateUserViaApi(email: "shared@test.com", departmentIds: [_deptJaId, _deptMifemId]);
+
+        // Admin can edit because they share JA, but can only assign JA (in their scope)
+        var response = await AdminClient.PutAsJsonAsync($"/api/users/{userId}",
+            ValidUpdatePayload(departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
     // --- POST /api/users/bulk ---
 
     private object ValidBulkPayload(int count = 5, int[]? departmentIds = null) => new

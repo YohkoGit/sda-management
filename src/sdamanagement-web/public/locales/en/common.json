@@ -259,12 +259,22 @@
         "submit": "Create All",
         "cancel": "Cancel"
       },
+      "editButton": "Edit",
+      "editForm": {
+        "title": "Edit User",
+        "submit": "Save",
+        "emailReadonly": "Email cannot be changed",
+        "selfRoleDisabled": "Your role can only be changed by another administrator",
+        "roleDowngradeWarning": "This user will lose admin privileges"
+      },
       "toast": {
         "created": "User created",
+        "updated": "User updated",
         "bulkCreated": "{{count}} users created",
         "error": {
           "duplicate": "This email is already in use",
           "forbidden": "Access denied",
+          "notFound": "User not found",
           "bulkValidation": "Fix errors before submitting",
           "duplicateInBatch": "Duplicate emails in batch"
         }

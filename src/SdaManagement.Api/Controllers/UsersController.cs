@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SdaManagement.Api.Auth;
+using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Dtos.User;
 using SdaManagement.Api.Services;
@@ -19,7 +20,8 @@ namespace SdaManagement.Api.Controllers;
 public class UsersController(
     IUserService userService,
     SdacAuth.IAuthorizationService auth,
-    ICurrentUserContext currentUser) : ControllerBase
+    ICurrentUserContext currentUser,
+    AppDbContext db) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll(
@@ -159,6 +161,56 @@ public class UsersController(
                 Detail = "A user with this email already exists.",
             });
         }
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(
+        int id,
+        [FromBody] UpdateUserRequest request,
+        [FromServices] IValidator<UpdateUserRequest> validator)
+    {
+        if (!auth.IsAuthenticated())
+            return Unauthorized();
+
+        if (currentUser.Role < UserRole.Admin)
+            return Forbid();
+
+        // Self-role-change guard (ALL roles) — before validation per spec
+        if (id == currentUser.UserId &&
+            !request.Role.Equals(currentUser.Role.ToString(), StringComparison.OrdinalIgnoreCase))
+            return Forbid();
+
+        // ADMIN-specific restrictions (skip for OWNER) — before validation per spec
+        if (!auth.IsOwner())
+        {
+            // Load target user's current departments for visibility check
+            var targetDeptIds = await db.Set<UserDepartment>()
+                .Where(ud => ud.UserId == id)
+                .Select(ud => ud.DepartmentId)
+                .ToListAsync();
+
+            // Target user must share at least one department with current ADMIN
+            if (!targetDeptIds.Any(d => currentUser.DepartmentIds.Contains(d)))
+                return Forbid();
+
+            // Cannot assign OWNER role
+            if (request.Role.Equals("Owner", StringComparison.OrdinalIgnoreCase))
+                return Forbid();
+
+            // All new departmentIds must be in current ADMIN's scope
+            if (request.DepartmentIds.Any(d => !currentUser.DepartmentIds.Contains(d)))
+                return Forbid();
+        }
+
+        var validation = await validator.ValidateAsync(request);
+        if (!validation.IsValid)
+            return ValidationError(validation);
+
+        var result = await userService.UpdateAsync(id, request);
+        if (result is null)
+            return NotFound();
+
+        return Ok(result);
     }
 
     private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>

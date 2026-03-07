@@ -121,6 +121,43 @@ export const userHandlersEmpty = [
   }),
 ];
 
+export const userHandlerPut = http.put("/api/users/:id", async ({ request }) => {
+  const body = (await request.json()) as Record<string, unknown>;
+  return HttpResponse.json({
+    id: 2,
+    firstName: body.firstName,
+    lastName: body.lastName,
+    email: "mc.legault@gmail.com",
+    role: body.role,
+    isGuest: false,
+    departments: [
+      { id: 1, name: "Jeunesse Adventiste", abbreviation: "JA", color: "#4F46E5" },
+    ],
+    createdAt: "2026-03-01T00:00:00Z",
+    updatedAt: "2026-03-06T00:00:00Z",
+  });
+});
+
+export const userHandlerPut400 = http.put("/api/users/:id", () => {
+  return HttpResponse.json(
+    {
+      type: "urn:sdac:validation-error",
+      title: "Validation Error",
+      status: 400,
+      errors: { firstName: ["'First Name' must not be empty."] },
+    },
+    { status: 400 }
+  );
+});
+
+export const userHandlerPut403 = http.put("/api/users/:id", () => {
+  return new HttpResponse(null, { status: 403 });
+});
+
+export const userHandlerPut404 = http.put("/api/users/:id", () => {
+  return new HttpResponse(null, { status: 404 });
+});
+
 export const userHandlers409 = http.post("/api/users", () => {
   return HttpResponse.json(
     {

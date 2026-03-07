@@ -65,7 +65,7 @@ development_status:
   epic-3: in-progress
   3-1-single-user-account-creation: done
   3-2-bulk-user-creation: done
-  3-3-user-role-and-department-management: backlog
+  3-3-user-role-and-department-management: done
   3-4-owner-user-management-full-access: backlog
   3-5-avatar-upload-and-display: backlog
   epic-3-retrospective: optional

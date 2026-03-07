@@ -213,6 +213,58 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUse
         }).ToList();
     }
 
+    public async Task<UserResponse?> UpdateAsync(int userId, UpdateUserRequest request)
+    {
+        var user = await db.Users
+            .Include(u => u.UserDepartments)
+            .FirstOrDefaultAsync(u => u.Id == userId && !u.IsGuest);
+
+        if (user is null) return null;
+
+        user.FirstName = sanitizer.Sanitize(request.FirstName);
+        user.LastName = sanitizer.Sanitize(request.LastName);
+        user.Role = Enum.Parse<UserRole>(request.Role, ignoreCase: true);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        // Replace departments: clear existing, add new
+        db.Set<UserDepartment>().RemoveRange(user.UserDepartments);
+        foreach (var deptId in request.DepartmentIds)
+        {
+            db.Set<UserDepartment>().Add(new UserDepartment
+            {
+                UserId = userId,
+                DepartmentId = deptId,
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        // Reload with department details for response
+        var updated = await db.Users
+            .Include(u => u.UserDepartments)
+            .ThenInclude(ud => ud.Department)
+            .FirstAsync(u => u.Id == userId);
+
+        return new UserResponse
+        {
+            Id = updated.Id,
+            FirstName = updated.FirstName,
+            LastName = updated.LastName,
+            Email = updated.Email,
+            Role = updated.Role.ToString(),
+            IsGuest = updated.IsGuest,
+            Departments = updated.UserDepartments.Select(ud => new UserDepartmentBadge
+            {
+                Id = ud.Department.Id,
+                Name = ud.Department.Name,
+                Abbreviation = ud.Department.Abbreviation,
+                Color = ud.Department.Color,
+            }).ToList(),
+            CreatedAt = updated.CreatedAt,
+            UpdatedAt = updated.UpdatedAt,
+        };
+    }
+
     internal static bool IsValidCursor(string cursor)
     {
         try

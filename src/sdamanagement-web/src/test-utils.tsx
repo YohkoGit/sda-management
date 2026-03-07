@@ -245,6 +245,14 @@ testI18n.use(initReactI18next).init({
             emptyState: "Aucun membre. Ajoutez votre premier membre.",
             loadMore: "Charger plus",
             bulkCreateButton: "Création en lot",
+            editButton: "Modifier",
+            editForm: {
+              title: "Modifier l'utilisateur",
+              submit: "Enregistrer",
+              emailReadonly: "Le courriel ne peut pas être modifié",
+              selfRoleDisabled: "Votre rôle ne peut être modifié que par un autre administrateur",
+              roleDowngradeWarning: "Cet utilisateur perdra ses privilèges d'administration",
+            },
             bulkForm: {
               title: "Création en lot",
               addRow: "Ajouter une ligne",
@@ -266,10 +274,12 @@ testI18n.use(initReactI18next).init({
             },
             toast: {
               created: "Utilisateur créé",
+              updated: "Utilisateur mis à jour",
               bulkCreated: "{{count}} utilisateurs créés",
               error: {
                 duplicate: "Cet email est déjà utilisé",
                 forbidden: "Accès refusé",
+                notFound: "Utilisateur introuvable",
                 bulkValidation: "Corrigez les erreurs avant de soumettre",
                 duplicateInBatch: "Emails en double dans le lot",
               },

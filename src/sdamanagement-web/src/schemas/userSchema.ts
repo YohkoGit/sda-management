@@ -24,6 +24,10 @@ export const createUserSchema = z.object({
 
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
 
+export const updateUserSchema = createUserSchema.omit({ email: true });
+
+export type UpdateUserFormData = z.infer<typeof updateUserSchema>;
+
 export const bulkCreateUsersSchema = z.object({
   users: z.array(createUserSchema).min(1).max(30),
 }).refine(

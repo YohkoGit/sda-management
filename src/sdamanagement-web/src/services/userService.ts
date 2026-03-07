@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { CreateUserFormData } from "@/schemas/userSchema";
+import type { CreateUserFormData, UpdateUserFormData } from "@/schemas/userSchema";
 
 export interface UserDepartmentBadge {
   id: number;
@@ -50,4 +50,6 @@ export const userService = {
     api.post<UserResponse>("/api/users", data),
   bulkCreateUsers: (data: { users: CreateUserFormData[] }) =>
     api.post<BulkCreateUsersResponse>("/api/users/bulk", data),
+  updateUser: (id: number, data: UpdateUserFormData) =>
+    api.put<UserResponse>(`/api/users/${id}`, data),
 };

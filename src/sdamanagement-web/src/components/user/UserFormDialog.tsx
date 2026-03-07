@@ -24,32 +24,38 @@ import {
 import { DepartmentMultiSelect } from "./DepartmentMultiSelect";
 import {
   createUserSchema,
+  updateUserSchema,
   type CreateUserFormData,
+  type UpdateUserFormData,
 } from "@/schemas/userSchema";
-import { userService } from "@/services/userService";
+import { userService, type UserResponse, type UserListItem } from "@/services/userService";
 import { departmentService } from "@/services/departmentService";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface UserFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editUser?: UserResponse | UserListItem;
 }
 
-export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
+export function UserFormDialog({ open, onOpenChange, editUser }: UserFormDialogProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
   const queryClient = useQueryClient();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  const isOwner = authUser?.role?.toUpperCase() === "OWNER";
+  const isEditMode = !!editUser;
+  const isSelfEdit = isEditMode && editUser.id === authUser?.userId;
 
   const {
     register,
     handleSubmit,
     reset,
     control,
+    watch,
     setError,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
+    resolver: zodResolver(isEditMode ? (updateUserSchema as unknown as typeof createUserSchema) : createUserSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -60,6 +66,12 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
     mode: "onBlur",
   });
 
+  const watchedRole = watch("role");
+  const showRoleDowngradeWarning =
+    isEditMode &&
+    editUser.role.toUpperCase() === "ADMIN" &&
+    watchedRole?.toUpperCase() === "VIEWER";
+
   const { data: departmentsData } = useQuery({
     queryKey: ["departments"],
     queryFn: () => departmentService.getAll().then((res) => res.data),
@@ -67,12 +79,12 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
   });
 
   const allDepartments = departmentsData ?? [];
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
-  const departments = isAdmin && user?.departmentIds
-    ? allDepartments.filter((d) => user.departmentIds!.includes(d.id))
+  const isAdmin = authUser?.role?.toUpperCase() === "ADMIN";
+  const departments = isAdmin && authUser?.departmentIds
+    ? allDepartments.filter((d) => authUser.departmentIds!.includes(d.id))
     : allDepartments;
 
-  const mutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: (data: CreateUserFormData) =>
       userService.createUser(data),
     onSuccess: () => {
@@ -93,13 +105,42 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateUserFormData) =>
+      userService.updateUser(editUser!.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success(t("pages.adminUsers.toast.updated"));
+      handleClose();
+    },
+    onError: (error) => {
+      if (isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          toast.error(t("pages.adminUsers.toast.error.forbidden"));
+        } else if (error.response?.status === 404) {
+          toast.error(t("pages.adminUsers.toast.error.notFound"));
+        }
+      }
+    },
+  });
+
+  const mutation = isEditMode ? updateMutation : createMutation;
+
   const handleClose = () => {
     reset();
     onOpenChange(false);
   };
 
   useEffect(() => {
-    if (open) {
+    if (open && editUser) {
+      reset({
+        firstName: editUser.firstName,
+        lastName: editUser.lastName,
+        email: "",
+        role: editUser.role as CreateUserFormData["role"],
+        departmentIds: editUser.departments.map((d) => d.id),
+      });
+    } else if (open && !editUser) {
       reset({
         firstName: "",
         lastName: "",
@@ -108,20 +149,33 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
         departmentIds: [],
       });
     }
-  }, [open, reset]);
+  }, [open, editUser, reset]);
 
   const roleOptions = isOwner
     ? ["Viewer", "Admin", "Owner"]
     : ["Viewer", "Admin"];
 
+  const onSubmit = handleSubmit((data) => {
+    if (isEditMode) {
+      const { email: _email, ...updateData } = data;
+      updateMutation.mutate(updateData);
+    } else {
+      createMutation.mutate(data);
+    }
+  });
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{t("pages.adminUsers.form.title")}</DialogTitle>
+          <DialogTitle>
+            {isEditMode
+              ? t("pages.adminUsers.editForm.title")
+              : t("pages.adminUsers.form.title")}
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">
@@ -159,23 +213,41 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">
-              {t("pages.adminUsers.form.email")}
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? "email-error" : undefined}
-              {...register("email")}
-            />
-            {errors.email && (
-              <p id="email-error" className="text-sm text-destructive">
-                {errors.email.message}
+          {isEditMode ? (
+            <div className="space-y-2">
+              <Label htmlFor="email">
+                {t("pages.adminUsers.form.email")}
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                disabled
+                value={editUser.email}
+                className="bg-slate-50 text-slate-500 cursor-not-allowed"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("pages.adminUsers.editForm.emailReadonly")}
               </p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="email">
+                {t("pages.adminUsers.form.email")}
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                {...register("email")}
+              />
+              {errors.email && (
+                <p id="email-error" className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="role">{t("pages.adminUsers.form.role")}</Label>
@@ -186,8 +258,13 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
+                  disabled={isSelfEdit}
                 >
-                  <SelectTrigger id="role" aria-invalid={!!errors.role}>
+                  <SelectTrigger
+                    id="role"
+                    aria-invalid={!!errors.role}
+                    className={isSelfEdit ? "bg-slate-50 cursor-not-allowed" : ""}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,6 +277,16 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
                 </Select>
               )}
             />
+            {isSelfEdit && (
+              <p className="text-xs text-muted-foreground">
+                {t("pages.adminUsers.editForm.selfRoleDisabled")}
+              </p>
+            )}
+            {showRoleDowngradeWarning && (
+              <p className="text-xs text-amber-600">
+                {t("pages.adminUsers.editForm.roleDowngradeWarning")}
+              </p>
+            )}
             {errors.role && (
               <p className="text-sm text-destructive">{errors.role.message}</p>
             )}
@@ -230,8 +317,10 @@ export function UserFormDialog({ open, onOpenChange }: UserFormDialogProps) {
             <Button type="button" variant="outline" onClick={handleClose}>
               {t("pages.adminUsers.form.cancel")}
             </Button>
-            <Button type="submit" disabled={mutation.isPending}>
-              {t("pages.adminUsers.form.submit")}
+            <Button type="submit" disabled={mutation.isPending || (isEditMode && !isDirty)}>
+              {isEditMode
+                ? t("pages.adminUsers.editForm.submit")
+                : t("pages.adminUsers.form.submit")}
             </Button>
           </div>
         </form>

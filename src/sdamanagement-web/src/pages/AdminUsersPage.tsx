@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Users } from "lucide-react";
+import { Pencil, Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { UserFormDialog, BulkUserFormDialog } from "@/components/user";
 import { useUsers } from "@/hooks/useUsers";
+import type { UserListItem } from "@/services/userService";
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
   OWNER: "bg-amber-100 text-amber-800 border-amber-200",
@@ -28,6 +29,7 @@ export default function AdminUsersPage() {
   } = useUsers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
 
   return (
     <div className="space-y-6">
@@ -125,6 +127,17 @@ export default function AdminUsersPage() {
                     </div>
                   )}
                 </div>
+                {isAdminOrOwner && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:text-indigo-600"
+                    onClick={() => setEditingUser(user)}
+                  >
+                    <Pencil className="h-4 w-4 mr-1" />
+                    {t("pages.adminUsers.editButton")}
+                  </Button>
+                )}
               </div>
             </Card>
           ))}
@@ -143,6 +156,11 @@ export default function AdminUsersPage() {
       )}
 
       <UserFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <UserFormDialog
+        open={!!editingUser}
+        onOpenChange={(open) => { if (!open) setEditingUser(null); }}
+        editUser={editingUser ?? undefined}
+      />
       <BulkUserFormDialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen} />
     </div>
   );

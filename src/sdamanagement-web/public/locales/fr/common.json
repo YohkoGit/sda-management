@@ -259,12 +259,22 @@
         "submit": "Cr\u00e9er tous",
         "cancel": "Annuler"
       },
+      "editButton": "Modifier",
+      "editForm": {
+        "title": "Modifier l'utilisateur",
+        "submit": "Enregistrer",
+        "emailReadonly": "Le courriel ne peut pas \u00eatre modifi\u00e9",
+        "selfRoleDisabled": "Votre r\u00f4le ne peut \u00eatre modifi\u00e9 que par un autre administrateur",
+        "roleDowngradeWarning": "Cet utilisateur perdra ses privil\u00e8ges d'administration"
+      },
       "toast": {
         "created": "Utilisateur cr\u00e9\u00e9",
+        "updated": "Utilisateur mis \u00e0 jour",
         "bulkCreated": "{{count}} utilisateurs cr\u00e9\u00e9s",
         "error": {
           "duplicate": "Cet email est d\u00e9j\u00e0 utilis\u00e9",
           "forbidden": "Acc\u00e8s refus\u00e9",
+          "notFound": "Utilisateur introuvable",
           "bulkValidation": "Corrigez les erreurs avant de soumettre",
           "duplicateInBatch": "Emails en double dans le lot"
         }
