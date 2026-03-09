@@ -10,4 +10,5 @@ public record UpdateActivityRequest : IActivityRequest
     public int DepartmentId { get; init; }
     public string Visibility { get; init; } = "public";
     public uint ConcurrencyToken { get; init; }
+    public List<ActivityRoleInput>? Roles { get; init; }
 }

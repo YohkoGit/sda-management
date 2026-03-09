@@ -106,7 +106,7 @@ describe("AdminActivitiesPage", () => {
     expect(screen.getByText("Activité sans modèle")).toBeInTheDocument();
   });
 
-  it("selecting a template transitions to form with role summary badges", async () => {
+  it("selecting a template transitions to form with pre-populated role roster", async () => {
     const user = userEvent.setup();
     const getSpy = vi.spyOn(activityTemplateService, "getAll").mockResolvedValue({
       data: mockTemplateData,
@@ -137,19 +137,19 @@ describe("AdminActivitiesPage", () => {
     const templateCard = screen.getByRole("radio", { name: /Culte du Sabbat/i });
     await user.click(templateCard);
 
-    // Should transition to form step with role badges
+    // Should transition to form step with role roster pre-populated from template
     await waitFor(() => {
-      expect(screen.getByText("Rôles du modèle")).toBeInTheDocument();
+      expect(screen.getByText("Rôles de l\u2019activité")).toBeInTheDocument();
     });
-    expect(screen.getByText("Predicateur x1")).toBeInTheDocument();
-    expect(screen.getByText("Ancien x1")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Predicateur")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Ancien")).toBeInTheDocument();
     expect(screen.getByText("Retour aux modèles")).toBeInTheDocument();
     expect(screen.getByLabelText("Titre")).toBeInTheDocument();
 
     getSpy.mockRestore();
   });
 
-  it("create with template sends templateId in request body", async () => {
+  it("create with template sends roles (not templateId) when roles are pre-populated", async () => {
     const user = userEvent.setup();
     const getSpy = vi.spyOn(activityTemplateService, "getAll").mockResolvedValue({
       data: mockTemplateData,
@@ -169,7 +169,10 @@ describe("AdminActivitiesPage", () => {
         departmentId: 1,
         departmentName: "Jeunesse Adventiste",
         visibility: "public",
-        roles: [],
+        roles: [
+          { id: 200, roleName: "Predicateur", headcount: 1, sortOrder: 0, assignments: [] },
+          { id: 201, roleName: "Ancien", headcount: 1, sortOrder: 1, assignments: [] },
+        ],
         concurrencyToken: 100,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -220,7 +223,11 @@ describe("AdminActivitiesPage", () => {
     });
 
     const callArgs = createSpy.mock.calls[0][0];
-    expect(callArgs.templateId).toBe(1);
+    // With pre-populated roles, templateId should be undefined (roles override)
+    expect(callArgs.templateId).toBeUndefined();
+    expect(callArgs.roles).toHaveLength(2);
+    expect(callArgs.roles![0].roleName).toBe("Predicateur");
+    expect(callArgs.roles![1].roleName).toBe("Ancien");
 
     createSpy.mockRestore();
     getSpy.mockRestore();
@@ -436,5 +443,345 @@ describe("AdminActivitiesPage", () => {
       ).toBeInTheDocument();
     });
     expect(screen.getByText("Nouvelle activité")).toBeInTheDocument();
+  });
+
+  // --- Role Roster Integration Tests (Story 4.3) ---
+
+  it("create flow with custom starts with empty role roster", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    await waitFor(() => {
+      expect(screen.getByText("Rôles de l\u2019activité")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText("Aucun rôle. Ajoutez des rôles pour définir les postes nécessaires.")
+    ).toBeInTheDocument();
+  });
+
+  it("edit flow pre-populates RoleRosterEditor with existing activity roles", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Activity 1 has "Predicateur" and "Ancien de Service" roles
+    expect(screen.getByDisplayValue("Predicateur")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Ancien de Service")).toBeInTheDocument();
+  });
+
+  it("role section appears with heading in form", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    await waitFor(() => {
+      expect(screen.getByText("Rôles de l\u2019activité")).toBeInTheDocument();
+    });
+
+    // The heading should be an h3
+    const heading = screen.getByText("Rôles de l\u2019activité");
+    expect(heading.tagName).toBe("H3");
+  });
+
+  it("'Back to templates' resets role roster", async () => {
+    const user = userEvent.setup();
+    const getSpy = vi.spyOn(activityTemplateService, "getAll").mockResolvedValue({
+      data: mockTemplateData,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+
+    // Select template to get pre-populated roles
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: /Culte du Sabbat/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("radio", { name: /Culte du Sabbat/i }));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Predicateur")).toBeInTheDocument();
+    });
+
+    // Go back to templates
+    await user.click(screen.getByText("Retour aux modèles"));
+
+    // Select custom (no template)
+    await waitFor(() => {
+      expect(screen.getByText("Activité sans modèle")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Activité sans modèle"));
+
+    // Role roster should be empty
+    await waitFor(() => {
+      expect(
+        screen.getByText("Aucun rôle. Ajoutez des rôles pour définir les postes nécessaires.")
+      ).toBeInTheDocument();
+    });
+
+    getSpy.mockRestore();
+  });
+
+  it("adding a role in create flow includes it in submit request", async () => {
+    const user = userEvent.setup();
+    const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
+      data: {
+        id: 99,
+        title: "With Role",
+        description: null,
+        date: "2026-03-15",
+        startTime: "10:00:00",
+        endTime: "12:00:00",
+        departmentId: 1,
+        departmentName: "Jeunesse Adventiste",
+        visibility: "public",
+        roles: [{ id: 200, roleName: "Musicien", headcount: 1, sortOrder: 0, assignments: [] }],
+        concurrencyToken: 100,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      status: 201,
+      statusText: "Created",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+    });
+
+    // Fill required fields
+    await user.type(screen.getByLabelText("Titre"), "With Role");
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-03-15" } });
+    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
+    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+
+    const selectTrigger = screen.getByRole("combobox");
+    await user.click(selectTrigger);
+    const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
+    await user.click(deptOption);
+
+    // Add a role
+    await user.click(screen.getByText("Ajouter un rôle"));
+    const roleInput = screen.getByPlaceholderText("Nom du rôle");
+    await user.type(roleInput, "Musicien");
+
+    // Submit
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalledOnce();
+    });
+
+    const callArgs = createSpy.mock.calls[0][0];
+    expect(callArgs.roles).toHaveLength(1);
+    expect(callArgs.roles![0].roleName).toBe("Musicien");
+    expect(callArgs.roles![0].headcount).toBe(1);
+
+    createSpy.mockRestore();
+  });
+
+  it("modifying roles in edit flow sends updated roles in request", async () => {
+    const user = userEvent.setup();
+    const updateSpy = vi.spyOn(activityService, "update").mockResolvedValueOnce({
+      data: {
+        id: 1,
+        title: "Culte du Sabbat",
+        description: "Service principal du samedi matin",
+        date: "2026-03-07",
+        startTime: "10:00:00",
+        endTime: "12:00:00",
+        departmentId: 1,
+        departmentName: "MIFEM",
+        visibility: "public",
+        roles: [
+          { id: 1, roleName: "Predicateur", headcount: 3, sortOrder: 0, assignments: [] },
+          { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, assignments: [] },
+        ],
+        concurrencyToken: 101,
+        createdAt: "2026-03-01T00:00:00Z",
+        updatedAt: new Date().toISOString(),
+      },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Predicateur")).toBeInTheDocument();
+    });
+
+    // Increase headcount on Predicateur role
+    const increaseButtons = screen.getAllByLabelText("Augmenter le nombre");
+    await user.click(increaseButtons[0]);
+    await user.click(increaseButtons[0]);
+
+    // Submit
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledOnce();
+    });
+
+    const callArgs = updateSpy.mock.calls[0];
+    const data = callArgs[1];
+    expect(data.roles).toHaveLength(2);
+    expect(data.roles![0].roleName).toBe("Predicateur");
+    expect(data.roles![0].headcount).toBe(3);
+
+    updateSpy.mockRestore();
+  });
+
+  it("removing all roles in edit sends empty roles array", async () => {
+    const user = userEvent.setup();
+    const updateSpy = vi.spyOn(activityService, "update").mockResolvedValueOnce({
+      data: {
+        id: 1,
+        title: "Culte du Sabbat",
+        description: "Service principal du samedi matin",
+        date: "2026-03-07",
+        startTime: "10:00:00",
+        endTime: "12:00:00",
+        departmentId: 1,
+        departmentName: "MIFEM",
+        visibility: "public",
+        roles: [],
+        concurrencyToken: 101,
+        createdAt: "2026-03-01T00:00:00Z",
+        updatedAt: new Date().toISOString(),
+      },
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Predicateur")).toBeInTheDocument();
+    });
+
+    // Remove all roles (Predicateur has no assignments, Ancien de Service has 1)
+    const removeButtons = screen.getAllByLabelText(/Supprimer le rôle/);
+    // Remove first role (Predicateur — no assignments, immediate removal)
+    await user.click(removeButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.queryByDisplayValue("Predicateur")).not.toBeInTheDocument();
+    });
+
+    // Remove second role (Ancien de Service — has assignments, needs confirmation)
+    const remainingRemoveBtn = screen.getByLabelText(/Supprimer le rôle/);
+    await user.click(remainingRemoveBtn);
+
+    // Confirm removal in dialog
+    await waitFor(() => {
+      expect(screen.getByText("Supprimer le rôle ?")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Supprimer" }));
+
+    await waitFor(() => {
+      expect(screen.queryByDisplayValue("Ancien de Service")).not.toBeInTheDocument();
+    });
+
+    // Submit
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledOnce();
+    });
+
+    const callArgs = updateSpy.mock.calls[0];
+    const data = callArgs[1];
+    expect(data.roles).toHaveLength(0);
+
+    updateSpy.mockRestore();
   });
 });

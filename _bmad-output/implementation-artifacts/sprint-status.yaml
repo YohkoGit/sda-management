@@ -74,7 +74,7 @@ development_status:
   epic-4: in-progress
   4-1-activity-data-model-and-basic-crud: done
   4-2-activity-creation-from-templates: done
-  4-3-role-roster-customization: backlog
+  4-3-role-roster-customization: done
   4-4-role-assignment-via-contact-picker: backlog
   4-5-special-activity-tagging-and-visibility-control: backlog
   4-6-inline-guest-speaker-creation: backlog

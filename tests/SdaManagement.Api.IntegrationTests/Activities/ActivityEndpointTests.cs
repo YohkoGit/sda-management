@@ -84,6 +84,33 @@ public class ActivityEndpointTests : IntegrationTestBase
         );
     }
 
+    private async Task<(int Id, uint ConcurrencyToken, JsonElement Roles)> CreateActivityWithRoles(
+        object[] roles,
+        string title = "Culte du Sabbat",
+        int? departmentId = null)
+    {
+        var payload = new
+        {
+            title,
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = departmentId ?? _deptMifemId,
+            visibility = "public",
+            roles,
+        };
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var json = await response.Content.ReadAsStringAsync();
+        var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        return (
+            root.GetProperty("id").GetInt32(),
+            root.GetProperty("concurrencyToken").GetUInt32(),
+            root.GetProperty("roles").Clone()
+        );
+    }
+
     // --- POST create ---
 
     [Fact]
@@ -510,5 +537,537 @@ public class ActivityEndpointTests : IntegrationTestBase
         rolesExist.ShouldBeFalse();
         var assignmentsExist = dbContext.RoleAssignments.Any(ra => ra.ActivityRole.ActivityId == activity.Id);
         assignmentsExist.ShouldBeFalse();
+    }
+
+    // --- POST create with explicit roles (Story 4.3) ---
+
+    [Fact]
+    public async Task CreateActivity_WithExplicitRoles_Returns201WithRoles()
+    {
+        var roles = new object[]
+        {
+            new { roleName = "Predicateur", headcount = 1 },
+            new { roleName = "Ancien de Service", headcount = 1 },
+            new { roleName = "Diacres", headcount = 3 },
+        };
+
+        var (_, _, rolesResult) = await CreateActivityWithRoles(roles);
+
+        rolesResult.GetArrayLength().ShouldBe(3);
+        rolesResult[0].GetProperty("roleName").GetString().ShouldBe("Predicateur");
+        rolesResult[0].GetProperty("headcount").GetInt32().ShouldBe(1);
+        rolesResult[0].GetProperty("sortOrder").GetInt32().ShouldBe(0);
+        rolesResult[1].GetProperty("roleName").GetString().ShouldBe("Ancien de Service");
+        rolesResult[1].GetProperty("headcount").GetInt32().ShouldBe(1);
+        rolesResult[1].GetProperty("sortOrder").GetInt32().ShouldBe(1);
+        rolesResult[2].GetProperty("roleName").GetString().ShouldBe("Diacres");
+        rolesResult[2].GetProperty("headcount").GetInt32().ShouldBe(3);
+        rolesResult[2].GetProperty("sortOrder").GetInt32().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithRolesAndTemplateId_RolesOverrideTemplate()
+    {
+        var template = await CreateTestActivityTemplate(
+            "Override Test",
+            [("Template Role", 5)]);
+
+        var payload = new
+        {
+            title = "Override Activity",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            templateId = template.Id,
+            roles = new[] { new { roleName = "Explicit Role", headcount = 2 } },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+
+        roles.GetArrayLength().ShouldBe(1);
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Explicit Role");
+        roles[0].GetProperty("headcount").GetInt32().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithDuplicateRoleNames_Returns400()
+    {
+        var payload = new
+        {
+            title = "Duplicate Roles",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new[]
+            {
+                new { roleName = "Predicateur", headcount = 1 },
+                new { roleName = "Predicateur", headcount = 2 },
+            },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithInvalidRoleHeadcount_Returns400()
+    {
+        var payload = new
+        {
+            title = "Invalid Headcount",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new[] { new { roleName = "Predicateur", headcount = 0 } },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithRoleNameTooLong_Returns400()
+    {
+        var payload = new
+        {
+            title = "Long Name",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new[] { new { roleName = new string('a', 101), headcount = 1 } },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithMaxRoles_Succeeds()
+    {
+        var roles = Enumerable.Range(1, 20)
+            .Select(i => new { roleName = $"Role {i}", headcount = 1 })
+            .ToArray();
+
+        var payload = new
+        {
+            title = "Max Roles",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles,
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("roles").GetArrayLength().ShouldBe(20);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithTooManyRoles_Returns400()
+    {
+        var roles = Enumerable.Range(1, 21)
+            .Select(i => new { roleName = $"Role {i}", headcount = 1 })
+            .ToArray();
+
+        var payload = new
+        {
+            title = "Too Many Roles",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles,
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    // --- PUT update with roles (Story 4.3) ---
+
+    [Fact]
+    public async Task UpdateActivity_AddNewRole_Returns200WithAddedRole()
+    {
+        var (activityId, token, existingRoles) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 1 }]);
+
+        var existingRoleId = existingRoles[0].GetProperty("id").GetInt32();
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new object[]
+            {
+                new { id = existingRoleId, roleName = "Predicateur", headcount = 1 },
+                new { roleName = "Musique Speciale", headcount = 3 },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+
+        roles.GetArrayLength().ShouldBe(2);
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Predicateur");
+        roles[1].GetProperty("roleName").GetString().ShouldBe("Musique Speciale");
+        roles[1].GetProperty("headcount").GetInt32().ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ChangeRoleHeadcount_Returns200WithUpdatedHeadcount()
+    {
+        var (activityId, token, existingRoles) = await CreateActivityWithRoles(
+            [new { roleName = "Diacres", headcount = 2 }]);
+
+        var roleId = existingRoles[0].GetProperty("id").GetInt32();
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new[] { new { id = roleId, roleName = "Diacres", headcount = 4 } },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("roles")[0].GetProperty("headcount").GetInt32().ShouldBe(4);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_RemoveRole_Returns200WithoutRemovedRole()
+    {
+        var (activityId, token, _) = await CreateActivityWithRoles(
+        [
+            new { roleName = "Predicateur", headcount = 1 },
+            new { roleName = "Annonces", headcount = 1 },
+        ]);
+
+        // Get fresh data to get role IDs
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activityId}");
+        var getJson = await getResponse.Content.ReadAsStringAsync();
+        using var getDoc = JsonDocument.Parse(getJson);
+        var currentRoles = getDoc.RootElement.GetProperty("roles");
+        var predicateurId = currentRoles[0].GetProperty("id").GetInt32();
+
+        // Keep only Predicateur, remove Annonces
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new[] { new { id = predicateurId, roleName = "Predicateur", headcount = 1 } },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+        roles.GetArrayLength().ShouldBe(1);
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Predicateur");
+    }
+
+    [Fact]
+    public async Task UpdateActivity_RemoveRoleWithAssignments_CascadeDeletes()
+    {
+        // Create activity with a role that has assignments
+        var viewer = await CreateTestUser("role-cascade@test.local", UserRole.Viewer);
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Role Cascade Test",
+            roles:
+            [
+                ("Predicateur", 1, new List<int> { viewer.Id }),
+                ("Ancien", 1, null),
+            ]);
+
+        // Get concurrency token
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activity.Id}");
+        var getJson = await getResponse.Content.ReadAsStringAsync();
+        using var getDoc = JsonDocument.Parse(getJson);
+        var token = getDoc.RootElement.GetProperty("concurrencyToken").GetUInt32();
+        var ancienId = getDoc.RootElement.GetProperty("roles")[1].GetProperty("id").GetInt32();
+
+        // Update: keep Ancien only, remove Predicateur (which has assignments)
+        var updatePayload = new
+        {
+            title = "Role Cascade Test",
+            date = "2026-03-15",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new[] { new { id = ancienId, roleName = "Ancien", headcount = 1 } },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activity.Id}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+        roles.GetArrayLength().ShouldBe(1);
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Ancien");
+
+        // Verify assignments are also gone
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var assignmentsExist = dbContext.RoleAssignments.Any(ra => ra.ActivityRole.ActivityId == activity.Id && ra.UserId == viewer.Id);
+        assignmentsExist.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateActivity_NullRoles_PreservesExistingRoles()
+    {
+        var (activityId, token, _) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 1 }]);
+
+        // Update without roles field (null = don't modify)
+        var updatePayload = new
+        {
+            title = "Updated Title",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+        roles.GetArrayLength().ShouldBe(1);
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Predicateur");
+    }
+
+    [Fact]
+    public async Task UpdateActivity_EmptyRoles_RemovesAllRoles()
+    {
+        var (activityId, token, _) = await CreateActivityWithRoles(
+        [
+            new { roleName = "Predicateur", headcount = 1 },
+            new { roleName = "Ancien", headcount = 1 },
+        ]);
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = Array.Empty<object>(),
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("roles").GetArrayLength().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_RolesWithStaleToken_Returns409()
+    {
+        var (activityId, originalToken, _) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 1 }]);
+
+        // First update succeeds
+        var firstUpdate = new
+        {
+            title = "First Update",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+            roles = new[] { new { roleName = "Updated Role", headcount = 2 } },
+        };
+        var firstResponse = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", firstUpdate);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Second update with stale token should fail
+        var staleUpdate = new
+        {
+            title = "Second Update",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+            roles = new[] { new { roleName = "Stale Role", headcount = 1 } },
+        };
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", staleUpdate);
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_DuplicateRoleNames_Returns400()
+    {
+        var (activityId, token, _) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 1 }]);
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new[]
+            {
+                new { roleName = "Duplicate", headcount = 1 },
+                new { roleName = "Duplicate", headcount = 2 },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ReorderRoles_UpdatesSortOrder()
+    {
+        var (activityId, token, existingRoles) = await CreateActivityWithRoles(
+        [
+            new { roleName = "Alpha", headcount = 1 },
+            new { roleName = "Beta", headcount = 1 },
+            new { roleName = "Gamma", headcount = 1 },
+        ]);
+
+        var alphaId = existingRoles[0].GetProperty("id").GetInt32();
+        var betaId = existingRoles[1].GetProperty("id").GetInt32();
+        var gammaId = existingRoles[2].GetProperty("id").GetInt32();
+
+        // Reorder: Gamma, Alpha, Beta
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new object[]
+            {
+                new { id = gammaId, roleName = "Gamma", headcount = 1 },
+                new { id = alphaId, roleName = "Alpha", headcount = 1 },
+                new { id = betaId, roleName = "Beta", headcount = 1 },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Gamma");
+        roles[0].GetProperty("sortOrder").GetInt32().ShouldBe(0);
+        roles[1].GetProperty("roleName").GetString().ShouldBe("Alpha");
+        roles[1].GetProperty("sortOrder").GetInt32().ShouldBe(1);
+        roles[2].GetProperty("roleName").GetString().ShouldBe("Beta");
+        roles[2].GetProperty("sortOrder").GetInt32().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_Roles_AsViewer_Returns403()
+    {
+        var (activityId, token, _) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 1 }]);
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new[] { new { roleName = "Hacked", headcount = 1 } },
+        };
+
+        var response = await ViewerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_Roles_WrongDepartment_Returns403()
+    {
+        // Create activity in JA (admin only has MIFEM access)
+        var (activityId, token, _) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 1 }],
+            departmentId: _deptJaId);
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptJaId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new[] { new { roleName = "Hacked", headcount = 1 } },
+        };
+
+        var response = await AdminClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 }

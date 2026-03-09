@@ -14,12 +14,14 @@ import {
 } from "@/services/activityService";
 import type { ActivityTemplateListItem } from "@/services/activityTemplateService";
 import TemplateSelector from "@/components/activity/TemplateSelector";
+import RoleRosterEditor from "@/components/activity/RoleRosterEditor";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import {
   createActivitySchema,
   type CreateActivityFormData,
   type UpdateActivityFormData,
 } from "@/schemas/activitySchema";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,11 +72,13 @@ function ActivityForm({
   isPending,
   departments,
   defaultValues,
+  existingAssignments,
 }: {
   onSubmit: (data: CreateActivityFormData) => void;
   isPending: boolean;
   departments: DepartmentListItem[];
   defaultValues?: Partial<CreateActivityFormData>;
+  existingAssignments?: Map<number, number>;
 }) {
   const { t } = useTranslation();
 
@@ -83,6 +87,7 @@ function ActivityForm({
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<CreateActivityFormData>({
     resolver: zodResolver(createActivitySchema),
@@ -94,6 +99,7 @@ function ActivityForm({
       endTime: "",
       departmentId: 0,
       visibility: "public",
+      roles: [],
       ...defaultValues,
     },
     mode: "onBlur",
@@ -224,6 +230,20 @@ function ActivityForm({
         </div>
       </div>
 
+      <Separator className="my-4" />
+      <div>
+        <h3 className="text-lg font-semibold mb-3">
+          {t("pages.adminActivities.roleRoster.title")}
+        </h3>
+        <RoleRosterEditor
+          control={control}
+          register={register}
+          setValue={setValue}
+          errors={errors}
+          existingAssignments={existingAssignments}
+        />
+      </div>
+
       <div className="flex justify-end gap-2 pt-2">
         <Button type="submit" disabled={isPending} className="min-h-[44px]">
           {isPending
@@ -285,7 +305,6 @@ export default function AdminActivitiesPage() {
         ...data,
         startTime: data.startTime + ":00",
         endTime: data.endTime + ":00",
-        templateId: selectedTemplate?.id,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities"] });
@@ -535,30 +554,16 @@ export default function AdminActivitiesPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   {t("pages.adminActivities.templateSelector.backToTemplates")}
                 </Button>
-                {selectedTemplate && selectedTemplate.roles.length > 0 && (
-                  <div className="mb-4">
-                    <Label>{t("pages.adminActivities.templateSelector.rolesLabel")}</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {selectedTemplate.roles.map((role) => (
-                        <Badge key={role.roleName} variant="secondary">
-                          {role.roleName} x{role.defaultHeadcount}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t("pages.adminActivities.templateSelector.rolesCaption")}
-                    </p>
-                  </div>
-                )}
-                {selectedTemplate && selectedTemplate.roles.length === 0 && (
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t("pages.adminActivities.templateSelector.noDefaultRoles")}
-                  </p>
-                )}
                 <ActivityForm
                   onSubmit={(data) => createMutation.mutate(data)}
                   isPending={createMutation.isPending}
                   departments={availableDepartments}
+                  defaultValues={{
+                    roles: selectedTemplate?.roles.map((r) => ({
+                      roleName: r.roleName,
+                      headcount: r.defaultHeadcount,
+                    })) ?? [],
+                  }}
                 />
               </>
             )}
@@ -586,7 +591,15 @@ export default function AdminActivitiesPage() {
                   endTime: formatTime(editActivity.endTime),
                   departmentId: editActivity.departmentId ?? 0,
                   visibility: editActivity.visibility as "public" | "authenticated",
+                  roles: editActivity.roles.map((r) => ({
+                    id: r.id,
+                    roleName: r.roleName,
+                    headcount: r.headcount,
+                  })),
                 }}
+                existingAssignments={
+                  new Map(editActivity.roles.map((r) => [r.id, r.assignments.length]))
+                }
               />
             </div>
           </FormContent>

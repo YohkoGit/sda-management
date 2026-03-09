@@ -331,6 +331,25 @@
         "public": "Publique",
         "authenticated": "Authentifi\u00e9"
       },
+      "roleRoster": {
+        "title": "R\u00f4les de l\u2019activit\u00e9",
+        "addRole": "Ajouter un r\u00f4le",
+        "roleNamePlaceholder": "Nom du r\u00f4le",
+        "headcountLabel": "Nombre",
+        "decreaseHeadcount": "Diminuer le nombre",
+        "increaseHeadcount": "Augmenter le nombre",
+        "assignedIndicator": "{{assigned}}/{{total}} assign\u00e9(s)",
+        "removeRole": "Supprimer le r\u00f4le",
+        "removeRoleConfirmTitle": "Supprimer le r\u00f4le ?",
+        "removeRoleConfirmDescription": "Supprimer ce r\u00f4le supprimera \u00e9galement {{count}} assignation(s) existante(s). Cette action est irr\u00e9versible.",
+        "removeRoleConfirmButton": "Supprimer",
+        "cancelButton": "Annuler",
+        "emptyState": "Aucun r\u00f4le. Ajoutez des r\u00f4les pour d\u00e9finir les postes n\u00e9cessaires.",
+        "maxRolesReached": "Maximum 20 r\u00f4les atteint.",
+        "duplicateRoleName": "Les noms de r\u00f4le doivent \u00eatre uniques.",
+        "roleNameRequired": "Le nom du r\u00f4le est requis.",
+        "roleNameTooLong": "Le nom du r\u00f4le ne doit pas d\u00e9passer 100 caract\u00e8res."
+      },
       "templateSelector": {
         "title": "Choisir un mod\u00e8le",
         "subtitle": "S\u00e9lectionnez un mod\u00e8le pour pr\u00e9-remplir les r\u00f4les, ou cr\u00e9ez une activit\u00e9 personnalis\u00e9e.",

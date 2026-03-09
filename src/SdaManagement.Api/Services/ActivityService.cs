@@ -69,7 +69,22 @@ public class ActivityService(
             UpdatedAt = now,
         };
 
-        if (request.TemplateId.HasValue)
+        if (request.Roles is { Count: > 0 })
+        {
+            for (var i = 0; i < request.Roles.Count; i++)
+            {
+                var roleInput = request.Roles[i];
+                activity.Roles.Add(new ActivityRole
+                {
+                    RoleName = sanitizer.Sanitize(roleInput.RoleName),
+                    Headcount = roleInput.Headcount,
+                    SortOrder = i,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                });
+            }
+        }
+        else if (request.TemplateId.HasValue)
         {
             var template = await dbContext.ActivityTemplates
                 .Include(t => t.Roles.OrderBy(r => r.SortOrder))
@@ -109,6 +124,8 @@ public class ActivityService(
         // Set original version for concurrency check
         dbContext.Entry(activity).Property(a => a.Version).OriginalValue = request.ConcurrencyToken;
 
+        var now = DateTime.UtcNow;
+
         activity.Title = sanitizer.Sanitize(request.Title);
         activity.Description = sanitizer.SanitizeNullable(request.Description);
         activity.Date = request.Date;
@@ -116,7 +133,52 @@ public class ActivityService(
         activity.EndTime = request.EndTime;
         activity.DepartmentId = request.DepartmentId;
         activity.Visibility = Enum.Parse<ActivityVisibility>(request.Visibility, ignoreCase: true);
-        activity.UpdatedAt = DateTime.UtcNow;
+        activity.UpdatedAt = now;
+
+        if (request.Roles is not null)
+        {
+            var existingRoles = await dbContext.ActivityRoles
+                .Where(r => r.ActivityId == activity.Id)
+                .ToListAsync();
+
+            var incomingIds = request.Roles
+                .Where(r => r.Id.HasValue)
+                .Select(r => r.Id!.Value)
+                .ToHashSet();
+
+            // DELETE: existing roles not in request
+            var toRemove = existingRoles.Where(r => !incomingIds.Contains(r.Id)).ToList();
+            dbContext.ActivityRoles.RemoveRange(toRemove);
+
+            // UPDATE existing + ADD new
+            for (var i = 0; i < request.Roles.Count; i++)
+            {
+                var roleInput = request.Roles[i];
+                if (roleInput.Id.HasValue)
+                {
+                    var existing = existingRoles.FirstOrDefault(r => r.Id == roleInput.Id.Value);
+                    if (existing is not null)
+                    {
+                        existing.RoleName = sanitizer.Sanitize(roleInput.RoleName);
+                        existing.Headcount = roleInput.Headcount;
+                        existing.SortOrder = i;
+                        existing.UpdatedAt = now;
+                    }
+                }
+                else
+                {
+                    dbContext.ActivityRoles.Add(new ActivityRole
+                    {
+                        ActivityId = activity.Id,
+                        RoleName = sanitizer.Sanitize(roleInput.RoleName),
+                        Headcount = roleInput.Headcount,
+                        SortOrder = i,
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    });
+                }
+            }
+        }
 
         await dbContext.SaveChangesAsync();
 

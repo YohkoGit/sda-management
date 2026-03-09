@@ -331,6 +331,25 @@
         "public": "Public",
         "authenticated": "Authenticated"
       },
+      "roleRoster": {
+        "title": "Activity Roles",
+        "addRole": "Add Role",
+        "roleNamePlaceholder": "Role name",
+        "headcountLabel": "Count",
+        "decreaseHeadcount": "Decrease count",
+        "increaseHeadcount": "Increase count",
+        "assignedIndicator": "{{assigned}}/{{total}} assigned",
+        "removeRole": "Remove role",
+        "removeRoleConfirmTitle": "Remove role?",
+        "removeRoleConfirmDescription": "Removing this role will also delete {{count}} existing assignment(s). This action is irreversible.",
+        "removeRoleConfirmButton": "Remove",
+        "cancelButton": "Cancel",
+        "emptyState": "No roles. Add roles to define required positions.",
+        "maxRolesReached": "Maximum 20 roles reached.",
+        "duplicateRoleName": "Role names must be unique.",
+        "roleNameRequired": "Role name is required.",
+        "roleNameTooLong": "Role name must not exceed 100 characters."
+      },
       "templateSelector": {
         "title": "Choose a Template",
         "subtitle": "Select a template to pre-fill roles, or create a custom activity.",

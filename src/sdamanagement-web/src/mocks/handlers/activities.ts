@@ -30,7 +30,9 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Ancien de Service",
         headcount: 1,
         sortOrder: 1,
-        assignments: [],
+        assignments: [
+          { id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null },
+        ],
       },
     ],
     concurrencyToken: 42,
@@ -128,10 +130,24 @@ export const activityHandlers = [
 
   http.post("/api/activities", async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
+    const explicitRoles = body.roles as Array<{ roleName: string; headcount: number }> | undefined;
     const templateId = body.templateId as number | undefined;
-    const roles = templateId
-      ? templateRolesToActivityRoles(templateId)
-      : [];
+
+    let roles: ActivityRoleResponse[];
+    if (explicitRoles && explicitRoles.length > 0) {
+      roles = explicitRoles.map((r, i) => ({
+        id: 200 + i,
+        roleName: r.roleName,
+        headcount: r.headcount,
+        sortOrder: i,
+        assignments: [],
+      }));
+    } else if (templateId) {
+      roles = templateRolesToActivityRoles(templateId);
+    } else {
+      roles = [];
+    }
+
     const created: ActivityResponse = {
       id: 99,
       title: body.title as string,
@@ -152,8 +168,28 @@ export const activityHandlers = [
 
   http.put("/api/activities/:id", async ({ request, params }) => {
     const body = (await request.json()) as Record<string, unknown>;
+    const id = Number(params.id);
+    const existing = mockActivities.find((a) => a.id === id);
+    const requestRoles = body.roles as Array<{ id?: number; roleName: string; headcount: number }> | undefined;
+
+    let roles: ActivityRoleResponse[];
+    if (requestRoles !== undefined) {
+      roles = requestRoles.map((r, i) => {
+        const existingRole = r.id ? existing?.roles.find((er) => er.id === r.id) : undefined;
+        return {
+          id: r.id ?? 300 + i,
+          roleName: r.roleName,
+          headcount: r.headcount,
+          sortOrder: i,
+          assignments: existingRole?.assignments ?? [],
+        };
+      });
+    } else {
+      roles = existing?.roles ?? [];
+    }
+
     const updated: ActivityResponse = {
-      id: Number(params.id),
+      id,
       title: body.title as string,
       description: (body.description as string) ?? null,
       date: body.date as string,
@@ -162,7 +198,7 @@ export const activityHandlers = [
       departmentId: body.departmentId as number,
       departmentName: "MIFEM",
       visibility: body.visibility as string,
-      roles: [],
+      roles,
       concurrencyToken: 101,
       createdAt: "2026-03-01T00:00:00Z",
       updatedAt: new Date().toISOString(),
