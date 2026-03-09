@@ -62,7 +62,7 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: User & Role Administration
-  epic-3: in-progress
+  epic-3: done
   3-1-single-user-account-creation: done
   3-2-bulk-user-creation: done
   3-3-user-role-and-department-management: done
@@ -71,8 +71,8 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Activity Scheduling & Role Assignment
-  epic-4: backlog
-  4-1-activity-data-model-and-basic-crud: backlog
+  epic-4: in-progress
+  4-1-activity-data-model-and-basic-crud: done
   4-2-activity-creation-from-templates: backlog
   4-3-role-roster-customization: backlog
   4-4-role-assignment-via-contact-picker: backlog

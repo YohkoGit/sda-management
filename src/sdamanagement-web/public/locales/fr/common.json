@@ -25,7 +25,8 @@
       "adminActivityTemplates": "Mod\u00e8les d\u2019activit\u00e9s",
       "adminProgramSchedules": "Horaires r\u00e9currents",
       "adminSystemHealth": "Sant\u00e9 du syst\u00e8me",
-      "adminUsers": "Membres"
+      "adminUsers": "Membres",
+      "adminActivities": "Activit\u00e9s"
     },
     "language": {
       "switchTo": "Changer en {{lang}}",
@@ -291,6 +292,44 @@
           "lastOwner": "Impossible de supprimer le dernier propri\u00e9taire",
           "deleteFailed": "\u00c9chec de la suppression"
         }
+      }
+    },
+    "adminActivities": {
+      "title": "Activit\u00e9s",
+      "createButton": "Nouvelle activit\u00e9",
+      "emptyState": "Aucune activit\u00e9. Cr\u00e9ez votre premi\u00e8re activit\u00e9.",
+      "emptyStateHelper": "Les activit\u00e9s organisent les \u00e9v\u00e9nements de votre d\u00e9partement\u00a0: cultes, r\u00e9unions, programmes sp\u00e9ciaux.",
+      "form": {
+        "createTitle": "Nouvelle activit\u00e9",
+        "editTitle": "Modifier l\u2019activit\u00e9",
+        "title": "Titre",
+        "titlePlaceholder": "Culte du Sabbat",
+        "description": "Description",
+        "descriptionPlaceholder": "Service principal du samedi...",
+        "date": "Date",
+        "startTime": "Heure de d\u00e9but",
+        "endTime": "Heure de fin",
+        "department": "D\u00e9partement",
+        "visibility": "Visibilit\u00e9",
+        "visibilityPublic": "Publique",
+        "visibilityAuthenticated": "Authentifi\u00e9 seulement",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "cancel": "Annuler"
+      },
+      "toast": {
+        "created": "Activit\u00e9 publi\u00e9e",
+        "updated": "Activit\u00e9 modifi\u00e9e",
+        "deleted": "Activit\u00e9 supprim\u00e9e"
+      },
+      "deleteConfirmTitle": "Supprimer l\u2019activit\u00e9",
+      "deleteConfirmMessage": "\u00cates-vous s\u00fbr de vouloir supprimer cette activit\u00e9 ?",
+      "deleteConfirmWarning": "Cette action supprimera \u00e9galement tous les r\u00f4les et assignations associ\u00e9s.",
+      "deleteConfirmAction": "Supprimer",
+      "conflictError": "Cette activit\u00e9 a \u00e9t\u00e9 modifi\u00e9e par un autre utilisateur. Rechargez et r\u00e9essayez.",
+      "visibility": {
+        "public": "Publique",
+        "authenticated": "Authentifi\u00e9"
       }
     },
     "notFound": {

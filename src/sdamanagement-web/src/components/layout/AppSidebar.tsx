@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Calendar,
+  CalendarDays,
   Building2,
   FolderTree,
   FileText,
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { to: "/my-departments", labelKey: "nav.auth.departments", icon: Building2 },
   { to: "/admin", labelKey: "nav.auth.admin", icon: Shield, minRole: "ADMIN" },
   { to: "/admin/users", labelKey: "nav.auth.adminUsers", icon: Users, minRole: "VIEWER" },
+  { to: "/admin/activities", labelKey: "nav.auth.adminActivities", icon: CalendarDays, minRole: "ADMIN" },
   { to: "/admin/departments", labelKey: "nav.auth.adminDepartments", icon: FolderTree, minRole: "OWNER" },
   { to: "/admin/activity-templates", labelKey: "nav.auth.adminActivityTemplates", icon: FileText, minRole: "OWNER" },
   { to: "/admin/program-schedules", labelKey: "nav.auth.adminProgramSchedules", icon: Clock, minRole: "OWNER" },

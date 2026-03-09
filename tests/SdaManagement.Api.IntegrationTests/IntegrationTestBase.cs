@@ -143,11 +143,68 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
-    /// Placeholder — requires Activity entity (Epic 4).
+    /// Creates an Activity record directly via AppDbContext for test setup.
+    /// Optionally creates ActivityRoles and RoleAssignments for cascade tests.
     /// </summary>
-    protected Task CreateTestActivity()
+    protected async Task<Activity> CreateTestActivity(
+        int departmentId,
+        string? title = null,
+        DateOnly? date = null,
+        ActivityVisibility visibility = ActivityVisibility.Public,
+        List<(string RoleName, int Headcount, List<int>? UserIds)>? roles = null)
     {
-        throw new NotImplementedException("Requires Epic 4 — Activity entity does not exist yet");
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var now = DateTime.UtcNow;
+
+        var activity = new Activity
+        {
+            Title = title ?? "Test Activity",
+            DepartmentId = departmentId,
+            Date = date ?? new DateOnly(2026, 3, 15),
+            StartTime = new TimeOnly(10, 0),
+            EndTime = new TimeOnly(12, 0),
+            Visibility = visibility,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+        dbContext.Activities.Add(activity);
+        await dbContext.SaveChangesAsync();
+
+        if (roles is not null)
+        {
+            for (var i = 0; i < roles.Count; i++)
+            {
+                var (roleName, headcount, userIds) = roles[i];
+                var activityRole = new ActivityRole
+                {
+                    ActivityId = activity.Id,
+                    RoleName = roleName,
+                    Headcount = headcount,
+                    SortOrder = i,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                };
+                dbContext.ActivityRoles.Add(activityRole);
+                await dbContext.SaveChangesAsync();
+
+                if (userIds is not null)
+                {
+                    foreach (var userId in userIds)
+                    {
+                        dbContext.RoleAssignments.Add(new RoleAssignment
+                        {
+                            ActivityRoleId = activityRole.Id,
+                            UserId = userId,
+                            CreatedAt = now,
+                        });
+                    }
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+        }
+
+        return activity;
     }
 
     private HttpClient CreateClientWithRole(string role)

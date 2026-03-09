@@ -18,6 +18,9 @@ public class AppDbContext : DbContext
     public DbSet<ActivityTemplate> ActivityTemplates => Set<ActivityTemplate>();
     public DbSet<TemplateRole> TemplateRoles => Set<TemplateRole>();
     public DbSet<ProgramSchedule> ProgramSchedules => Set<ProgramSchedule>();
+    public DbSet<Activity> Activities => Set<Activity>();
+    public DbSet<ActivityRole> ActivityRoles => Set<ActivityRole>();
+    public DbSet<RoleAssignment> RoleAssignments => Set<RoleAssignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -136,6 +139,52 @@ public class AppDbContext : DbContext
              .WithMany()
              .HasForeignKey(p => p.DepartmentId)
              .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Activity
+        modelBuilder.Entity<Activity>(e =>
+        {
+            e.HasKey(a => a.Id);
+            e.Property(a => a.Version).IsRowVersion();
+            e.Property(a => a.Title).HasMaxLength(150);
+            e.Property(a => a.Description).HasMaxLength(1000);
+            e.Property(a => a.Visibility).HasConversion<int>();
+            e.Property(a => a.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(a => a.UpdatedAt).HasDefaultValueSql("now()");
+            e.HasOne(a => a.Department)
+             .WithMany()
+             .HasForeignKey(a => a.DepartmentId)
+             .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ActivityRole
+        modelBuilder.Entity<ActivityRole>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.RoleName).HasMaxLength(100);
+            e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
+            e.Property(r => r.UpdatedAt).HasDefaultValueSql("now()");
+            e.HasOne(r => r.Activity)
+             .WithMany(a => a.Roles)
+             .HasForeignKey(r => r.ActivityId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(r => new { r.ActivityId, r.RoleName }).IsUnique();
+        });
+
+        // RoleAssignment
+        modelBuilder.Entity<RoleAssignment>(e =>
+        {
+            e.HasKey(ra => ra.Id);
+            e.Property(ra => ra.CreatedAt).HasDefaultValueSql("now()");
+            e.HasOne(ra => ra.ActivityRole)
+             .WithMany(r => r.Assignments)
+             .HasForeignKey(ra => ra.ActivityRoleId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(ra => ra.User)
+             .WithMany()
+             .HasForeignKey(ra => ra.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(ra => new { ra.ActivityRoleId, ra.UserId }).IsUnique();
         });
 
         // UserDepartment — composite PK, cascade delete on user/dept removal
