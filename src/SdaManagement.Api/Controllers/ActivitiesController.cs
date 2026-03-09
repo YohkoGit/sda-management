@@ -60,8 +60,21 @@ public class ActivitiesController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        var activity = await activityService.CreateAsync(request);
-        return CreatedAtAction(nameof(GetById), new { id = activity.Id }, activity);
+        try
+        {
+            var activity = await activityService.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = activity.Id }, activity);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Type = "urn:sdac:validation-error",
+                Title = "Invalid Template",
+                Status = 400,
+                Detail = "Activity template not found.",
+            });
+        }
     }
 
     [HttpPut("{id:int}")]

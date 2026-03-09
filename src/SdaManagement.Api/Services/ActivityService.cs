@@ -69,6 +69,28 @@ public class ActivityService(
             UpdatedAt = now,
         };
 
+        if (request.TemplateId.HasValue)
+        {
+            var template = await dbContext.ActivityTemplates
+                .Include(t => t.Roles.OrderBy(r => r.SortOrder))
+                .FirstOrDefaultAsync(t => t.Id == request.TemplateId.Value);
+
+            if (template is null)
+                throw new KeyNotFoundException($"Activity template {request.TemplateId.Value} not found");
+
+            foreach (var templateRole in template.Roles)
+            {
+                activity.Roles.Add(new ActivityRole
+                {
+                    RoleName = templateRole.RoleName,
+                    Headcount = templateRole.DefaultHeadcount,
+                    SortOrder = templateRole.SortOrder,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                });
+            }
+        }
+
         dbContext.Activities.Add(activity);
         await dbContext.SaveChangesAsync();
 

@@ -2,7 +2,9 @@ import { http, HttpResponse } from "msw";
 import type {
   ActivityListItem,
   ActivityResponse,
+  ActivityRoleResponse,
 } from "@/services/activityService";
+import type { ActivityTemplateListItem } from "@/services/activityTemplateService";
 
 const mockActivities: ActivityResponse[] = [
   {
@@ -66,6 +68,47 @@ const toListItem = (a: ActivityResponse): ActivityListItem => ({
   createdAt: a.createdAt,
 });
 
+const mockTemplates: ActivityTemplateListItem[] = [
+  {
+    id: 1,
+    name: "Culte du Sabbat",
+    description: "Service principal du samedi matin",
+    roleSummary: "Predicateur (1), Ancien de Service (1), Diacres (2)",
+    roleCount: 3,
+    roles: [
+      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
+      { id: 2, roleName: "Ancien de Service", defaultHeadcount: 1, sortOrder: 1 },
+      { id: 3, roleName: "Diacres", defaultHeadcount: 2, sortOrder: 2 },
+    ],
+  },
+  {
+    id: 2,
+    name: "Sainte-Cene",
+    description: "Service avec communion",
+    roleSummary: "Predicateur (1), Ancien (1), Lavement (4)",
+    roleCount: 3,
+    roles: [
+      { id: 4, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
+      { id: 5, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1 },
+      { id: 6, roleName: "Lavement", defaultHeadcount: 4, sortOrder: 2 },
+    ],
+  },
+];
+
+const templateRolesToActivityRoles = (
+  templateId: number
+): ActivityRoleResponse[] => {
+  const template = mockTemplates.find((t) => t.id === templateId);
+  if (!template) return [];
+  return template.roles.map((r, i) => ({
+    id: 100 + i,
+    roleName: r.roleName,
+    headcount: r.defaultHeadcount,
+    sortOrder: r.sortOrder,
+    assignments: [],
+  }));
+};
+
 export const activityHandlers = [
   http.get("/api/activities", ({ request }) => {
     const url = new URL(request.url);
@@ -85,6 +128,10 @@ export const activityHandlers = [
 
   http.post("/api/activities", async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
+    const templateId = body.templateId as number | undefined;
+    const roles = templateId
+      ? templateRolesToActivityRoles(templateId)
+      : [];
     const created: ActivityResponse = {
       id: 99,
       title: body.title as string,
@@ -95,7 +142,7 @@ export const activityHandlers = [
       departmentId: body.departmentId as number,
       departmentName: "MIFEM",
       visibility: body.visibility as string,
-      roles: [],
+      roles,
       concurrencyToken: 100,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -103,10 +150,10 @@ export const activityHandlers = [
     return HttpResponse.json(created, { status: 201 });
   }),
 
-  http.put("/api/activities/:id", async ({ request }) => {
+  http.put("/api/activities/:id", async ({ request, params }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const updated: ActivityResponse = {
-      id: Number(body.id) || 1,
+      id: Number(params.id),
       title: body.title as string,
       description: (body.description as string) ?? null,
       date: body.date as string,
@@ -128,6 +175,16 @@ export const activityHandlers = [
   }),
 ];
 
+export const activityTemplateHandlers = [
+  http.get("/api/activity-templates", () => HttpResponse.json(mockTemplates)),
+];
+
+export const activityTemplateHandlersEmpty = [
+  http.get("/api/activity-templates", () => HttpResponse.json([])),
+];
+
 export const activityHandlersEmpty = [
   http.get("/api/activities", () => HttpResponse.json([])),
 ];
+
+export { mockTemplates };

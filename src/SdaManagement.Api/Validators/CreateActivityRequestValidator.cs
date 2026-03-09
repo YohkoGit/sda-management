@@ -8,5 +8,6 @@ public class CreateActivityRequestValidator : AbstractValidator<CreateActivityRe
     public CreateActivityRequestValidator()
     {
         ActivityValidationRules.Apply(this);
+        RuleFor(x => x.TemplateId).GreaterThan(0).When(x => x.TemplateId.HasValue);
     }
 }

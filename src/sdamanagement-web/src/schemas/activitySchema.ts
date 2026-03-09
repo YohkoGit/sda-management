@@ -15,6 +15,7 @@ export const createActivitySchema = z
     endTime: z.string().min(1, { message: "L'heure de fin est requise" }),
     departmentId: z.number().int().positive({ message: "Le departement est requis" }),
     visibility: z.enum(["public", "authenticated"]),
+    templateId: z.number().int().positive().optional(),
   })
   .refine((data) => data.endTime > data.startTime, {
     message: "L'heure de fin doit etre apres l'heure de debut",

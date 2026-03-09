@@ -330,6 +330,22 @@
       "visibility": {
         "public": "Publique",
         "authenticated": "Authentifi\u00e9"
+      },
+      "templateSelector": {
+        "title": "Choisir un mod\u00e8le",
+        "subtitle": "S\u00e9lectionnez un mod\u00e8le pour pr\u00e9-remplir les r\u00f4les, ou cr\u00e9ez une activit\u00e9 personnalis\u00e9e.",
+        "customCard": "Activit\u00e9 sans mod\u00e8le",
+        "customDescription": "Commencez avec une activit\u00e9 vide, sans r\u00f4les pr\u00e9d\u00e9finis.",
+        "rolesLabel": "R\u00f4les du mod\u00e8le",
+        "rolesCaption": "Ces r\u00f4les seront cr\u00e9\u00e9s automatiquement avec l\u2019activit\u00e9.",
+        "backToTemplates": "Retour aux mod\u00e8les",
+        "emptyState": "Aucun mod\u00e8le disponible.",
+        "emptyStateOwner": "Cr\u00e9ez des mod\u00e8les d\u2019activit\u00e9s dans les param\u00e8tres pour acc\u00e9l\u00e9rer la cr\u00e9ation.",
+        "emptyStateAdmin": "Contactez l\u2019administrateur pour cr\u00e9er des mod\u00e8les.",
+        "errorState": "Impossible de charger les mod\u00e8les.",
+        "retry": "R\u00e9essayer",
+        "noDefaultRoles": "Aucun r\u00f4le par d\u00e9faut",
+        "templateError": "Le mod\u00e8le s\u00e9lectionn\u00e9 est introuvable."
       }
     },
     "notFound": {

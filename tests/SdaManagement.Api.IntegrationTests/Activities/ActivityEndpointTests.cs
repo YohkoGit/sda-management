@@ -158,6 +158,159 @@ public class ActivityEndpointTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
+    // --- POST create with template ---
+
+    [Fact]
+    public async Task CreateActivity_WithTemplateId_Returns201WithRoles()
+    {
+        var template = await CreateTestActivityTemplate(
+            "Culte du Sabbat",
+            [("Predicateur", 1), ("Ancien de Service", 1), ("Diacres", 2)]);
+
+        var payload = new
+        {
+            title = "Sabbat Service",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            templateId = template.Id,
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        var roles = root.GetProperty("roles");
+
+        roles.GetArrayLength().ShouldBe(3);
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Predicateur");
+        roles[0].GetProperty("headcount").GetInt32().ShouldBe(1);
+        roles[1].GetProperty("roleName").GetString().ShouldBe("Ancien de Service");
+        roles[1].GetProperty("headcount").GetInt32().ShouldBe(1);
+        roles[2].GetProperty("roleName").GetString().ShouldBe("Diacres");
+        roles[2].GetProperty("headcount").GetInt32().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithTemplateId_RolesAreIndependentCopies()
+    {
+        var template = await CreateTestActivityTemplate(
+            "Independence Test",
+            [("Predicateur", 1)]);
+
+        var payload = new
+        {
+            title = "Independent Activity",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            templateId = template.Id,
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var activityJson = await response.Content.ReadAsStringAsync();
+        using var activityDoc = JsonDocument.Parse(activityJson);
+        var activityId = activityDoc.RootElement.GetProperty("id").GetInt32();
+
+        // Modify the template role directly in the database
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var templateRole = dbContext.Set<TemplateRole>().First(r => r.ActivityTemplateId == template.Id);
+        templateRole.RoleName = "Modified Role";
+        templateRole.DefaultHeadcount = 99;
+        await dbContext.SaveChangesAsync();
+
+        // Verify the activity's roles are unchanged
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activityId}");
+        var getJson = await getResponse.Content.ReadAsStringAsync();
+        using var getDoc = JsonDocument.Parse(getJson);
+        var roles = getDoc.RootElement.GetProperty("roles");
+
+        roles[0].GetProperty("roleName").GetString().ShouldBe("Predicateur");
+        roles[0].GetProperty("headcount").GetInt32().ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithInvalidTemplateId_Returns400()
+    {
+        var payload = new
+        {
+            title = "Bad Template",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            templateId = 99999,
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        var json = await response.Content.ReadAsStringAsync();
+        json.ShouldContain("validation-error");
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithoutTemplateId_Returns201WithNoRoles()
+    {
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", ValidActivityPayload());
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("roles").GetArrayLength().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithTemplateId_AsViewer_Returns403()
+    {
+        var template = await CreateTestActivityTemplate();
+
+        var payload = new
+        {
+            title = "Viewer Attempt",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            templateId = template.Id,
+        };
+
+        var response = await ViewerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithTemplateId_WrongDepartment_Returns403()
+    {
+        var template = await CreateTestActivityTemplate();
+
+        var payload = new
+        {
+            title = "Wrong Dept",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptJaId,
+            visibility = "public",
+            templateId = template.Id,
+        };
+
+        // Admin only has MIFEM access, not JA
+        var response = await AdminClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
     // --- GET list ---
 
     [Fact]

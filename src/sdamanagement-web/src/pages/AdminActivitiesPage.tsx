@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, CalendarDays, Pencil, Trash2 } from "lucide-react";
+import { Plus, CalendarDays, Pencil, Trash2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -12,6 +12,8 @@ import {
   type ActivityListItem,
   type ActivityResponse,
 } from "@/services/activityService";
+import type { ActivityTemplateListItem } from "@/services/activityTemplateService";
+import TemplateSelector from "@/components/activity/TemplateSelector";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import {
   createActivitySchema,
@@ -244,6 +246,8 @@ export default function AdminActivitiesPage() {
   const canAccess = isOwner || isAdmin;
 
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createStep, setCreateStep] = useState<"template" | "form">("template");
+  const [selectedTemplate, setSelectedTemplate] = useState<ActivityTemplateListItem | null>(null);
   const [editActivity, setEditActivity] = useState<ActivityResponse | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ActivityListItem | null>(null);
 
@@ -281,11 +285,19 @@ export default function AdminActivitiesPage() {
         ...data,
         startTime: data.startTime + ":00",
         endTime: data.endTime + ":00",
+        templateId: selectedTemplate?.id,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities"] });
       setShowCreateForm(false);
+      setCreateStep("template");
+      setSelectedTemplate(null);
       toast.success(t("pages.adminActivities.toast.created"));
+    },
+    onError: (error: AxiosError) => {
+      if (error.response?.status === 400 && selectedTemplate) {
+        toast.error(t("pages.adminActivities.templateSelector.templateError"));
+      }
     },
   });
 
@@ -481,18 +493,75 @@ export default function AdminActivitiesPage() {
         </div>
       )}
 
-      {/* Create Form */}
-      <FormWrapper open={showCreateForm} onOpenChange={setShowCreateForm}>
+      {/* Create Form — Two-step: template selection then form */}
+      <FormWrapper
+        open={showCreateForm}
+        onOpenChange={(open) => {
+          setShowCreateForm(open);
+          if (!open) {
+            setCreateStep("template");
+            setSelectedTemplate(null);
+          }
+        }}
+      >
         <FormContent side={isMobile ? "bottom" : undefined} className={isMobile ? "h-[90vh]" : ""}>
           <FormHeader>
-            <FormTitle>{t("pages.adminActivities.form.createTitle")}</FormTitle>
+            <FormTitle>
+              {createStep === "template"
+                ? t("pages.adminActivities.templateSelector.title")
+                : t("pages.adminActivities.form.createTitle")}
+            </FormTitle>
           </FormHeader>
           <div className={isMobile ? "overflow-y-auto flex-1 px-1" : ""}>
-            <ActivityForm
-              onSubmit={(data) => createMutation.mutate(data)}
-              isPending={createMutation.isPending}
-              departments={availableDepartments}
-            />
+            {createStep === "template" ? (
+              <TemplateSelector
+                onSelect={(template) => {
+                  setSelectedTemplate(template);
+                  setCreateStep("form");
+                }}
+                selectedId={selectedTemplate?.id ?? null}
+                isOwner={isOwner}
+              />
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mb-3 -ml-2"
+                  onClick={() => {
+                    setCreateStep("template");
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  {t("pages.adminActivities.templateSelector.backToTemplates")}
+                </Button>
+                {selectedTemplate && selectedTemplate.roles.length > 0 && (
+                  <div className="mb-4">
+                    <Label>{t("pages.adminActivities.templateSelector.rolesLabel")}</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedTemplate.roles.map((role) => (
+                        <Badge key={role.roleName} variant="secondary">
+                          {role.roleName} x{role.defaultHeadcount}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("pages.adminActivities.templateSelector.rolesCaption")}
+                    </p>
+                  </div>
+                )}
+                {selectedTemplate && selectedTemplate.roles.length === 0 && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t("pages.adminActivities.templateSelector.noDefaultRoles")}
+                  </p>
+                )}
+                <ActivityForm
+                  onSubmit={(data) => createMutation.mutate(data)}
+                  isPending={createMutation.isPending}
+                  departments={availableDepartments}
+                />
+              </>
+            )}
           </div>
         </FormContent>
       </FormWrapper>

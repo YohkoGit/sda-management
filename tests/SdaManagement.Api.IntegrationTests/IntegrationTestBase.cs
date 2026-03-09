@@ -207,6 +207,45 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         return activity;
     }
 
+    /// <summary>
+    /// Creates an ActivityTemplate with optional roles directly via AppDbContext for test setup.
+    /// </summary>
+    protected async Task<ActivityTemplate> CreateTestActivityTemplate(
+        string? name = null,
+        List<(string RoleName, int DefaultHeadcount)>? roles = null)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var now = DateTime.UtcNow;
+
+        roles ??= [("Predicateur", 1), ("Ancien de Service", 1)];
+
+        var template = new ActivityTemplate
+        {
+            Name = name ?? "Test Template",
+            Description = "Template for testing",
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        for (var i = 0; i < roles.Count; i++)
+        {
+            var (roleName, defaultHeadcount) = roles[i];
+            template.Roles.Add(new TemplateRole
+            {
+                RoleName = roleName,
+                DefaultHeadcount = defaultHeadcount,
+                SortOrder = i,
+                CreatedAt = now,
+                UpdatedAt = now,
+            });
+        }
+
+        dbContext.Set<ActivityTemplate>().Add(template);
+        await dbContext.SaveChangesAsync();
+        return template;
+    }
+
     private HttpClient CreateClientWithRole(string role)
     {
         var client = _factory.CreateClient();

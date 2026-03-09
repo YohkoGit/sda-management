@@ -330,6 +330,22 @@
       "visibility": {
         "public": "Public",
         "authenticated": "Authenticated"
+      },
+      "templateSelector": {
+        "title": "Choose a Template",
+        "subtitle": "Select a template to pre-fill roles, or create a custom activity.",
+        "customCard": "Activity without template",
+        "customDescription": "Start with an empty activity, no predefined roles.",
+        "rolesLabel": "Template Roles",
+        "rolesCaption": "These roles will be created automatically with the activity.",
+        "backToTemplates": "Back to templates",
+        "emptyState": "No templates available.",
+        "emptyStateOwner": "Create activity templates in settings to speed up creation.",
+        "emptyStateAdmin": "Contact the administrator to create templates.",
+        "errorState": "Unable to load templates.",
+        "retry": "Retry",
+        "noDefaultRoles": "No default roles",
+        "templateError": "The selected template was not found."
       }
     },
     "notFound": {

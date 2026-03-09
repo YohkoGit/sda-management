@@ -9,4 +9,5 @@ public record CreateActivityRequest : IActivityRequest
     public TimeOnly EndTime { get; init; }
     public int DepartmentId { get; init; }
     public string Visibility { get; init; } = "public";
+    public int? TemplateId { get; init; }
 }

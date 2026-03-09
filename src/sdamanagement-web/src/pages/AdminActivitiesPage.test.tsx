@@ -5,9 +5,10 @@ import { fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
-import { activityHandlers, activityHandlersEmpty } from "@/mocks/handlers/activities";
+import { activityHandlers, activityHandlersEmpty, activityTemplateHandlers } from "@/mocks/handlers/activities";
 import { departmentHandlers } from "@/mocks/handlers/departments";
 import { activityService } from "@/services/activityService";
+import { activityTemplateService } from "@/services/activityTemplateService";
 import AdminActivitiesPage from "./AdminActivitiesPage";
 
 // Radix UI jsdom polyfills
@@ -36,12 +37,38 @@ const adminUser = {
   departmentIds: [1],
 };
 
+const mockTemplateData = [
+  {
+    id: 1,
+    name: "Culte du Sabbat",
+    description: "Service principal",
+    roleSummary: "Predicateur (1), Ancien (1)",
+    roleCount: 2,
+    roles: [
+      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
+      { id: 2, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1 },
+    ],
+  },
+];
 
-const server = setupServer(...authHandlers, ...activityHandlers, ...departmentHandlers);
+const server = setupServer(
+  ...authHandlers,
+  ...activityHandlers,
+  ...activityTemplateHandlers,
+  ...departmentHandlers
+);
 
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
+
+/** Helper: navigate past template step by clicking "Custom" card */
+async function skipTemplateStep(user: ReturnType<typeof userEvent.setup>) {
+  await waitFor(() => {
+    expect(screen.getByText("Activité sans modèle")).toBeInTheDocument();
+  });
+  await user.click(screen.getByText("Activité sans modèle"));
+}
 
 describe("AdminActivitiesPage", () => {
   it("renders activity list with department badges", async () => {
@@ -58,7 +85,7 @@ describe("AdminActivitiesPage", () => {
     expect(screen.getByText("MIFEM")).toBeInTheDocument();
   });
 
-  it("create activity opens form dialog", async () => {
+  it("create flow shows template selector as first step", async () => {
     const user = userEvent.setup();
     server.use(
       http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
@@ -72,19 +99,65 @@ describe("AdminActivitiesPage", () => {
 
     await user.click(screen.getByText("Nouvelle activité"));
 
+    // Template selector should be shown
     await waitFor(() => {
-      expect(screen.getByText("Nouvelle activité", { selector: "[role='dialog'] *" })).toBeInTheDocument();
+      expect(screen.getByText("Choisir un modèle")).toBeInTheDocument();
     });
-
-    // Verify form fields are present
-    expect(screen.getByLabelText("Titre")).toBeInTheDocument();
-    expect(screen.getByLabelText("Date")).toBeInTheDocument();
-    expect(screen.getByLabelText("Heure de début")).toBeInTheDocument();
-    expect(screen.getByLabelText("Heure de fin")).toBeInTheDocument();
+    expect(screen.getByText("Activité sans modèle")).toBeInTheDocument();
   });
 
-  it("create mutation calls service with correct data", async () => {
+  it("selecting a template transitions to form with role summary badges", async () => {
     const user = userEvent.setup();
+    const getSpy = vi.spyOn(activityTemplateService, "getAll").mockResolvedValue({
+      data: mockTemplateData,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+
+    // Wait for template cards
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat", { selector: "[role='radio'] *" })).toBeInTheDocument();
+    });
+
+    // Click the template card
+    const templateCard = screen.getByRole("radio", { name: /Culte du Sabbat/i });
+    await user.click(templateCard);
+
+    // Should transition to form step with role badges
+    await waitFor(() => {
+      expect(screen.getByText("Rôles du modèle")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Predicateur x1")).toBeInTheDocument();
+    expect(screen.getByText("Ancien x1")).toBeInTheDocument();
+    expect(screen.getByText("Retour aux modèles")).toBeInTheDocument();
+    expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+
+    getSpy.mockRestore();
+  });
+
+  it("create with template sends templateId in request body", async () => {
+    const user = userEvent.setup();
+    const getSpy = vi.spyOn(activityTemplateService, "getAll").mockResolvedValue({
+      data: mockTemplateData,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {} as never,
+    });
     const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
       data: {
         id: 99,
@@ -119,34 +192,104 @@ describe("AdminActivitiesPage", () => {
 
     // Open create form
     await user.click(screen.getByText("Nouvelle activité"));
+
+    // Select template
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: /Culte du Sabbat/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("radio", { name: /Culte du Sabbat/i }));
+
+    // Fill form
     await waitFor(() => {
       expect(screen.getByLabelText("Titre")).toBeInTheDocument();
     });
-
-    // Fill text fields
     await user.type(screen.getByLabelText("Titre"), "Test Activite");
     fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-03-15" } });
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
-    // Select department via Radix Select
     const selectTrigger = screen.getByRole("combobox");
     await user.click(selectTrigger);
     const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
     await user.click(deptOption);
 
-    // Submit form
-    const submitButton = screen.getByRole("button", { name: /enregistrer/i });
-    await user.click(submitButton);
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
 
     await waitFor(() => {
       expect(createSpy).toHaveBeenCalledOnce();
     });
 
+    const callArgs = createSpy.mock.calls[0][0];
+    expect(callArgs.templateId).toBe(1);
+
+    createSpy.mockRestore();
+    getSpy.mockRestore();
+  });
+
+  it("create without template (custom) does NOT send templateId", async () => {
+    const user = userEvent.setup();
+    const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
+      data: {
+        id: 99,
+        title: "Custom Activity",
+        description: null,
+        date: "2026-03-15",
+        startTime: "10:00:00",
+        endTime: "12:00:00",
+        departmentId: 1,
+        departmentName: "Jeunesse Adventiste",
+        visibility: "public",
+        roles: [],
+        concurrencyToken: 100,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      status: 201,
+      statusText: "Created",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    // Fill form
+    await waitFor(() => {
+      expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+    });
+    await user.type(screen.getByLabelText("Titre"), "Custom Activity");
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-03-15" } });
+    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
+    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+
+    const selectTrigger = screen.getByRole("combobox");
+    await user.click(selectTrigger);
+    const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
+    await user.click(deptOption);
+
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalledOnce();
+    });
+
+    const callArgs = createSpy.mock.calls[0][0];
+    expect(callArgs.templateId).toBeUndefined();
+
     createSpy.mockRestore();
   });
 
-  it("edit activity opens pre-populated form with existing values", async () => {
+  it("edit flow does NOT show template selector", async () => {
     const user = userEvent.setup();
     server.use(
       http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
@@ -161,9 +304,52 @@ describe("AdminActivitiesPage", () => {
     const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
     await user.click(editButtons[0]);
 
+    // Edit should show form directly, no template selector
     await waitFor(() => {
       expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
     });
+
+    // Template selector should NOT be present
+    expect(screen.queryByText("Choisir un modèle")).not.toBeInTheDocument();
+    expect(screen.queryByText("Activité sans modèle")).not.toBeInTheDocument();
+  });
+
+  it("'Back to templates' button returns to template selection and resets form", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    // Verify we're on the form step and type into the form
+    await waitFor(() => {
+      expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+    });
+    await user.type(screen.getByLabelText("Titre"), "Typed Title");
+    expect(screen.getByLabelText("Titre")).toHaveValue("Typed Title");
+
+    // Click back to templates
+    await user.click(screen.getByText("Retour aux modèles"));
+
+    // Should be back on template selector
+    await waitFor(() => {
+      expect(screen.getByText("Activité sans modèle")).toBeInTheDocument();
+    });
+
+    // Go forward again — form should be reset (unmount/remount clears state)
+    await user.click(screen.getByText("Activité sans modèle"));
+    await waitFor(() => {
+      expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText("Titre")).toHaveValue("");
   });
 
   it("delete activity shows AlertDialog confirmation and deletes", async () => {
