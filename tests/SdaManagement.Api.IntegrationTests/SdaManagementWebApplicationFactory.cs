@@ -21,6 +21,9 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
         .WithPassword("testpass")
         .Build();
 
+    private readonly string _avatarTestPath = Path.Combine(
+        Path.GetTempPath(), $"sdac-test-avatars-{Guid.NewGuid()}");
+
     public string ConnectionString => _postgresContainer.GetConnectionString();
 
     public async Task InitializeAsync()
@@ -58,6 +61,8 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
                 ["RateLimiting:AuthPermitLimit"] = "10000",
                 // Prevent Program.cs seeder from querying DB before migrations are applied
                 ["OwnerEmail"] = "",
+                // Story 3.5: Avatar storage in isolated temp directory
+                ["AvatarStorage:Path"] = _avatarTestPath,
             });
         });
 
@@ -98,6 +103,10 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
     // the path used for fixture cleanup.
     async Task IAsyncLifetime.DisposeAsync()
     {
+        // Clean up avatar test directory
+        if (Directory.Exists(_avatarTestPath))
+            Directory.Delete(_avatarTestPath, true);
+
         // DisposeAsync() already stops and removes the container — StopAsync() beforehand is redundant
         await _postgresContainer.DisposeAsync();
         await base.DisposeAsync();

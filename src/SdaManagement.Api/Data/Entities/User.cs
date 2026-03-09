@@ -11,6 +11,7 @@ public class User
     public string? PasswordHash { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public ICollection<UserDepartment> UserDepartments { get; } = [];
     public ICollection<RefreshToken> RefreshTokens { get; } = [];
 }

@@ -10,4 +10,5 @@ public interface IUserService
     Task<UserResponse> CreateAsync(CreateUserRequest request);
     Task<List<UserResponse>> BulkCreateAsync(List<CreateUserRequest> requests);
     Task<UserResponse?> UpdateAsync(int userId, UpdateUserRequest request);
+    Task<bool> DeleteAsync(int userId);
 }

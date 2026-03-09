@@ -213,6 +213,39 @@ public class UsersController(
         return Ok(result);
     }
 
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        if (!auth.IsAuthenticated())
+            return Unauthorized();
+
+        if (!auth.IsOwner())
+            return Forbid();
+
+        if (id == currentUser.UserId)
+            return Forbid();
+
+        var targetUser = await db.Users.FindAsync(id);
+        if (targetUser is null)
+            return NotFound();
+
+        if (targetUser.Role == UserRole.Owner)
+        {
+            var ownerCount = await db.Users.CountAsync(u => u.Role == UserRole.Owner);
+            if (ownerCount <= 1)
+                return Conflict(new ProblemDetails
+                {
+                    Type = "urn:sdac:conflict",
+                    Title = "Resource Conflict",
+                    Status = 409,
+                    Detail = "Cannot delete the last owner account",
+                });
+        }
+
+        var deleted = await userService.DeleteAsync(id);
+        return deleted ? NoContent() : NotFound();
+    }
+
     private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
         BadRequest(new ValidationProblemDetails(validation.ToDictionary())
         {

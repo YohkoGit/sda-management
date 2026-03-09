@@ -260,6 +260,11 @@
         "cancel": "Cancel"
       },
       "editButton": "Edit",
+      "deleteDialog": {
+        "title": "Delete User",
+        "description": "This action is irreversible. {{name}} will no longer be able to sign in.",
+        "confirm": "Delete"
+      },
       "editForm": {
         "title": "Edit User",
         "submit": "Save",
@@ -270,13 +275,21 @@
       "toast": {
         "created": "User created",
         "updated": "User updated",
+        "deleted": "User deleted",
         "bulkCreated": "{{count}} users created",
+        "avatarUploadSuccess": "Avatar uploaded successfully",
+        "avatarUploadError": "Failed to upload avatar",
+        "avatarFileTooLarge": "File is too large or invalid format",
+        "avatarInvalidType": "File must be JPEG, PNG, or WebP",
+        "changeAvatar": "Change avatar",
         "error": {
           "duplicate": "This email is already in use",
           "forbidden": "Access denied",
           "notFound": "User not found",
           "bulkValidation": "Fix errors before submitting",
-          "duplicateInBatch": "Duplicate emails in batch"
+          "duplicateInBatch": "Duplicate emails in batch",
+          "lastOwner": "Cannot delete the last owner account",
+          "deleteFailed": "Delete failed"
         }
       }
     },
@@ -361,6 +374,9 @@
       "members": "Members"
     },
     "complete": "Setup complete \u2014 your system is ready!"
+  },
+  "common": {
+    "cancel": "Cancel"
   },
   "days": {
     "0": "Sunday",

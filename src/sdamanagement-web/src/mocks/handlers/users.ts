@@ -8,6 +8,7 @@ const mockUsers: UserListItem[] = [
     lastName: "Legault",
     email: "mc.legault@gmail.com",
     role: "Viewer",
+    avatarUrl: "/api/avatars/2?v=123456",
     departments: [
       { id: 1, name: "Jeunesse Adventiste", abbreviation: "JA", color: "#4F46E5" },
     ],
@@ -53,6 +54,7 @@ const mockUsers: UserListItem[] = [
     lastName: "Dupont",
     email: "nicole.d@gmail.com",
     role: "Admin",
+    avatarUrl: "/api/avatars/6?v=789012",
     departments: [
       { id: 2, name: "MIFEM", abbreviation: "MIFEM", color: "#EC4899" },
     ],
@@ -172,5 +174,63 @@ export const userHandlers409 = http.post("/api/users", () => {
 
 export const userHandlers403 = http.post("/api/users", () => {
   return new HttpResponse(null, { status: 403 });
+});
+
+export const userHandlerDelete = http.delete("/api/users/:id", () => {
+  return new HttpResponse(null, { status: 204 });
+});
+
+export const userHandlerDelete403 = http.delete("/api/users/:id", () => {
+  return new HttpResponse(null, { status: 403 });
+});
+
+export const userHandlerDelete404 = http.delete("/api/users/:id", () => {
+  return new HttpResponse(null, { status: 404 });
+});
+
+export const userHandlerDelete409 = http.delete("/api/users/:id", () => {
+  return HttpResponse.json(
+    { message: "Cannot delete the last owner account" },
+    { status: 409 }
+  );
+});
+
+// --- Avatar handlers ---
+
+export const avatarHandlerUpload = http.post("/api/avatars/:userId", () => {
+  return new HttpResponse(null, { status: 204 });
+});
+
+export const avatarHandlerUpload400 = http.post("/api/avatars/:userId", () => {
+  return HttpResponse.json(
+    {
+      type: "urn:sdac:validation-error",
+      title: "Validation Error",
+      status: 400,
+      detail: "File size must be between 1 byte and 512000 bytes.",
+    },
+    { status: 400 }
+  );
+});
+
+export const avatarHandlerUpload403 = http.post("/api/avatars/:userId", () => {
+  return new HttpResponse(null, { status: 403 });
+});
+
+export const avatarHandlerGet = http.get("/api/avatars/:userId", ({ params }) => {
+  const userId = Number(params.userId);
+  // Return avatar for users 2 and 6 (those with avatarUrl in mock data)
+  if (userId === 2 || userId === 6) {
+    return new HttpResponse(new Uint8Array([0x00]), {
+      status: 200,
+      headers: {
+        "Content-Type": "image/webp",
+        "ETag": `"${Date.now()}"`,
+        "Cache-Control": "public, max-age=86400",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+  return new HttpResponse(null, { status: 404 });
 });
 

@@ -41,7 +41,7 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Project Foundation & Authentication
-  epic-1: in-progress
+  epic-1: done
   1-1-project-scaffolding-and-development-infrastructure: done
   1-2-integration-test-infrastructure: done
   1-3-user-entity-owner-seed-and-core-auth-backend: done
@@ -52,7 +52,7 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Church Configuration & First-Time Setup
-  epic-2: in-progress
+  epic-2: done
   2-1-church-identity-settings: done
   2-2-department-crud-and-sub-ministries: done
   2-3-activity-template-management: done
@@ -66,8 +66,8 @@ development_status:
   3-1-single-user-account-creation: done
   3-2-bulk-user-creation: done
   3-3-user-role-and-department-management: done
-  3-4-owner-user-management-full-access: backlog
-  3-5-avatar-upload-and-display: backlog
+  3-4-owner-user-management-full-access: done
+  3-5-avatar-upload-and-display: done
   epic-3-retrospective: optional
 
   # Epic 4: Activity Scheduling & Role Assignment

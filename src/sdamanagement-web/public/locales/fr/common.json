@@ -260,6 +260,11 @@
         "cancel": "Annuler"
       },
       "editButton": "Modifier",
+      "deleteDialog": {
+        "title": "Supprimer l'utilisateur",
+        "description": "Cette action est irr\u00e9versible. {{name}} ne pourra plus se connecter.",
+        "confirm": "Supprimer"
+      },
       "editForm": {
         "title": "Modifier l'utilisateur",
         "submit": "Enregistrer",
@@ -270,13 +275,21 @@
       "toast": {
         "created": "Utilisateur cr\u00e9\u00e9",
         "updated": "Utilisateur mis \u00e0 jour",
+        "deleted": "Utilisateur supprim\u00e9",
         "bulkCreated": "{{count}} utilisateurs cr\u00e9\u00e9s",
+        "avatarUploadSuccess": "Avatar t\u00e9l\u00e9vers\u00e9 avec succ\u00e8s",
+        "avatarUploadError": "\u00c9chec du t\u00e9l\u00e9versement de l\u2019avatar",
+        "avatarFileTooLarge": "Le fichier est trop volumineux ou le format est invalide",
+        "avatarInvalidType": "Le fichier doit \u00eatre au format JPEG, PNG ou WebP",
+        "changeAvatar": "Changer l\u2019avatar",
         "error": {
           "duplicate": "Cet email est d\u00e9j\u00e0 utilis\u00e9",
           "forbidden": "Acc\u00e8s refus\u00e9",
           "notFound": "Utilisateur introuvable",
           "bulkValidation": "Corrigez les erreurs avant de soumettre",
-          "duplicateInBatch": "Emails en double dans le lot"
+          "duplicateInBatch": "Emails en double dans le lot",
+          "lastOwner": "Impossible de supprimer le dernier propri\u00e9taire",
+          "deleteFailed": "\u00c9chec de la suppression"
         }
       }
     },
@@ -361,6 +374,9 @@
       "members": "Membres"
     },
     "complete": "Configuration termin\u00e9e \u2014 votre syst\u00e8me est pr\u00eat!"
+  },
+  "common": {
+    "cancel": "Annuler"
   },
   "days": {
     "0": "Dimanche",

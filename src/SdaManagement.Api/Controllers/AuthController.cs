@@ -22,7 +22,8 @@ public class AuthController(
     ITokenService tokenService,
     IPasswordService passwordService,
     ICurrentUserContext currentUserContext,
-    IConfiguration configuration) : ControllerBase
+    IConfiguration configuration,
+    IAvatarService avatarService) : ControllerBase
 {
     [HttpPost("initiate")]
     public async Task<IActionResult> Initiate(
@@ -283,16 +284,21 @@ public class AuthController(
             })
             .FirstOrDefaultAsync();
 
-        return user is not null ? Ok(user) : Unauthorized();
+        if (user is null)
+            return Unauthorized();
+
+        user.AvatarUrl = avatarService.GetAvatarUrl(user.UserId);
+        return Ok(user);
     }
 
-    private static AuthMeResponse ToAuthMeResponse(User user) => new()
+    private AuthMeResponse ToAuthMeResponse(User user) => new()
     {
         UserId = user.Id,
         Email = user.Email,
         FirstName = user.FirstName,
         LastName = user.LastName,
         Role = user.Role.ToString().ToUpperInvariant(),
+        AvatarUrl = avatarService.GetAvatarUrl(user.Id),
     };
 
     private IActionResult RedirectToFrontend(string path)

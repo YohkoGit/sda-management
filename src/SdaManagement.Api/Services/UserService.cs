@@ -7,7 +7,7 @@ using SdaManagement.Api.Dtos.User;
 
 namespace SdaManagement.Api.Services;
 
-public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUserService
+public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvatarService avatarService) : IUserService
 {
     public async Task<PagedResponse<UserListItem>> GetUsersAsync(
         string? cursor, int limit, IReadOnlyList<int>? departmentFilter)
@@ -50,6 +50,10 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUse
             })
             .ToListAsync();
 
+        // Set AvatarUrl post-materialization (file system call can't be in EF .Select())
+        foreach (var item in items)
+            item.AvatarUrl = avatarService.GetAvatarUrl(item.Id);
+
         string? nextCursor = items.Count > limit
             ? EncodeCursor(items[limit - 1].LastName, items[limit - 1].Id)
             : null;
@@ -63,7 +67,7 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUse
 
     public async Task<UserResponse?> GetByIdAsync(int id)
     {
-        return await db.Users
+        var user = await db.Users
             .Where(u => u.Id == id && !u.IsGuest)
             .Select(u => new UserResponse
             {
@@ -86,6 +90,11 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUse
                 UpdatedAt = u.UpdatedAt,
             })
             .FirstOrDefaultAsync();
+
+        if (user is not null)
+            user.AvatarUrl = avatarService.GetAvatarUrl(user.Id);
+
+        return user;
     }
 
     public async Task<UserResponse> CreateAsync(CreateUserRequest request)
@@ -263,6 +272,27 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUse
             CreatedAt = updated.CreatedAt,
             UpdatedAt = updated.UpdatedAt,
         };
+    }
+
+    public async Task<bool> DeleteAsync(int userId)
+    {
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return false;
+
+        user.DeletedAt = DateTime.UtcNow;
+
+        var refreshTokens = await db.RefreshTokens
+            .Where(r => r.UserId == userId)
+            .ToListAsync();
+        db.RefreshTokens.RemoveRange(refreshTokens);
+
+        var resetTokens = await db.PasswordResetTokens
+            .Where(p => p.UserId == userId)
+            .ToListAsync();
+        db.PasswordResetTokens.RemoveRange(resetTokens);
+
+        await db.SaveChangesAsync();
+        return true;
     }
 
     internal static bool IsValidCursor(string cursor)

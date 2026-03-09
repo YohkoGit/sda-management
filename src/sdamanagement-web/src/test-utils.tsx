@@ -246,6 +246,11 @@ testI18n.use(initReactI18next).init({
             loadMore: "Charger plus",
             bulkCreateButton: "Création en lot",
             editButton: "Modifier",
+            deleteDialog: {
+              title: "Supprimer l'utilisateur",
+              description: "Cette action est irréversible. {{name}} ne pourra plus se connecter.",
+              confirm: "Supprimer",
+            },
             editForm: {
               title: "Modifier l'utilisateur",
               submit: "Enregistrer",
@@ -275,13 +280,21 @@ testI18n.use(initReactI18next).init({
             toast: {
               created: "Utilisateur créé",
               updated: "Utilisateur mis à jour",
+              deleted: "Utilisateur supprimé",
               bulkCreated: "{{count}} utilisateurs créés",
+              avatarUploadSuccess: "Avatar téléversé avec succès",
+              avatarUploadError: "Échec du téléversement de l'avatar",
+              avatarFileTooLarge: "Le fichier est trop volumineux ou le format est invalide",
+              avatarInvalidType: "Le fichier doit être au format JPEG, PNG ou WebP",
+              changeAvatar: "Changer l'avatar",
               error: {
                 duplicate: "Cet email est déjà utilisé",
                 forbidden: "Accès refusé",
                 notFound: "Utilisateur introuvable",
                 bulkValidation: "Corrigez les erreurs avant de soumettre",
                 duplicateInBatch: "Emails en double dans le lot",
+                lastOwner: "Impossible de supprimer le dernier propriétaire",
+                deleteFailed: "Échec de la suppression",
               },
             },
           },
@@ -354,6 +367,9 @@ testI18n.use(initReactI18next).init({
             members: "Membres",
           },
           complete: "Configuration terminée \u2014 votre système est prêt!",
+        },
+        common: {
+          cancel: "Annuler",
         },
         days: {
           "0": "Dimanche",

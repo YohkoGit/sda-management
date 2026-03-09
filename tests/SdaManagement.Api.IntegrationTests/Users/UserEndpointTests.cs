@@ -759,4 +759,124 @@ public class UserEndpointTests : IntegrationTestBase
         var afterCount = afterDoc.RootElement.GetProperty("items").GetArrayLength();
         afterCount.ShouldBe(beforeCount);
     }
+
+    // --- DELETE /api/users/{id} ---
+
+    [Fact]
+    public async Task DeleteUser_AsOwner_SoftDeletesViewer_Returns204()
+    {
+        var userId = await CreateUserViaApi(email: "delete-target@test.com", role: "Viewer");
+
+        var response = await OwnerClient.DeleteAsync($"/api/users/{userId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task DeleteUser_DeletedUserDisappearsFromList()
+    {
+        var userId = await CreateUserViaApi(email: "disappear@test.com");
+
+        await OwnerClient.DeleteAsync($"/api/users/{userId}");
+
+        var listResponse = await OwnerClient.GetAsync("/api/users?limit=100");
+        var json = await listResponse.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var items = doc.RootElement.GetProperty("items");
+        var emails = Enumerable.Range(0, items.GetArrayLength())
+            .Select(i => items[i].GetProperty("email").GetString());
+        emails.ShouldNotContain("disappear@test.com");
+    }
+
+    [Fact]
+    public async Task DeleteUser_DeletedUserReturns404OnGetById()
+    {
+        var userId = await CreateUserViaApi(email: "get-deleted@test.com");
+
+        await OwnerClient.DeleteAsync($"/api/users/{userId}");
+
+        var response = await OwnerClient.GetAsync($"/api/users/{userId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AlreadyDeletedUserReturns404()
+    {
+        var userId = await CreateUserViaApi(email: "double-delete@test.com");
+
+        await OwnerClient.DeleteAsync($"/api/users/{userId}");
+
+        var response = await OwnerClient.DeleteAsync($"/api/users/{userId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AsOwner_DeletingSelf_Returns403()
+    {
+        var response = await OwnerClient.DeleteAsync($"/api/users/{_ownerUserId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AsOwner_DeletingNonLastOwner_Returns204()
+    {
+        // Create a second OWNER
+        var secondOwnerId = await CreateUserViaApi(email: "second-owner@test.com", role: "Owner");
+
+        var response = await OwnerClient.DeleteAsync($"/api/users/{secondOwnerId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AsAdmin_Returns403()
+    {
+        var userId = await CreateUserViaApi(email: "admin-delete-target@test.com");
+
+        var response = await AdminClient.DeleteAsync($"/api/users/{userId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AsViewer_Returns403()
+    {
+        var userId = await CreateUserViaApi(email: "viewer-delete-target@test.com");
+
+        var response = await ViewerClient.DeleteAsync($"/api/users/{userId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AsAnonymous_Returns401()
+    {
+        var response = await AnonymousClient.DeleteAsync("/api/users/1");
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task DeleteUser_NonExistentId_Returns404()
+    {
+        var response = await OwnerClient.DeleteAsync("/api/users/99999");
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteUser_SoftDeletedUserCannotLogIn()
+    {
+        // Create a user with a password
+        var user = await CreateTestUser("login-delete@test.com", UserRole.Viewer);
+        await SetUserPassword(user.Id, "TestPassword1");
+
+        // Verify login works before delete
+        var loginBefore = await AnonymousClient.PostAsJsonAsync("/api/auth/login",
+            new { email = "login-delete@test.com", password = "TestPassword1" });
+        loginBefore.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Soft-delete the user
+        var deleteResponse = await OwnerClient.DeleteAsync($"/api/users/{user.Id}");
+        deleteResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // Attempt login after delete — should fail
+        var loginAfter = await AnonymousClient.PostAsJsonAsync("/api/auth/login",
+            new { email = "login-delete@test.com", password = "TestPassword1" });
+        loginAfter.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }

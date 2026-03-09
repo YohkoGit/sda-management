@@ -165,6 +165,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISystemHealthService, SystemHealthService>();
         services.AddScoped<ISetupProgressService, SetupProgressService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddSingleton<IAvatarService, AvatarService>();
 
         // FluentValidation — auto-register all validators from assembly
         services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();

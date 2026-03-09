@@ -29,9 +29,10 @@ public class AppDbContext : DbContext
             e.Property(u => u.Role).HasConversion<int>();
             e.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
             e.Property(u => u.UpdatedAt).HasDefaultValueSql("now()");
+            e.HasQueryFilter(u => u.DeletedAt == null);
         });
 
-        // RefreshToken — cascade delete when user deleted
+        // RefreshToken — FK cascade on hard-delete; soft-delete path cleans tokens in UserService.DeleteAsync
         modelBuilder.Entity<RefreshToken>(e =>
         {
             e.HasKey(r => r.Id);
@@ -43,7 +44,7 @@ public class AppDbContext : DbContext
              .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // PasswordResetToken — cascade delete when user deleted
+        // PasswordResetToken — FK cascade on hard-delete; soft-delete path cleans tokens in UserService.DeleteAsync
         modelBuilder.Entity<PasswordResetToken>(e =>
         {
             e.HasKey(p => p.Id);

@@ -14,6 +14,7 @@ export interface UserListItem {
   lastName: string;
   email: string;
   role: string;
+  avatarUrl?: string;
   departments: UserDepartmentBadge[];
   createdAt: string;
 }
@@ -24,6 +25,7 @@ export interface UserResponse {
   lastName: string;
   email: string;
   role: string;
+  avatarUrl?: string;
   isGuest: boolean;
   departments: UserDepartmentBadge[];
   createdAt: string;
@@ -52,4 +54,10 @@ export const userService = {
     api.post<BulkCreateUsersResponse>("/api/users/bulk", data),
   updateUser: (id: number, data: UpdateUserFormData) =>
     api.put<UserResponse>(`/api/users/${id}`, data),
+  deleteUser: (id: number) => api.delete(`/api/users/${id}`),
+  uploadAvatar: (userId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post(`/api/avatars/${userId}`, formData);
+  },
 };
