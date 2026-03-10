@@ -9,6 +9,7 @@ const BG_COLORS = [
 ];
 
 const SIZE_CLASSES = {
+  xs: "h-7 w-7 text-[10px]",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-12 w-12 text-base",
@@ -26,7 +27,7 @@ function hashName(firstName: string, lastName: string): number {
 interface InitialsAvatarProps {
   firstName: string;
   lastName: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   avatarUrl?: string;
   className?: string;
 }

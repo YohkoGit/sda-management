@@ -346,9 +346,25 @@
         "cancelButton": "Cancel",
         "emptyState": "No roles. Add roles to define required positions.",
         "maxRolesReached": "Maximum 20 roles reached.",
+        "unassigned": "Unassigned",
+        "tapToAssign": "Tap to assign",
+        "editAssignment": "Edit assignment for {{role}}",
+        "removeAssignment": "{{name}} \u2014 tap to remove",
         "duplicateRoleName": "Role names must be unique.",
         "roleNameRequired": "Role name is required.",
         "roleNameTooLong": "Role name must not exceed 100 characters."
+      },
+      "contactPicker": {
+        "searchPlaceholder": "Search member...",
+        "noResults": "No members found.",
+        "selectionFor": "Selection for: {{role}}",
+        "fullyStaffed": "Fully staffed",
+        "tapToAssign": "Tap to assign",
+        "unassigned": "Unassigned",
+        "emptySystem": "No members registered. Add members in Administration.",
+        "frequentlyAssigned": "Frequently assigned",
+        "addGuest": "Add a guest",
+        "showMore": "Show more..."
       },
       "templateSelector": {
         "title": "Choose a Template",
@@ -450,7 +466,8 @@
     "complete": "Setup complete \u2014 your system is ready!"
   },
   "common": {
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
   },
   "days": {
     "0": "Sunday",

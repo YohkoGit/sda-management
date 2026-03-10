@@ -75,6 +75,16 @@ public class ActivitiesController(
                 Detail = "Activity template not found.",
             });
         }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new ProblemDetails
+            {
+                Type = "urn:sdac:validation-error",
+                Title = "Assignment Validation Error",
+                Status = 422,
+                Detail = ex.Message,
+            });
+        }
     }
 
     [HttpPut("{id:int}")]
@@ -112,6 +122,16 @@ public class ActivitiesController(
                 Title = "Concurrency Conflict",
                 Status = 409,
                 Detail = "This activity was modified by another user. Please reload and try again.",
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new ProblemDetails
+            {
+                Type = "urn:sdac:validation-error",
+                Title = "Assignment Validation Error",
+                Status = 422,
+                Detail = ex.Message,
             });
         }
     }

@@ -1070,4 +1070,372 @@ public class ActivityEndpointTests : IntegrationTestBase
         var response = await AdminClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
+
+    // --- POST/PUT with assignments (Story 4.4) ---
+
+    [Fact]
+    public async Task CreateActivity_WithRolesAndAssignments_Returns201()
+    {
+        var viewer = await CreateTestUser("assign-create@test.local", UserRole.Viewer);
+
+        var payload = new
+        {
+            title = "Activity With Assignments",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new object[]
+            {
+                new
+                {
+                    roleName = "Predicateur",
+                    headcount = 2,
+                    assignments = new[] { new { userId = viewer.Id } },
+                },
+            },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+        roles[0].GetProperty("assignments").GetArrayLength().ShouldBe(1);
+        roles[0].GetProperty("assignments")[0].GetProperty("userId").GetInt32().ShouldBe(viewer.Id);
+        roles[0].GetProperty("assignments")[0].GetProperty("firstName").GetString().ShouldBe("Test");
+    }
+
+    [Fact]
+    public async Task UpdateActivity_AddAssignment_ReturnsAssignment()
+    {
+        var viewer = await CreateTestUser("assign-add@test.local", UserRole.Viewer);
+
+        var (activityId, token, roles) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 2 }]);
+
+        var roleId = roles[0].GetProperty("id").GetInt32();
+
+        var updatePayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new object[]
+            {
+                new
+                {
+                    id = roleId,
+                    roleName = "Predicateur",
+                    headcount = 2,
+                    assignments = new[] { new { userId = viewer.Id } },
+                },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var updatedRoles = doc.RootElement.GetProperty("roles");
+        updatedRoles[0].GetProperty("assignments").GetArrayLength().ShouldBe(1);
+        updatedRoles[0].GetProperty("assignments")[0].GetProperty("userId").GetInt32().ShouldBe(viewer.Id);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_RemoveAssignment_ReturnsEmptyAssignments()
+    {
+        var viewer = await CreateTestUser("assign-remove@test.local", UserRole.Viewer);
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Remove Assignment",
+            roles: [("Predicateur", 2, new List<int> { viewer.Id })]);
+
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activity.Id}");
+        var getJson = await getResponse.Content.ReadAsStringAsync();
+        using var getDoc = JsonDocument.Parse(getJson);
+        var token = getDoc.RootElement.GetProperty("concurrencyToken").GetUInt32();
+        var roleId = getDoc.RootElement.GetProperty("roles")[0].GetProperty("id").GetInt32();
+
+        // Update with empty assignments = remove all
+        var updatePayload = new
+        {
+            title = "Remove Assignment",
+            date = "2026-03-15",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new object[]
+            {
+                new
+                {
+                    id = roleId,
+                    roleName = "Predicateur",
+                    headcount = 2,
+                    assignments = Array.Empty<object>(),
+                },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activity.Id}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("roles")[0].GetProperty("assignments").GetArrayLength().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_NullAssignments_PreservesExisting()
+    {
+        var viewer = await CreateTestUser("assign-null@test.local", UserRole.Viewer);
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Null Assignment",
+            roles: [("Predicateur", 2, new List<int> { viewer.Id })]);
+
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activity.Id}");
+        var getJson = await getResponse.Content.ReadAsStringAsync();
+        using var getDoc = JsonDocument.Parse(getJson);
+        var token = getDoc.RootElement.GetProperty("concurrencyToken").GetUInt32();
+        var roleId = getDoc.RootElement.GetProperty("roles")[0].GetProperty("id").GetInt32();
+
+        // Update without assignments field (null = don't modify)
+        var updatePayload = new
+        {
+            title = "Null Assignment",
+            date = "2026-03-15",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new object[]
+            {
+                new { id = roleId, roleName = "Predicateur", headcount = 2 },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activity.Id}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("roles")[0].GetProperty("assignments").GetArrayLength().ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ReduceHeadcountBelowAssignments_Returns422()
+    {
+        var viewer1 = await CreateTestUser("assign-hc1@test.local", UserRole.Viewer);
+        var viewer2 = await CreateTestUser("assign-hc2@test.local", UserRole.Viewer);
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Headcount Check",
+            roles: [("Predicateur", 2, new List<int> { viewer1.Id, viewer2.Id })]);
+
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activity.Id}");
+        var getJson = await getResponse.Content.ReadAsStringAsync();
+        using var getDoc = JsonDocument.Parse(getJson);
+        var token = getDoc.RootElement.GetProperty("concurrencyToken").GetUInt32();
+        var roleId = getDoc.RootElement.GetProperty("roles")[0].GetProperty("id").GetInt32();
+
+        // Reduce headcount to 1 but don't modify assignments (null) -> 2 assignments with headcount 1
+        var updatePayload = new
+        {
+            title = "Headcount Check",
+            date = "2026-03-15",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+            roles = new object[]
+            {
+                new { id = roleId, roleName = "Predicateur", headcount = 1 },
+            },
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activity.Id}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task CreateActivity_DuplicateUserIdInSameRole_Returns400()
+    {
+        var viewer = await CreateTestUser("assign-dup@test.local", UserRole.Viewer);
+
+        var payload = new
+        {
+            title = "Duplicate Test",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new object[]
+            {
+                new
+                {
+                    roleName = "Predicateur",
+                    headcount = 3,
+                    assignments = new[] { new { userId = viewer.Id }, new { userId = viewer.Id } },
+                },
+            },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateActivity_GuestUserId_Returns422()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var guest = new User
+        {
+            Email = "guest@test.local",
+            FirstName = "Guest",
+            LastName = "Speaker",
+            Role = UserRole.Viewer,
+            IsGuest = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        dbContext.Users.Add(guest);
+        await dbContext.SaveChangesAsync();
+
+        var payload = new
+        {
+            title = "Guest Assignment",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new object[]
+            {
+                new
+                {
+                    roleName = "Predicateur",
+                    headcount = 1,
+                    assignments = new[] { new { userId = guest.Id } },
+                },
+            },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task CreateActivity_NonExistentUserId_Returns422()
+    {
+        var payload = new
+        {
+            title = "Bad User",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            roles = new object[]
+            {
+                new
+                {
+                    roleName = "Predicateur",
+                    headcount = 1,
+                    assignments = new[] { new { userId = 99999 } },
+                },
+            },
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ConcurrencyConflict_WithAssignments_Returns409()
+    {
+        var viewer = await CreateTestUser("assign-concurrency@test.local", UserRole.Viewer);
+
+        var (activityId, originalToken, roles) = await CreateActivityWithRoles(
+            [new { roleName = "Predicateur", headcount = 2 }]);
+        var roleId = roles[0].GetProperty("id").GetInt32();
+
+        // First update succeeds
+        var firstUpdate = new
+        {
+            title = "First",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+            roles = new object[]
+            {
+                new
+                {
+                    id = roleId,
+                    roleName = "Predicateur",
+                    headcount = 2,
+                    assignments = new[] { new { userId = viewer.Id } },
+                },
+            },
+        };
+        var firstResponse = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", firstUpdate);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Second update with stale token
+        var staleUpdate = new
+        {
+            title = "Stale",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+            roles = new object[]
+            {
+                new { id = roleId, roleName = "Predicateur", headcount = 2 },
+            },
+        };
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", staleUpdate);
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task GetActivity_IncludesAssignmentData()
+    {
+        var viewer = await CreateTestUser("assign-get@test.local", UserRole.Viewer);
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Get Assignment Test",
+            roles: [("Predicateur", 1, new List<int> { viewer.Id })]);
+
+        var response = await OwnerClient.GetAsync($"/api/activities/{activity.Id}");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+        var assignments = roles[0].GetProperty("assignments");
+
+        assignments.GetArrayLength().ShouldBe(1);
+        assignments[0].GetProperty("userId").GetInt32().ShouldBe(viewer.Id);
+        assignments[0].GetProperty("firstName").GetString().ShouldBe("Test");
+        assignments[0].GetProperty("lastName").GetString().ShouldBe("Viewer");
+    }
 }

@@ -1,10 +1,15 @@
 import { z } from "zod";
 
+export const roleAssignmentInputSchema = z.object({
+  userId: z.number().int().positive(),
+});
+
 export const activityRoleInputSchema = z.object({
   // useFieldArray injects a string `id` for React keys; catch(undefined) silently discards it
   id: z.number().int().positive().optional().catch(undefined),
   roleName: z.string().min(1).max(100),
   headcount: z.number().int().min(1).max(99),
+  assignments: z.array(roleAssignmentInputSchema).optional(),
 });
 
 export type ActivityRoleInputData = z.infer<typeof activityRoleInputSchema>;

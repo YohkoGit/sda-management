@@ -1,17 +1,86 @@
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, vi, beforeEach } from "vitest";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import userEvent from "@testing-library/user-event";
 import { render, screen } from "@/test-utils";
 import { createActivitySchema, type CreateActivityFormData } from "@/schemas/activitySchema";
 import RoleRosterEditor from "./RoleRosterEditor";
+import type { AssignableOfficer } from "@/services/userService";
 
-// Radix UI jsdom polyfills
+const mockOfficers: AssignableOfficer[] = [
+  {
+    userId: 5,
+    firstName: "Jean",
+    lastName: "Dupont",
+    avatarUrl: null,
+    departments: [{ id: 1, name: "MIFEM", abbreviation: "MIFEM", color: "#EC4899" }],
+  },
+  {
+    userId: 6,
+    firstName: "Marie",
+    lastName: "Tremblay",
+    avatarUrl: null,
+    departments: [{ id: 2, name: "Jeunesse Adventiste", abbreviation: "JA", color: "#4F46E5" }],
+  },
+  {
+    userId: 7,
+    firstName: "Pierre",
+    lastName: "Lavoie",
+    avatarUrl: null,
+    departments: [{ id: 1, name: "MIFEM", abbreviation: "MIFEM", color: "#EC4899" }],
+  },
+];
+
+// Mock useAssignableOfficers to return test data
+vi.mock("@/hooks/useAssignableOfficers", () => ({
+  useAssignableOfficers: () => ({
+    officers: mockOfficers,
+    isPending: false,
+    error: null,
+  }),
+  groupByDepartment: (officers: AssignableOfficer[]) => {
+    const map = new Map<string, AssignableOfficer[]>();
+    for (const o of officers) {
+      for (const d of o.departments) {
+        if (!map.has(d.name)) map.set(d.name, []);
+        map.get(d.name)!.push(o);
+      }
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, officers]) => ({ departmentName: name, officers }));
+  },
+}));
+
+// jsdom polyfills for Radix UI + cmdk
 beforeAll(() => {
   Element.prototype.hasPointerCapture = vi.fn();
   Element.prototype.setPointerCapture = vi.fn();
   Element.prototype.releasePointerCapture = vi.fn();
   Element.prototype.scrollIntoView = vi.fn();
+
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof globalThis.ResizeObserver;
+});
+
+// Force desktop layout
+beforeEach(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: query === "(min-width: 640px)",
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
 });
 
 function TestWrapper({
@@ -271,11 +340,10 @@ describe("RoleRosterEditor", () => {
     render(
       <TestWrapper
         defaultRoles={[
-          { id: 1, roleName: "Full", headcount: 2 },
-          { id: 2, roleName: "Partial", headcount: 3 },
+          { id: 1, roleName: "Full", headcount: 2, assignments: [{ userId: 5 }, { userId: 6 }] },
+          { id: 2, roleName: "Partial", headcount: 3, assignments: [{ userId: 7 }] },
           { id: 3, roleName: "Empty", headcount: 1 },
         ]}
-        existingAssignments={new Map([[1, 2], [2, 1], [3, 0]])}
       />
     );
 
@@ -285,5 +353,160 @@ describe("RoleRosterEditor", () => {
     expect(screen.getByText("1/3")).toBeInTheDocument();
     // Empty (0/1) - should have muted indicators
     expect(screen.getByText("0/1")).toBeInTheDocument();
+  });
+
+  // ---- Assignment-related tests (Story 4.4) ----
+
+  it("displays assignment chips for roles with existing assignments", () => {
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 2,
+            assignments: [{ userId: 5 }],
+          },
+        ]}
+      />
+    );
+
+    // Assignment chip shows the officer's name
+    expect(screen.getByText("Dupont, J.")).toBeInTheDocument();
+    // Remove button exists for the chip
+    expect(
+      screen.getByLabelText("Jean Dupont — appuyer pour retirer")
+    ).toBeInTheDocument();
+  });
+
+  it("shows dashed 'Non assigné' placeholder for empty assignment slots", () => {
+    render(
+      <TestWrapper
+        defaultRoles={[
+          { roleName: "Predicateur", headcount: 2 },
+        ]}
+      />
+    );
+
+    const placeholders = screen.getAllByText("Non assigné");
+    expect(placeholders.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("removes assignment chip when 'x' remove button is clicked", async () => {
+    const user = userEvent.setup();
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 2,
+            assignments: [{ userId: 5 }, { userId: 6 }],
+          },
+        ]}
+      />
+    );
+
+    // Badge should show 2/2
+    expect(screen.getByText("2/2")).toBeInTheDocument();
+
+    // Click remove on first assignment (use exact match to avoid duplicates)
+    const removeBtn = screen.getByLabelText("Jean Dupont — appuyer pour retirer");
+    await user.click(removeBtn);
+
+    // Should now show 1/2
+    expect(screen.getByText("1/2")).toBeInTheDocument();
+    expect(screen.queryByText("Dupont, J.")).not.toBeInTheDocument();
+    // Other assignment should still be there
+    expect(screen.getByText("Tremblay, M.")).toBeInTheDocument();
+  });
+
+  it("shows role with form-level assignments triggers confirmation on remove", async () => {
+    const user = userEvent.setup();
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 2,
+            assignments: [{ userId: 5 }],
+          },
+        ]}
+      />
+    );
+
+    // Delete role button
+    const removeBtn = screen.getByLabelText(/Supprimer le rôle/);
+    await user.click(removeBtn);
+
+    // Should show confirmation dialog because the role has assignments
+    expect(screen.getByText("Supprimer le rôle ?")).toBeInTheDocument();
+  });
+
+  it("shows multiple assignment chips wrapping in flex container", () => {
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Diacres",
+            headcount: 3,
+            assignments: [{ userId: 5 }, { userId: 6 }, { userId: 7 }],
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Dupont, J.")).toBeInTheDocument();
+    expect(screen.getByText("Tremblay, M.")).toBeInTheDocument();
+    expect(screen.getByText("Lavoie, P.")).toBeInTheDocument();
+    // Badge shows 3/3
+    expect(screen.getByText("3/3")).toBeInTheDocument();
+  });
+
+  it("shows assign trigger when not fully staffed", () => {
+    render(
+      <TestWrapper
+        defaultRoles={[
+          { roleName: "Predicateur", headcount: 2 },
+        ]}
+      />
+    );
+
+    // The ContactPicker trigger (+ button) should be present
+    expect(screen.getByRole("button", { name: /assigner/i })).toBeInTheDocument();
+  });
+
+  it("shows editing ring when contact picker is opened", async () => {
+    const user = userEvent.setup();
+    render(
+      <TestWrapper
+        defaultRoles={[{ roleName: "Predicateur", headcount: 2 }]}
+      />
+    );
+
+    const roleGroup = screen.getByRole("group", { name: /Role 1: Predicateur/ });
+
+    // Before opening, no ring
+    expect(roleGroup).not.toHaveClass("ring-2");
+
+    // Open the contact picker
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    // After opening, ring should be applied
+    expect(roleGroup).toHaveClass("ring-2");
+  });
+
+  it("hides unassigned placeholders when all slots filled", () => {
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 1,
+            assignments: [{ userId: 5 }],
+          },
+        ]}
+      />
+    );
+
+    expect(screen.queryByText("Non assigné")).not.toBeInTheDocument();
   });
 });

@@ -77,4 +77,70 @@ public class ActivityRoleInputValidatorTests
         var result = _validator.TestValidate(new ActivityRoleInput { Id = 5, RoleName = "Test", Headcount = 1 });
         result.ShouldNotHaveValidationErrorFor(x => x.Id);
     }
+
+    // --- Assignment validation ---
+
+    [Fact]
+    public void Null_assignments_passes()
+    {
+        var result = _validator.TestValidate(new ActivityRoleInput { RoleName = "Test", Headcount = 2, Assignments = null });
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Empty_assignments_passes()
+    {
+        var result = _validator.TestValidate(new ActivityRoleInput { RoleName = "Test", Headcount = 2, Assignments = [] });
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Assignments_within_headcount_passes()
+    {
+        var result = _validator.TestValidate(new ActivityRoleInput
+        {
+            RoleName = "Test",
+            Headcount = 2,
+            Assignments = [new() { UserId = 1 }, new() { UserId = 2 }],
+        });
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Assignments_exceeding_headcount_fails()
+    {
+        var result = _validator.TestValidate(new ActivityRoleInput
+        {
+            RoleName = "Test",
+            Headcount = 1,
+            Assignments = [new() { UserId = 1 }, new() { UserId = 2 }],
+        });
+        result.ShouldHaveValidationErrorFor(x => x.Assignments)
+            .WithErrorMessage("Number of assignments cannot exceed headcount.");
+    }
+
+    [Fact]
+    public void Duplicate_userId_in_assignments_fails()
+    {
+        var result = _validator.TestValidate(new ActivityRoleInput
+        {
+            RoleName = "Test",
+            Headcount = 3,
+            Assignments = [new() { UserId = 1 }, new() { UserId = 1 }],
+        });
+        result.ShouldHaveValidationErrorFor(x => x.Assignments)
+            .WithErrorMessage("Duplicate userId within same role is not allowed.");
+    }
+
+    [Fact]
+    public void Assignment_with_invalid_userId_fails()
+    {
+        var result = _validator.TestValidate(new ActivityRoleInput
+        {
+            RoleName = "Test",
+            Headcount = 2,
+            Assignments = [new() { UserId = 0 }],
+        });
+        result.ShouldHaveValidationErrorFor("Assignments[0].UserId");
+    }
 }

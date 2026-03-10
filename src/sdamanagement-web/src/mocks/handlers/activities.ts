@@ -130,7 +130,7 @@ export const activityHandlers = [
 
   http.post("/api/activities", async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    const explicitRoles = body.roles as Array<{ roleName: string; headcount: number }> | undefined;
+    const explicitRoles = body.roles as Array<{ roleName: string; headcount: number; assignments?: Array<{ userId: number }> }> | undefined;
     const templateId = body.templateId as number | undefined;
 
     let roles: ActivityRoleResponse[];
@@ -140,7 +140,13 @@ export const activityHandlers = [
         roleName: r.roleName,
         headcount: r.headcount,
         sortOrder: i,
-        assignments: [],
+        assignments: (r.assignments ?? []).map((a, j) => ({
+          id: 500 + i * 10 + j,
+          userId: a.userId,
+          firstName: "User",
+          lastName: `${a.userId}`,
+          avatarUrl: null,
+        })),
       }));
     } else if (templateId) {
       roles = templateRolesToActivityRoles(templateId);
@@ -170,18 +176,28 @@ export const activityHandlers = [
     const body = (await request.json()) as Record<string, unknown>;
     const id = Number(params.id);
     const existing = mockActivities.find((a) => a.id === id);
-    const requestRoles = body.roles as Array<{ id?: number; roleName: string; headcount: number }> | undefined;
+    const requestRoles = body.roles as Array<{ id?: number; roleName: string; headcount: number; assignments?: Array<{ userId: number }> | null }> | undefined;
 
     let roles: ActivityRoleResponse[];
     if (requestRoles !== undefined) {
       roles = requestRoles.map((r, i) => {
         const existingRole = r.id ? existing?.roles.find((er) => er.id === r.id) : undefined;
+        // Null assignments = don't modify, undefined = don't modify, array = replace
+        const assignments = r.assignments !== undefined && r.assignments !== null
+          ? r.assignments.map((a, j) => ({
+              id: 600 + i * 10 + j,
+              userId: a.userId,
+              firstName: "User",
+              lastName: `${a.userId}`,
+              avatarUrl: null,
+            }))
+          : existingRole?.assignments ?? [];
         return {
           id: r.id ?? 300 + i,
           roleName: r.roleName,
           headcount: r.headcount,
           sortOrder: i,
-          assignments: existingRole?.assignments ?? [],
+          assignments,
         };
       });
     } else {

@@ -595,6 +595,7 @@ export default function AdminActivitiesPage() {
                     id: r.id,
                     roleName: r.roleName,
                     headcount: r.headcount,
+                    assignments: r.assignments.map((a) => ({ userId: a.userId })),
                   })),
                 }}
                 existingAssignments={

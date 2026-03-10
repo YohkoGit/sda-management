@@ -23,6 +23,17 @@ public class UsersController(
     ICurrentUserContext currentUser,
     AppDbContext db) : ControllerBase
 {
+    [HttpGet("assignable-officers")]
+    [DisableRateLimiting]
+    public async Task<IActionResult> GetAssignableOfficers([FromQuery] string? search = null)
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        var items = await userService.GetAssignableOfficersAsync(search);
+        return Ok(new { items, nextCursor = (string?)null });
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? cursor = null,

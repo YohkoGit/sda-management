@@ -42,7 +42,17 @@ export interface BulkCreateUsersResponse {
   count: number;
 }
 
+export interface AssignableOfficer {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string | null;
+  departments: { id: number; name: string; abbreviation: string; color: string }[];
+}
+
 export const userService = {
+  getAssignableOfficers: () =>
+    api.get<{ items: AssignableOfficer[]; nextCursor: string | null }>("/api/users/assignable-officers"),
   getUsers: (cursor?: string, limit?: number) =>
     api.get<PagedResponse<UserListItem>>("/api/users", {
       params: { cursor, limit },

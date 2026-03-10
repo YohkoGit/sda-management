@@ -274,6 +274,50 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
         };
     }
 
+    public async Task<List<AssignableOfficerResponse>> GetAssignableOfficersAsync(string? search)
+    {
+        var query = db.Users
+            .Where(u => !u.IsGuest && u.DeletedAt == null)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            // Sanitize search for control characters
+            var sanitizedSearch = sanitizer.Sanitize(search);
+            var pattern = $"%{sanitizedSearch}%";
+            query = query.Where(u =>
+                EF.Functions.ILike(u.FirstName, pattern) ||
+                EF.Functions.ILike(u.LastName, pattern));
+        }
+
+        var items = await query
+            .OrderBy(u => u.LastName)
+            .ThenBy(u => u.FirstName)
+            .Take(200)
+            .Select(u => new AssignableOfficerResponse
+            {
+                UserId = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Departments = u.UserDepartments
+                    .Select(ud => new OfficerDepartmentBadge
+                    {
+                        Id = ud.Department.Id,
+                        Name = ud.Department.Name,
+                        Abbreviation = ud.Department.Abbreviation,
+                        Color = ud.Department.Color,
+                    })
+                    .ToList(),
+            })
+            .ToListAsync();
+
+        // Set AvatarUrl post-materialization (file system call can't be in EF .Select())
+        foreach (var item in items)
+            item.AvatarUrl = avatarService.GetAvatarUrl(item.UserId);
+
+        return items;
+    }
+
     public async Task<bool> DeleteAsync(int userId)
     {
         var user = await db.Users.FindAsync(userId);

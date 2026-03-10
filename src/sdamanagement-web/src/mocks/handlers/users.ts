@@ -72,6 +72,27 @@ const mockEmptyResponse: PagedResponse<UserListItem> = {
   nextCursor: null,
 };
 
+export const assignableOfficerHandlers = [
+  http.get("/api/users/assignable-officers", () => {
+    return HttpResponse.json({
+      items: mockUsers.map((u) => ({
+        userId: u.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        avatarUrl: u.avatarUrl ?? null,
+        departments: u.departments,
+      })),
+      nextCursor: null,
+    });
+  }),
+];
+
+export const assignableOfficerHandlersEmpty = [
+  http.get("/api/users/assignable-officers", () => {
+    return HttpResponse.json({ items: [], nextCursor: null });
+  }),
+];
+
 export const userHandlers = [
   http.get("/api/users", () => {
     return HttpResponse.json(mockPagedResponse);

@@ -346,9 +346,25 @@
         "cancelButton": "Annuler",
         "emptyState": "Aucun r\u00f4le. Ajoutez des r\u00f4les pour d\u00e9finir les postes n\u00e9cessaires.",
         "maxRolesReached": "Maximum 20 r\u00f4les atteint.",
+        "unassigned": "Non assign\u00e9",
+        "tapToAssign": "Appuyer pour assigner",
+        "editAssignment": "Modifier l\u2019assignation pour {{role}}",
+        "removeAssignment": "{{name}} \u2014 appuyer pour retirer",
         "duplicateRoleName": "Les noms de r\u00f4le doivent \u00eatre uniques.",
         "roleNameRequired": "Le nom du r\u00f4le est requis.",
         "roleNameTooLong": "Le nom du r\u00f4le ne doit pas d\u00e9passer 100 caract\u00e8res."
+      },
+      "contactPicker": {
+        "searchPlaceholder": "Rechercher un membre...",
+        "noResults": "Aucun membre trouv\u00e9.",
+        "selectionFor": "S\u00e9lection pour\u00a0: {{role}}",
+        "fullyStaffed": "Complet",
+        "tapToAssign": "Appuyer pour assigner",
+        "unassigned": "Non assign\u00e9",
+        "emptySystem": "Aucun membre enregistr\u00e9. Ajoutez des membres dans Administration.",
+        "frequentlyAssigned": "Fr\u00e9quemment assign\u00e9s",
+        "addGuest": "Ajouter un invit\u00e9",
+        "showMore": "Afficher plus..."
       },
       "templateSelector": {
         "title": "Choisir un mod\u00e8le",
@@ -450,7 +466,8 @@
     "complete": "Configuration termin\u00e9e \u2014 votre syst\u00e8me est pr\u00eat!"
   },
   "common": {
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "back": "Retour"
   },
   "days": {
     "0": "Dimanche",

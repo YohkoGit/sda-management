@@ -350,9 +350,25 @@ testI18n.use(initReactI18next).init({
               cancelButton: "Annuler",
               emptyState: "Aucun rôle. Ajoutez des rôles pour définir les postes nécessaires.",
               maxRolesReached: "Maximum 20 rôles atteint.",
+              unassigned: "Non assigné",
+              tapToAssign: "Appuyer pour assigner",
+              editAssignment: "Modifier l\u2019assignation pour {{role}}",
+              removeAssignment: "{{name}} — appuyer pour retirer",
               duplicateRoleName: "Les noms de rôle doivent être uniques.",
               roleNameRequired: "Le nom du rôle est requis.",
               roleNameTooLong: "Le nom du rôle ne doit pas dépasser 100 caractères.",
+            },
+            contactPicker: {
+              searchPlaceholder: "Rechercher un membre...",
+              noResults: "Aucun membre trouvé.",
+              selectionFor: "Sélection pour\u00a0: {{role}}",
+              fullyStaffed: "Complet",
+              tapToAssign: "Appuyer pour assigner",
+              unassigned: "Non assigné",
+              emptySystem: "Aucun membre enregistré. Ajoutez des membres dans Administration.",
+              frequentlyAssigned: "Fréquemment assignés",
+              addGuest: "Ajouter un invité",
+              showMore: "Afficher plus...",
             },
             templateSelector: {
               title: "Choisir un modèle",
@@ -443,6 +459,7 @@ testI18n.use(initReactI18next).init({
         },
         common: {
           cancel: "Annuler",
+          back: "Retour",
         },
         days: {
           "0": "Dimanche",

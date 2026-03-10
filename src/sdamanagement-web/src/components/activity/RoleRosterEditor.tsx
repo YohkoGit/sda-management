@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useFieldArray, useWatch } from "react-hook-form";
 import type { Control, UseFormRegister, UseFormSetValue, FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Plus, Minus, Trash2 } from "lucide-react";
+import { Plus, Minus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import ContactPicker from "./ContactPicker";
+import { useAssignableOfficers } from "@/hooks/useAssignableOfficers";
 import type { CreateActivityFormData } from "@/schemas/activitySchema";
+import type { AssignableOfficer } from "@/services/userService";
 
 function AssignmentBadge({ assigned, total }: { assigned: number; total: number }) {
   const isFull = assigned >= total;
@@ -86,6 +90,168 @@ function HeadcountStepper({
   );
 }
 
+function AssignmentChip({
+  officer,
+  onRemove,
+}: {
+  officer: AssignableOfficer;
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  const displayName = `${officer.lastName}, ${officer.firstName.charAt(0)}.`;
+
+  return (
+    <span className="inline-flex items-center gap-1 rounded-xl border bg-background px-2 py-1">
+      <InitialsAvatar
+        firstName={officer.firstName}
+        lastName={officer.lastName}
+        size="xs"
+        avatarUrl={officer.avatarUrl ?? undefined}
+      />
+      <span className="max-w-[10rem] truncate text-sm">{displayName}</span>
+      <button
+        type="button"
+        className="p-2 -mr-1 text-muted-foreground hover:text-foreground"
+        onClick={onRemove}
+        aria-label={t("pages.adminActivities.roleRoster.removeAssignment", {
+          name: `${officer.firstName} ${officer.lastName}`,
+        })}
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </span>
+  );
+}
+
+const RoleRow = memo(function RoleRow({
+  index,
+  control,
+  register,
+  setValue,
+  errors,
+  officers,
+  allAssignments,
+}: {
+  index: number;
+  control: Control<CreateActivityFormData>;
+  register: UseFormRegister<CreateActivityFormData>;
+  setValue: UseFormSetValue<CreateActivityFormData>;
+  errors: FieldErrors<CreateActivityFormData>;
+  officers: AssignableOfficer[];
+  allAssignments: { userId: number }[][];
+}) {
+  const { t } = useTranslation();
+  const [pickerActive, setPickerActive] = useState(false);
+
+  const watchedRole = useWatch({ control, name: `roles.${index}` });
+  const roleErrors = errors.roles?.[index];
+  const roleNameError = roleErrors?.roleName;
+  const watchedHeadcount = watchedRole?.headcount ?? 1;
+  const watchedRoleName = watchedRole?.roleName ?? "";
+  const roleAssignments = watchedRole?.assignments ?? [];
+
+  // Build assigned count: from form state assignments
+  const assignedCount = roleAssignments.length;
+
+  // Compute frequent userIds from all assignments across all roles (deduplicated)
+  const frequentUserIds = [...new Set(allAssignments.flat().map((a) => a.userId))];
+
+  const handleAddAssignment = (userId: number) => {
+    const current = roleAssignments;
+    setValue(`roles.${index}.assignments`, [...current, { userId }]);
+    setPickerActive(false);
+  };
+
+  const handleRemoveAssignment = (userId: number) => {
+    const current = roleAssignments;
+    setValue(
+      `roles.${index}.assignments`,
+      current.filter((a) => a.userId !== userId)
+    );
+  };
+
+  const assignedUserIds = roleAssignments.map((a) => a.userId);
+
+  return (
+    <div
+      role="group"
+      aria-label={`Role ${index + 1}: ${watchedRoleName || t("pages.adminActivities.roleRoster.roleNamePlaceholder")}`}
+      className={cn(
+        "flex flex-col gap-2 rounded-lg border p-3",
+        pickerActive && "ring-2 ring-primary"
+      )}
+    >
+      <input type="hidden" {...register(`roles.${index}.id`, { valueAsNumber: true })} />
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <div className="flex-1">
+          <Label
+            htmlFor={`role-name-${index}`}
+            className="sr-only sm:not-sr-only sm:text-sm sm:font-medium"
+          >
+            {t("pages.adminActivities.roleRoster.roleNamePlaceholder")}
+          </Label>
+          <Input
+            id={`role-name-${index}`}
+            placeholder={t("pages.adminActivities.roleRoster.roleNamePlaceholder")}
+            className={cn("min-h-[44px]", roleNameError && "border-red-500")}
+            aria-describedby={roleNameError ? `role-name-error-${index}` : undefined}
+            {...register(`roles.${index}.roleName`)}
+          />
+          {roleNameError && (
+            <p id={`role-name-error-${index}`} className="mt-1 text-sm text-red-500">
+              {roleNameError.message}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 sm:justify-start sm:gap-3">
+          <HeadcountStepper index={index} control={control} setValue={setValue} />
+          <AssignmentBadge assigned={assignedCount} total={watchedHeadcount} />
+        </div>
+      </div>
+
+      {/* Assignment chips area */}
+      <div className="flex flex-wrap gap-1.5">
+        {roleAssignments.map((assignment) => {
+          const officer = officers.find((o) => o.userId === assignment.userId);
+          if (!officer) return null;
+          return (
+            <AssignmentChip
+              key={assignment.userId}
+              officer={officer}
+              onRemove={() => handleRemoveAssignment(assignment.userId)}
+            />
+          );
+        })}
+
+        {/* Empty slot placeholders */}
+        {assignedCount < watchedHeadcount &&
+          Array.from({ length: Math.min(watchedHeadcount - assignedCount, 3) }).map((_, i) => (
+            <span
+              key={`empty-${i}`}
+              className="inline-flex items-center gap-1 rounded-xl border border-dashed px-3 py-1.5 text-xs text-muted-foreground"
+            >
+              {t("pages.adminActivities.roleRoster.unassigned")}
+            </span>
+          ))}
+
+        {/* Add assignment trigger */}
+        <ContactPicker
+          officers={officers}
+          assignedUserIds={assignedUserIds}
+          headcount={watchedHeadcount}
+          roleName={watchedRoleName}
+          onSelect={handleAddAssignment}
+          onOpenChange={setPickerActive}
+          frequentUserIds={frequentUserIds}
+          trigger={<Plus className="h-4 w-4" />}
+        />
+      </div>
+    </div>
+  );
+});
+
 export default function RoleRosterEditor({
   control,
   register,
@@ -103,10 +269,13 @@ export default function RoleRosterEditor({
   const { fields, append, remove } = useFieldArray({ control, name: "roles" });
   const watchedRoles = useWatch({ control, name: "roles" });
   const [roleToRemove, setRoleToRemove] = useState<{ index: number; assignmentCount: number } | null>(null);
+  const { officers } = useAssignableOfficers();
 
   const handleRemove = (index: number) => {
     const dbId = watchedRoles?.[index]?.id;
-    const assignmentCount = dbId && existingAssignments ? (existingAssignments.get(dbId) ?? 0) : 0;
+    const formAssignments = watchedRoles?.[index]?.assignments?.length ?? 0;
+    const existingCount = dbId && existingAssignments ? (existingAssignments.get(dbId) ?? 0) : 0;
+    const assignmentCount = Math.max(formAssignments, existingCount);
 
     if (assignmentCount > 0) {
       setRoleToRemove({ index, assignmentCount });
@@ -115,8 +284,9 @@ export default function RoleRosterEditor({
     }
   };
 
+  const allAssignments = (watchedRoles ?? []).map((r) => r?.assignments ?? []);
+
   const rolesError = errors.roles;
-  // RHF v7 field arrays: root-level errors may be at .root (useFieldArray) or directly on the object
   const arrayLevelError =
     (rolesError && "root" in rolesError ? (rolesError.root as { message?: string } | undefined)?.message : undefined) ??
     (rolesError && "message" in rolesError ? (rolesError as { message?: string }).message : undefined);
@@ -135,62 +305,29 @@ export default function RoleRosterEditor({
         </p>
       ) : (
         <div className="space-y-3">
-          {fields.map((field, index) => {
-            const roleErrors = errors.roles?.[index];
-            const roleNameError = roleErrors?.roleName;
-            const dbRoleId = watchedRoles?.[index]?.id;
-            const assignedCount =
-              dbRoleId && existingAssignments ? (existingAssignments.get(dbRoleId) ?? 0) : 0;
-            const watchedHeadcount = watchedRoles?.[index]?.headcount ?? 1;
-            const watchedRoleName = watchedRoles?.[index]?.roleName ?? "";
-
-            return (
-              <div
-                key={field.id}
-                role="group"
-                aria-label={`Role ${index + 1}: ${watchedRoleName || t("pages.adminActivities.roleRoster.roleNamePlaceholder")}`}
-                className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3"
+          {fields.map((field, index) => (
+            <div key={field.id} className="relative">
+              <RoleRow
+                index={index}
+                control={control}
+                register={register}
+                setValue={setValue}
+                errors={errors}
+                officers={officers}
+                allAssignments={allAssignments}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1 h-11 w-11 sm:h-9 sm:w-9 text-destructive"
+                onClick={() => handleRemove(index)}
+                aria-label={`${t("pages.adminActivities.roleRoster.removeRole")} ${watchedRoles?.[index]?.roleName ?? ""}`}
               >
-                <input type="hidden" {...register(`roles.${index}.id`, { valueAsNumber: true })} />
-
-                <div className="flex-1">
-                  <Label
-                    htmlFor={`role-name-${index}`}
-                    className="sr-only sm:not-sr-only sm:text-sm sm:font-medium"
-                  >
-                    {t("pages.adminActivities.roleRoster.roleNamePlaceholder")}
-                  </Label>
-                  <Input
-                    id={`role-name-${index}`}
-                    placeholder={t("pages.adminActivities.roleRoster.roleNamePlaceholder")}
-                    className={cn("min-h-[44px]", roleNameError && "border-red-500")}
-                    aria-describedby={roleNameError ? `role-name-error-${index}` : undefined}
-                    {...register(`roles.${index}.roleName`)}
-                  />
-                  {roleNameError && (
-                    <p id={`role-name-error-${index}`} className="mt-1 text-sm text-red-500">
-                      {roleNameError.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between gap-2 sm:justify-start sm:gap-3">
-                  <HeadcountStepper index={index} control={control} setValue={setValue} />
-                  <AssignmentBadge assigned={assignedCount} total={watchedHeadcount} />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11 sm:h-9 sm:w-9 text-destructive"
-                    onClick={() => handleRemove(index)}
-                    aria-label={`${t("pages.adminActivities.roleRoster.removeRole")} ${watchedRoleName}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
 
