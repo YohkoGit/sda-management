@@ -313,9 +313,20 @@
         "visibility": "Visibility",
         "visibilityPublic": "Public",
         "visibilityAuthenticated": "Authenticated only",
+        "specialType": "Special Type",
+        "specialTypeNone": "None",
         "save": "Save",
         "saving": "Saving...",
         "cancel": "Cancel"
+      },
+      "specialType": {
+        "sainte-cene": "Sainte-Cene",
+        "week-of-prayer": "Week of Prayer",
+        "camp-meeting": "Camp Meeting",
+        "youth-day": "Youth Day",
+        "family-day": "Family Day",
+        "womens-day": "Women's Day",
+        "evangelism": "Evangelism"
       },
       "toast": {
         "created": "Activity published",
@@ -327,6 +338,7 @@
       "deleteConfirmWarning": "This will also delete all associated roles and assignments.",
       "deleteConfirmAction": "Delete",
       "conflictError": "This activity was modified by another user. Reload and try again.",
+      "assignmentError": "Assignment validation error. Check roles and try again.",
       "visibility": {
         "public": "Public",
         "authenticated": "Authenticated"

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, CalendarDays, Pencil, Trash2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import RoleRosterEditor from "@/components/activity/RoleRosterEditor";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import {
   createActivitySchema,
+  SPECIAL_TYPES,
   type CreateActivityFormData,
   type UpdateActivityFormData,
 } from "@/schemas/activitySchema";
@@ -230,6 +231,36 @@ function ActivityForm({
         </div>
       </div>
 
+      <div>
+        <Label>{t("pages.adminActivities.form.specialType")}</Label>
+        <Controller
+          name="specialType"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Select
+              value={field.value ?? "none"}
+              onValueChange={(val) => field.onChange(val === "none" ? null : val)}
+            >
+              <SelectTrigger
+                className={`min-h-[44px] ${fieldState.invalid ? "border-red-500" : ""}`}
+                aria-label={t("pages.adminActivities.form.specialType")}
+                aria-invalid={fieldState.invalid}
+              >
+                <SelectValue placeholder={t("pages.adminActivities.form.specialTypeNone")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t("pages.adminActivities.form.specialTypeNone")}</SelectItem>
+                {SPECIAL_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`pages.adminActivities.specialType.${type}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+      </div>
+
       <Separator className="my-4" />
       <div>
         <h3 className="text-lg font-semibold mb-3">
@@ -316,6 +347,8 @@ export default function AdminActivitiesPage() {
     onError: (error: AxiosError) => {
       if (error.response?.status === 400 && selectedTemplate) {
         toast.error(t("pages.adminActivities.templateSelector.templateError"));
+      } else if (error.response?.status === 422) {
+        toast.error(t("pages.adminActivities.assignmentError"));
       }
     },
   });
@@ -335,6 +368,8 @@ export default function AdminActivitiesPage() {
     onError: (error: AxiosError) => {
       if (error.response?.status === 409) {
         toast.error(t("pages.adminActivities.conflictError"));
+      } else if (error.response?.status === 422) {
+        toast.error(t("pages.adminActivities.assignmentError"));
       }
     },
   });
@@ -458,7 +493,14 @@ export default function AdminActivitiesPage() {
             <TableBody>
               {activities.map((activity) => (
                 <TableRow key={activity.id}>
-                  <TableCell className="font-medium">{activity.title}</TableCell>
+                  <TableCell className="font-medium">
+                    {activity.title}
+                    {activity.specialType && (
+                      <Badge variant="secondary" className="ml-2 max-w-[10rem] truncate text-xs" data-testid="special-type-badge">
+                        {t(`pages.adminActivities.specialType.${activity.specialType}`)}
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell>{activity.date}</TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {formatTime(activity.startTime)}–{formatTime(activity.endTime)}
@@ -591,6 +633,7 @@ export default function AdminActivitiesPage() {
                   endTime: formatTime(editActivity.endTime),
                   departmentId: editActivity.departmentId ?? 0,
                   visibility: editActivity.visibility as "public" | "authenticated",
+                  specialType: editActivity.specialType as CreateActivityFormData["specialType"],
                   roles: editActivity.roles.map((r) => ({
                     id: r.id,
                     roleName: r.roleName,

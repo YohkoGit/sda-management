@@ -1438,4 +1438,172 @@ public class ActivityEndpointTests : IntegrationTestBase
         assignments[0].GetProperty("firstName").GetString().ShouldBe("Test");
         assignments[0].GetProperty("lastName").GetString().ShouldBe("Viewer");
     }
+
+    // --- SpecialType CRUD (Story 4.5) ---
+
+    [Fact]
+    public async Task CreateActivity_WithSpecialType_Returns201WithSpecialType()
+    {
+        var payload = new
+        {
+            title = "Sainte-Cene",
+            date = "2026-04-01",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            specialType = "sainte-cene",
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("specialType").GetString().ShouldBe("sainte-cene");
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithoutSpecialType_ReturnsNullSpecialType()
+    {
+        var payload = ValidActivityPayload();
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("specialType").ValueKind.ShouldBe(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_SetAndClearSpecialType_RoundTrips()
+    {
+        // Create without specialType
+        var (activityId, token) = await CreateActivityAndGetIdAndToken();
+
+        // Set specialType
+        var setPayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            specialType = "youth-day",
+            concurrencyToken = token,
+        };
+
+        var setResponse = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", setPayload);
+        setResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var setJson = await setResponse.Content.ReadAsStringAsync();
+        using var setDoc = JsonDocument.Parse(setJson);
+        setDoc.RootElement.GetProperty("specialType").GetString().ShouldBe("youth-day");
+        var newToken = setDoc.RootElement.GetProperty("concurrencyToken").GetUInt32();
+
+        // Clear specialType (set to null)
+        var clearPayload = new
+        {
+            title = "Culte du Sabbat",
+            date = "2026-03-07",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            specialType = (string?)null,
+            concurrencyToken = newToken,
+        };
+
+        var clearResponse = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", clearPayload);
+        clearResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var clearJson = await clearResponse.Content.ReadAsStringAsync();
+        using var clearDoc = JsonDocument.Parse(clearJson);
+        clearDoc.RootElement.GetProperty("specialType").ValueKind.ShouldBe(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithInvalidSpecialType_Returns400()
+    {
+        var payload = new
+        {
+            title = "Invalid Tag",
+            date = "2026-04-01",
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            specialType = "invalid-tag",
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    // --- Visibility filter (Story 4.5) ---
+
+    [Fact]
+    public async Task GetAll_WithVisibilityPublic_ReturnsOnlyPublicActivities()
+    {
+        await CreateTestActivity(_deptMifemId, "Public Activity", visibility: ActivityVisibility.Public);
+        await CreateTestActivity(_deptMifemId, "Auth Activity", visibility: ActivityVisibility.Authenticated);
+
+        var response = await OwnerClient.GetAsync("/api/activities?visibility=public");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var activities = doc.RootElement;
+
+        activities.GetArrayLength().ShouldBeGreaterThan(0);
+        foreach (var activity in activities.EnumerateArray())
+        {
+            activity.GetProperty("visibility").GetString().ShouldBe("public");
+        }
+    }
+
+    [Fact]
+    public async Task GetAll_WithVisibilityAuthenticated_ReturnsOnlyAuthenticatedActivities()
+    {
+        await CreateTestActivity(_deptMifemId, "Public Activity 2", visibility: ActivityVisibility.Public);
+        await CreateTestActivity(_deptMifemId, "Auth Activity 2", visibility: ActivityVisibility.Authenticated);
+
+        var response = await OwnerClient.GetAsync("/api/activities?visibility=authenticated");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var activities = doc.RootElement;
+
+        activities.GetArrayLength().ShouldBeGreaterThan(0);
+        foreach (var activity in activities.EnumerateArray())
+        {
+            activity.GetProperty("visibility").GetString().ShouldBe("authenticated");
+        }
+    }
+
+    [Fact]
+    public async Task GetAll_WithoutVisibilityFilter_ReturnsAllActivities()
+    {
+        await CreateTestActivity(_deptMifemId, "Public Activity 3", visibility: ActivityVisibility.Public);
+        await CreateTestActivity(_deptMifemId, "Auth Activity 3", visibility: ActivityVisibility.Authenticated);
+
+        var response = await OwnerClient.GetAsync("/api/activities");
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var activities = doc.RootElement;
+
+        activities.GetArrayLength().ShouldBeGreaterThanOrEqualTo(2);
+    }
+
+    [Fact]
+    public async Task GetAll_WithInvalidVisibility_Returns400()
+    {
+        var response = await OwnerClient.GetAsync("/api/activities?visibility=invalid");
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
 }

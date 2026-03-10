@@ -11,6 +11,7 @@ public class ActivityListItem
     public string DepartmentName { get; init; } = string.Empty;
     public string DepartmentColor { get; init; } = string.Empty;
     public string Visibility { get; init; } = string.Empty;
+    public string? SpecialType { get; init; }
     public int RoleCount { get; init; }
     public DateTime CreatedAt { get; init; }
 }

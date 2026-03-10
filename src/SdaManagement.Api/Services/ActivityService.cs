@@ -10,12 +10,18 @@ public class ActivityService(
     ISanitizationService sanitizer,
     IAvatarService avatarService) : IActivityService
 {
-    public async Task<List<ActivityListItem>> GetAllAsync(int? departmentId)
+    public async Task<List<ActivityListItem>> GetAllAsync(int? departmentId, string? visibility = null)
     {
         var query = dbContext.Activities.AsQueryable();
 
         if (departmentId.HasValue)
             query = query.Where(a => a.DepartmentId == departmentId.Value);
+
+        if (!string.IsNullOrEmpty(visibility))
+        {
+            var parsed = Enum.Parse<ActivityVisibility>(visibility, ignoreCase: true);
+            query = query.Where(a => a.Visibility == parsed);
+        }
 
         return await query
             .OrderByDescending(a => a.Date)
@@ -31,6 +37,7 @@ public class ActivityService(
                 DepartmentName = a.Department != null ? a.Department.Name : string.Empty,
                 DepartmentColor = a.Department != null ? a.Department.Color : string.Empty,
                 Visibility = a.Visibility.ToString().ToLowerInvariant(),
+                SpecialType = a.SpecialType,
                 RoleCount = a.Roles.Count,
                 CreatedAt = a.CreatedAt,
             })
@@ -65,6 +72,7 @@ public class ActivityService(
             EndTime = request.EndTime,
             DepartmentId = request.DepartmentId,
             Visibility = Enum.Parse<ActivityVisibility>(request.Visibility, ignoreCase: true),
+            SpecialType = string.IsNullOrWhiteSpace(request.SpecialType) ? null : request.SpecialType,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -158,6 +166,7 @@ public class ActivityService(
         activity.EndTime = request.EndTime;
         activity.DepartmentId = request.DepartmentId;
         activity.Visibility = Enum.Parse<ActivityVisibility>(request.Visibility, ignoreCase: true);
+        activity.SpecialType = string.IsNullOrWhiteSpace(request.SpecialType) ? null : request.SpecialType;
         activity.UpdatedAt = now;
 
         if (request.Roles is not null)
@@ -323,6 +332,7 @@ public class ActivityService(
             DepartmentId = activity.DepartmentId,
             DepartmentName = activity.Department?.Name ?? string.Empty,
             Visibility = activity.Visibility.ToString().ToLowerInvariant(),
+            SpecialType = activity.SpecialType,
             Roles = activity.Roles
                 .OrderBy(r => r.SortOrder)
                 .Select(r => new ActivityRoleResponse

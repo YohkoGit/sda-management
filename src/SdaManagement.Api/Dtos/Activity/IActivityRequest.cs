@@ -9,4 +9,5 @@ public interface IActivityRequest
     TimeOnly EndTime { get; }
     int DepartmentId { get; }
     string Visibility { get; }
+    string? SpecialType { get; }
 }

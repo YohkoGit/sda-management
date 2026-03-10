@@ -11,6 +11,7 @@ public class ActivityResponse
     public int? DepartmentId { get; init; }
     public string DepartmentName { get; init; } = string.Empty;
     public string Visibility { get; init; } = string.Empty;
+    public string? SpecialType { get; init; }
     public List<ActivityRoleResponse> Roles { get; init; } = [];
     public uint ConcurrencyToken { get; init; }
     public DateTime CreatedAt { get; init; }

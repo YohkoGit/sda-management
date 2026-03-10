@@ -169,6 +169,7 @@ describe("AdminActivitiesPage", () => {
         departmentId: 1,
         departmentName: "Jeunesse Adventiste",
         visibility: "public",
+        specialType: null,
         roles: [
           { id: 200, roleName: "Predicateur", headcount: 1, sortOrder: 0, assignments: [] },
           { id: 201, roleName: "Ancien", headcount: 1, sortOrder: 1, assignments: [] },
@@ -211,7 +212,7 @@ describe("AdminActivitiesPage", () => {
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
-    const selectTrigger = screen.getByRole("combobox");
+    const selectTrigger = screen.getAllByRole("combobox")[0];
     await user.click(selectTrigger);
     const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
     await user.click(deptOption);
@@ -246,6 +247,7 @@ describe("AdminActivitiesPage", () => {
         departmentId: 1,
         departmentName: "Jeunesse Adventiste",
         visibility: "public",
+        specialType: null,
         roles: [],
         concurrencyToken: 100,
         createdAt: new Date().toISOString(),
@@ -279,7 +281,7 @@ describe("AdminActivitiesPage", () => {
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
-    const selectTrigger = screen.getByRole("combobox");
+    const selectTrigger = screen.getAllByRole("combobox")[0];
     await user.click(selectTrigger);
     const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
     await user.click(deptOption);
@@ -413,6 +415,7 @@ describe("AdminActivitiesPage", () => {
               departmentName: "MIFEM",
               departmentColor: "#4F46E5",
               visibility: "public",
+              specialType: null,
               roleCount: 0,
               createdAt: "2026-03-01T00:00:00Z",
             },
@@ -583,6 +586,7 @@ describe("AdminActivitiesPage", () => {
         departmentId: 1,
         departmentName: "Jeunesse Adventiste",
         visibility: "public",
+        specialType: null,
         roles: [{ id: 200, roleName: "Musicien", headcount: 1, sortOrder: 0, assignments: [] }],
         concurrencyToken: 100,
         createdAt: new Date().toISOString(),
@@ -617,7 +621,7 @@ describe("AdminActivitiesPage", () => {
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
-    const selectTrigger = screen.getByRole("combobox");
+    const selectTrigger = screen.getAllByRole("combobox")[0];
     await user.click(selectTrigger);
     const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
     await user.click(deptOption);
@@ -655,6 +659,7 @@ describe("AdminActivitiesPage", () => {
         departmentId: 1,
         departmentName: "MIFEM",
         visibility: "public",
+        specialType: null,
         roles: [
           { id: 1, roleName: "Predicateur", headcount: 3, sortOrder: 0, assignments: [] },
           { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, assignments: [] },
@@ -720,6 +725,7 @@ describe("AdminActivitiesPage", () => {
         departmentId: 1,
         departmentName: "MIFEM",
         visibility: "public",
+        specialType: null,
         roles: [],
         concurrencyToken: 101,
         createdAt: "2026-03-01T00:00:00Z",
@@ -783,5 +789,245 @@ describe("AdminActivitiesPage", () => {
     expect(data.roles).toHaveLength(0);
 
     updateSpy.mockRestore();
+  });
+
+  // --- SpecialType Tests (Story 4.5) ---
+
+  it("renders specialType select with all options in create form", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    await waitFor(() => {
+      expect(screen.getByText("Type spécial")).toBeInTheDocument();
+    });
+
+    // Open the specialType select — find by label
+    const specialTypeLabel = screen.getByText("Type spécial");
+    const selectContainer = specialTypeLabel.closest("div")!;
+    const selectTrigger = selectContainer.querySelector('[role="combobox"]')!;
+    await user.click(selectTrigger);
+
+    // Verify all options are present
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Aucun" })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("option", { name: "Sainte-Cène" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Semaine de prière" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Camp Meeting" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Journée de la jeunesse" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Journée de la famille" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Journée de la femme" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Évangélisation" })).toBeInTheDocument();
+  });
+
+  it("selecting specialType includes it in the create payload", async () => {
+    const user = userEvent.setup();
+    const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
+      data: {
+        id: 99,
+        title: "Sainte-Cene",
+        description: null,
+        date: "2026-04-01",
+        startTime: "10:00:00",
+        endTime: "12:00:00",
+        departmentId: 1,
+        departmentName: "Jeunesse Adventiste",
+        visibility: "public",
+        specialType: "sainte-cene",
+        roles: [],
+        concurrencyToken: 100,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      status: 201,
+      statusText: "Created",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+    });
+
+    // Fill required fields
+    await user.type(screen.getByLabelText("Titre"), "Sainte-Cene");
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-04-01" } });
+    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
+    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+
+    // Select department
+    const deptTrigger = screen.getAllByRole("combobox")[0];
+    await user.click(deptTrigger);
+    const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
+    await user.click(deptOption);
+
+    // Select specialType
+    const specialTypeLabel = screen.getByText("Type spécial");
+    const specialTypeContainer = specialTypeLabel.closest("div")!;
+    const specialTypeTrigger = specialTypeContainer.querySelector('[role="combobox"]')!;
+    await user.click(specialTypeTrigger);
+
+    const sainteCeneOption = await screen.findByRole("option", { name: "Sainte-Cène" });
+    await user.click(sainteCeneOption);
+
+    // Submit
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalledOnce();
+    });
+
+    const callArgs = createSpy.mock.calls[0][0];
+    expect(callArgs.specialType).toBe("sainte-cene");
+
+    createSpy.mockRestore();
+  });
+
+  it("selecting 'None' sends null specialType", async () => {
+    const user = userEvent.setup();
+    const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
+      data: {
+        id: 99,
+        title: "No Special",
+        description: null,
+        date: "2026-04-01",
+        startTime: "10:00:00",
+        endTime: "12:00:00",
+        departmentId: 1,
+        departmentName: "Jeunesse Adventiste",
+        visibility: "public",
+        specialType: null,
+        roles: [],
+        concurrencyToken: 100,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      status: 201,
+      statusText: "Created",
+      headers: {},
+      config: {} as never,
+    });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Nouvelle activité"));
+    await skipTemplateStep(user);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Titre")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Titre"), "No Special");
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-04-01" } });
+    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
+    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+
+    const deptTrigger = screen.getAllByRole("combobox")[0];
+    await user.click(deptTrigger);
+    const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
+    await user.click(deptOption);
+
+    // Submit without selecting specialType (default is None/null)
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalledOnce();
+    });
+
+    const callArgs = createSpy.mock.calls[0][0];
+    // Default is undefined/null — not set
+    expect(callArgs.specialType ?? null).toBeNull();
+
+    createSpy.mockRestore();
+  });
+
+  it("edit flow pre-populates specialType from existing activity", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Click edit on first activity (which has specialType: "sainte-cene" in mock)
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // The specialType select should show "Sainte-Cène" (pre-populated)
+    // There may be multiple "Sainte-Cène" elements (badge in table + select in form)
+    const sainteCeneElements = screen.getAllByText("Sainte-Cène");
+    expect(sainteCeneElements.length).toBeGreaterThanOrEqual(2); // badge + select value
+  });
+
+  it("renders specialType badge for activities with specialType", async () => {
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // First activity has specialType: "sainte-cene" — should show badge
+    expect(screen.getByText("Sainte-Cène")).toBeInTheDocument();
+  });
+
+  it("does not render specialType badge for activities without specialType", async () => {
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Reunion JA")).toBeInTheDocument();
+    });
+
+    // Second activity has specialType: null — no badge should appear
+    const reunionRow = screen.getByText("Reunion JA").closest("tr")!;
+    const specialBadges = reunionRow.querySelectorAll('[data-testid="special-type-badge"]');
+    expect(specialBadges).toHaveLength(0);
   });
 });

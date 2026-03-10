@@ -317,9 +317,20 @@ testI18n.use(initReactI18next).init({
               visibility: "Visibilité",
               visibilityPublic: "Publique",
               visibilityAuthenticated: "Authentifié seulement",
+              specialType: "Type spécial",
+              specialTypeNone: "Aucun",
               save: "Enregistrer",
               saving: "Enregistrement...",
               cancel: "Annuler",
+            },
+            specialType: {
+              "sainte-cene": "Sainte-Cène",
+              "week-of-prayer": "Semaine de prière",
+              "camp-meeting": "Camp Meeting",
+              "youth-day": "Journée de la jeunesse",
+              "family-day": "Journée de la famille",
+              "womens-day": "Journée de la femme",
+              "evangelism": "Évangélisation",
             },
             toast: {
               created: "Activité publiée",
@@ -331,6 +342,7 @@ testI18n.use(initReactI18next).init({
             deleteConfirmWarning: "Cette action supprimera également tous les rôles et assignations associés.",
             deleteConfirmAction: "Supprimer",
             conflictError: "Cette activité a été modifiée par un autre utilisateur. Rechargez et réessayez.",
+            assignmentError: "Erreur de validation des assignations. Vérifiez les rôles et réessayez.",
             visibility: {
               public: "Publique",
               authenticated: "Authentifié",

@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const SPECIAL_TYPES = [
+  "sainte-cene",
+  "week-of-prayer",
+  "camp-meeting",
+  "youth-day",
+  "family-day",
+  "womens-day",
+  "evangelism",
+] as const;
+
 export const roleAssignmentInputSchema = z.object({
   userId: z.number().int().positive(),
 });
@@ -29,6 +39,7 @@ export const createActivitySchema = z
     endTime: z.string().min(1, { message: "L'heure de fin est requise" }),
     departmentId: z.number().int().positive({ message: "Le departement est requis" }),
     visibility: z.enum(["public", "authenticated"]),
+    specialType: z.enum(SPECIAL_TYPES).nullable().optional(),
     templateId: z.number().int().positive().optional(),
     roles: z.array(activityRoleInputSchema).max(20).optional(),
   })

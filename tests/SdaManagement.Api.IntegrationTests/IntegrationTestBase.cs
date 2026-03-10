@@ -151,7 +151,8 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         string? title = null,
         DateOnly? date = null,
         ActivityVisibility visibility = ActivityVisibility.Public,
-        List<(string RoleName, int Headcount, List<int>? UserIds)>? roles = null)
+        List<(string RoleName, int Headcount, List<int>? UserIds)>? roles = null,
+        string? specialType = null)
     {
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -165,6 +166,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(12, 0),
             Visibility = visibility,
+            SpecialType = specialType,
             CreatedAt = now,
             UpdatedAt = now,
         };

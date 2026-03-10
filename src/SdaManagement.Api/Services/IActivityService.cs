@@ -4,7 +4,7 @@ namespace SdaManagement.Api.Services;
 
 public interface IActivityService
 {
-    Task<List<ActivityListItem>> GetAllAsync(int? departmentId);
+    Task<List<ActivityListItem>> GetAllAsync(int? departmentId, string? visibility = null);
     Task<ActivityResponse?> GetByIdAsync(int id);
     Task<ActivityResponse> CreateAsync(CreateActivityRequest request);
     Task<ActivityResponse?> UpdateAsync(int id, UpdateActivityRequest request);

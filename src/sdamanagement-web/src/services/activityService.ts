@@ -27,6 +27,7 @@ export interface ActivityResponse {
   departmentId: number | null;
   departmentName: string;
   visibility: string;
+  specialType: string | null;
   roles: ActivityRoleResponse[];
   concurrencyToken: number;
   createdAt: string;
@@ -43,6 +44,7 @@ export interface ActivityListItem {
   departmentName: string;
   departmentColor: string;
   visibility: string;
+  specialType: string | null;
   roleCount: number;
   createdAt: string;
 }

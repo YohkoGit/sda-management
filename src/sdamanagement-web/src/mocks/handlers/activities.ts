@@ -17,6 +17,7 @@ const mockActivities: ActivityResponse[] = [
     departmentId: 1,
     departmentName: "MIFEM",
     visibility: "public",
+    specialType: "sainte-cene",
     roles: [
       {
         id: 1,
@@ -49,6 +50,7 @@ const mockActivities: ActivityResponse[] = [
     departmentId: 2,
     departmentName: "Jeunesse Adventiste",
     visibility: "authenticated",
+    specialType: null,
     roles: [],
     concurrencyToken: 43,
     createdAt: "2026-03-02T00:00:00Z",
@@ -66,6 +68,7 @@ const toListItem = (a: ActivityResponse): ActivityListItem => ({
   departmentName: a.departmentName,
   departmentColor: a.departmentId === 1 ? "#4F46E5" : "#10B981",
   visibility: a.visibility,
+  specialType: a.specialType,
   roleCount: a.roles.length,
   createdAt: a.createdAt,
 });
@@ -164,6 +167,7 @@ export const activityHandlers = [
       departmentId: body.departmentId as number,
       departmentName: "MIFEM",
       visibility: body.visibility as string,
+      specialType: (body.specialType as string | null) ?? null,
       roles,
       concurrencyToken: 100,
       createdAt: new Date().toISOString(),
@@ -214,6 +218,7 @@ export const activityHandlers = [
       departmentId: body.departmentId as number,
       departmentName: "MIFEM",
       visibility: body.visibility as string,
+      specialType: (body.specialType as string | null) ?? null,
       roles,
       concurrencyToken: 101,
       createdAt: "2026-03-01T00:00:00Z",

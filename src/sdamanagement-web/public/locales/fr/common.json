@@ -313,9 +313,20 @@
         "visibility": "Visibilit\u00e9",
         "visibilityPublic": "Publique",
         "visibilityAuthenticated": "Authentifi\u00e9 seulement",
+        "specialType": "Type sp\u00e9cial",
+        "specialTypeNone": "Aucun",
         "save": "Enregistrer",
         "saving": "Enregistrement...",
         "cancel": "Annuler"
+      },
+      "specialType": {
+        "sainte-cene": "Sainte-C\u00e8ne",
+        "week-of-prayer": "Semaine de pri\u00e8re",
+        "camp-meeting": "Camp Meeting",
+        "youth-day": "Journ\u00e9e de la jeunesse",
+        "family-day": "Journ\u00e9e de la famille",
+        "womens-day": "Journ\u00e9e de la femme",
+        "evangelism": "\u00c9vang\u00e9lisation"
       },
       "toast": {
         "created": "Activit\u00e9 publi\u00e9e",
@@ -327,6 +338,7 @@
       "deleteConfirmWarning": "Cette action supprimera \u00e9galement tous les r\u00f4les et assignations associ\u00e9s.",
       "deleteConfirmAction": "Supprimer",
       "conflictError": "Cette activit\u00e9 a \u00e9t\u00e9 modifi\u00e9e par un autre utilisateur. Rechargez et r\u00e9essayez.",
+      "assignmentError": "Erreur de validation des assignations. V\u00e9rifiez les r\u00f4les et r\u00e9essayez.",
       "visibility": {
         "public": "Publique",
         "authenticated": "Authentifi\u00e9"

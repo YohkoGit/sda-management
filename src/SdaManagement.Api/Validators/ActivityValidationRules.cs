@@ -5,6 +5,12 @@ namespace SdaManagement.Api.Validators;
 
 internal static class ActivityValidationRules
 {
+    private static readonly string[] AllowedSpecialTypes =
+    [
+        "sainte-cene", "week-of-prayer", "camp-meeting",
+        "youth-day", "family-day", "womens-day", "evangelism"
+    ];
+
     internal static void Apply<T>(AbstractValidator<T> validator)
         where T : IActivityRequest
     {
@@ -27,5 +33,11 @@ internal static class ActivityValidationRules
             .NotEmpty()
             .Must(v => v is "public" or "authenticated")
             .WithMessage("Visibility must be 'public' or 'authenticated'.");
+        validator.RuleFor(x => x.SpecialType)
+            .MaximumLength(50)
+            .Must(st => string.IsNullOrEmpty(st) || AllowedSpecialTypes.Contains(st))
+            .WithMessage($"SpecialType must be one of: {string.Join(", ", AllowedSpecialTypes)}")
+            .MustNotContainControlCharacters()
+            .When(x => !string.IsNullOrWhiteSpace(x.SpecialType));
     }
 }

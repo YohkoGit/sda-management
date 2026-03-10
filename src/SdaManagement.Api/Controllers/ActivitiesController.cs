@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Dtos.Activity;
 using SdaManagement.Api.Services;
 using SdacAuth = SdaManagement.Api.Auth;
@@ -18,7 +19,7 @@ public class ActivitiesController(
     SdacAuth.IAuthorizationService auth) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int? departmentId)
+    public async Task<IActionResult> GetAll([FromQuery] int? departmentId, [FromQuery] string? visibility = null)
     {
         if (departmentId.HasValue)
         {
@@ -31,7 +32,17 @@ public class ActivitiesController(
                 return Forbid();
         }
 
-        var activities = await activityService.GetAllAsync(departmentId);
+        if (!string.IsNullOrEmpty(visibility) &&
+            !Enum.TryParse<ActivityVisibility>(visibility, ignoreCase: true, out _))
+            return BadRequest(new ProblemDetails
+            {
+                Type = "urn:sdac:validation-error",
+                Title = "Invalid Visibility Filter",
+                Status = 400,
+                Detail = "Visibility must be 'public' or 'authenticated'.",
+            });
+
+        var activities = await activityService.GetAllAsync(departmentId, visibility);
         return Ok(activities);
     }
 
