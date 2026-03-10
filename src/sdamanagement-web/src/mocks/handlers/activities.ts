@@ -57,7 +57,93 @@ const mockActivities: ActivityResponse[] = [
     createdAt: "2026-03-02T00:00:00Z",
     updatedAt: "2026-03-02T00:00:00Z",
   },
+  {
+    id: 3,
+    title: "Ecole du Sabbat",
+    description: "Étude biblique du matin",
+    date: "2026-03-14",
+    startTime: "09:00:00",
+    endTime: "10:00:00",
+    departmentId: 1,
+    departmentName: "MIFEM",
+    visibility: "public",
+    specialType: null,
+    roles: [
+      {
+        id: 5,
+        roleName: "Predicateur",
+        headcount: 1,
+        sortOrder: 0,
+        assignments: [
+          { id: 20, userId: 3, firstName: "Marie", lastName: "Blanc", avatarUrl: null, isGuest: false },
+        ],
+      },
+      {
+        id: 6,
+        roleName: "Ancien de Service",
+        headcount: 1,
+        sortOrder: 1,
+        assignments: [
+          { id: 21, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
+        ],
+      },
+    ],
+    concurrencyToken: 44,
+    createdAt: "2026-03-03T00:00:00Z",
+    updatedAt: "2026-03-03T00:00:00Z",
+  },
+  {
+    id: 4,
+    title: "Veillée de Prière",
+    description: null,
+    date: "2026-03-14",
+    startTime: "19:00:00",
+    endTime: "21:00:00",
+    departmentId: 1,
+    departmentName: "MIFEM",
+    visibility: "authenticated",
+    specialType: null,
+    roles: [
+      {
+        id: 7,
+        roleName: "Predicateur",
+        headcount: 1,
+        sortOrder: 0,
+        assignments: [
+          { id: 30, userId: 3, firstName: "Marie", lastName: "Blanc", avatarUrl: null, isGuest: false },
+        ],
+      },
+      {
+        id: 8,
+        roleName: "Diacres",
+        headcount: 3,
+        sortOrder: 1,
+        assignments: [
+          { id: 31, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
+        ],
+      },
+    ],
+    concurrencyToken: 45,
+    createdAt: "2026-03-04T00:00:00Z",
+    updatedAt: "2026-03-04T00:00:00Z",
+  },
 ];
+
+const computeStaffingStatus = (roles: ActivityRoleResponse[]): string => {
+  const totalHeadcount = roles.reduce((sum, r) => sum + r.headcount, 0);
+  if (totalHeadcount === 0) return "NoRoles";
+  const hasCriticalGap = roles.some(
+    (r) =>
+      r.assignments.length === 0 &&
+      (r.roleName.toLowerCase() === "ancien" ||
+        r.roleName.toLowerCase().startsWith("ancien ") ||
+        r.roleName.toLowerCase().includes("predicateur")),
+  );
+  if (hasCriticalGap) return "CriticalGap";
+  const assignedCount = roles.reduce((sum, r) => sum + r.assignments.length, 0);
+  if (assignedCount >= totalHeadcount) return "FullyStaffed";
+  return "PartiallyStaffed";
+};
 
 const toListItem = (a: ActivityResponse): ActivityListItem => ({
   id: a.id,
@@ -71,6 +157,9 @@ const toListItem = (a: ActivityResponse): ActivityListItem => ({
   visibility: a.visibility,
   specialType: a.specialType,
   roleCount: a.roles.length,
+  totalHeadcount: a.roles.reduce((sum, r) => sum + r.headcount, 0),
+  assignedCount: a.roles.reduce((sum, r) => sum + r.assignments.length, 0),
+  staffingStatus: computeStaffingStatus(a.roles),
   createdAt: a.createdAt,
 });
 

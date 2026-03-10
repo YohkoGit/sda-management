@@ -23,10 +23,10 @@ public class ActivityService(
             query = query.Where(a => a.Visibility == parsed);
         }
 
-        return await query
+        var projected = await query
             .OrderByDescending(a => a.Date)
             .ThenBy(a => a.StartTime)
-            .Select(a => new ActivityListItem
+            .Select(a => new
             {
                 Id = a.Id,
                 Title = a.Title,
@@ -39,9 +39,36 @@ public class ActivityService(
                 Visibility = a.Visibility.ToString().ToLowerInvariant(),
                 SpecialType = a.SpecialType,
                 RoleCount = a.Roles.Count,
+                TotalHeadcount = a.Roles.Sum(r => r.Headcount),
+                AssignedCount = a.Roles.Sum(r => r.Assignments.Count),
+                // EF Core 10 + Npgsql translates this collection projection to a correlated subquery (not N+1).
+                // Verified: produces single SQL query with JSON aggregation for role-level data.
+                RoleDetails = a.Roles.Select(r => new { r.RoleName, AssignmentCount = r.Assignments.Count }).ToList(),
                 CreatedAt = a.CreatedAt,
             })
             .ToListAsync();
+
+        return projected.Select(a => new ActivityListItem
+        {
+            Id = a.Id,
+            Title = a.Title,
+            Date = a.Date,
+            StartTime = a.StartTime,
+            EndTime = a.EndTime,
+            DepartmentId = a.DepartmentId,
+            DepartmentName = a.DepartmentName,
+            DepartmentColor = a.DepartmentColor,
+            Visibility = a.Visibility,
+            SpecialType = a.SpecialType,
+            RoleCount = a.RoleCount,
+            TotalHeadcount = a.TotalHeadcount,
+            AssignedCount = a.AssignedCount,
+            StaffingStatus = ComputeStaffingStatus(
+                a.TotalHeadcount,
+                a.AssignedCount,
+                a.RoleDetails.Select(r => (r.RoleName, r.AssignmentCount))),
+            CreatedAt = a.CreatedAt,
+        }).ToList();
     }
 
     public async Task<ActivityResponse?> GetByIdAsync(int id)
@@ -317,6 +344,31 @@ public class ActivityService(
         if (invalidIds.Count > 0)
             throw new InvalidOperationException(
                 $"Invalid assignment userId(s): {string.Join(", ", invalidIds)}. Users must exist and not be deleted.");
+    }
+
+    internal static string ComputeStaffingStatus(
+        int totalHeadcount,
+        int assignedCount,
+        IEnumerable<(string RoleName, int AssignmentCount)> roleDetails)
+    {
+        if (totalHeadcount == 0)
+            return "NoRoles";
+
+        // "Ancien de Service", "Ancien du Sabbat" match — but NOT "Ancienne Musique"
+        // Uses "ancien " (with trailing space) + exact "ancien" to avoid feminine-form false positives
+        var hasCriticalGap = roleDetails.Any(r =>
+            r.AssignmentCount == 0 &&
+            (r.RoleName.Equals("ancien", StringComparison.OrdinalIgnoreCase) ||
+             r.RoleName.StartsWith("ancien ", StringComparison.OrdinalIgnoreCase) ||
+             r.RoleName.Contains("predicateur", StringComparison.OrdinalIgnoreCase)));
+
+        if (hasCriticalGap)
+            return "CriticalGap";
+
+        if (assignedCount >= totalHeadcount)
+            return "FullyStaffed";
+
+        return "PartiallyStaffed";
     }
 
     private ActivityResponse MapToResponse(Activity activity)

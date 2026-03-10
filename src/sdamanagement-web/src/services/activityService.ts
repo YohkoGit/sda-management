@@ -47,6 +47,9 @@ export interface ActivityListItem {
   visibility: string;
   specialType: string | null;
   roleCount: number;
+  totalHeadcount: number;
+  assignedCount: number;
+  staffingStatus: string;
   createdAt: string;
 }
 

@@ -401,6 +401,25 @@
         "retry": "Retry",
         "noDefaultRoles": "No default roles",
         "templateError": "The selected template was not found."
+      },
+      "staffing": {
+        "fullyStaffed": "Complete",
+        "partiallyStaffed": "{{assigned}}/{{total}}",
+        "criticalGap": "Critical",
+        "noRoles": "No roles",
+        "count": "{{assigned}}/{{total}}",
+        "filled": "{{assigned}}/{{total}} filled",
+        "ariaLabel": "Staffing: {{assigned}} of {{total}} roles filled",
+        "ariaLabelCritical": "Staffing: {{assigned}} of {{total}} roles filled, critical gap",
+        "ariaLabelNoRoles": "No roles defined",
+        "column": "Staffing"
+      },
+      "roster": {
+        "title": "Activity Roster",
+        "unassigned": "Unassigned",
+        "guest": "(Guest)",
+        "noRoles": "No roles",
+        "moreUnassigned": "+{{count}} more"
       }
     },
     "notFound": {

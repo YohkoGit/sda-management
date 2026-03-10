@@ -13,5 +13,8 @@ public class ActivityListItem
     public string Visibility { get; init; } = string.Empty;
     public string? SpecialType { get; init; }
     public int RoleCount { get; init; }
+    public int TotalHeadcount { get; init; }
+    public int AssignedCount { get; init; }
+    public string StaffingStatus { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
 }

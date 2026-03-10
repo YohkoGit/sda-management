@@ -401,6 +401,25 @@
         "retry": "R\u00e9essayer",
         "noDefaultRoles": "Aucun r\u00f4le par d\u00e9faut",
         "templateError": "Le mod\u00e8le s\u00e9lectionn\u00e9 est introuvable."
+      },
+      "staffing": {
+        "fullyStaffed": "Complet",
+        "partiallyStaffed": "{{assigned}}/{{total}}",
+        "criticalGap": "Critique",
+        "noRoles": "Aucun r\u00f4le",
+        "count": "{{assigned}}/{{total}}",
+        "filled": "{{assigned}}/{{total}} postes pourvus",
+        "ariaLabel": "Effectif\u00a0: {{assigned}} sur {{total}} postes pourvus",
+        "ariaLabelCritical": "Effectif\u00a0: {{assigned}} sur {{total}} postes pourvus, lacune critique",
+        "ariaLabelNoRoles": "Aucun r\u00f4le d\u00e9fini",
+        "column": "Effectif"
+      },
+      "roster": {
+        "title": "Composition de l\u2019activit\u00e9",
+        "unassigned": "Non assign\u00e9",
+        "guest": "(Invit\u00e9)",
+        "noRoles": "Aucun r\u00f4le",
+        "moreUnassigned": "+{{count}} de plus"
       }
     },
     "notFound": {

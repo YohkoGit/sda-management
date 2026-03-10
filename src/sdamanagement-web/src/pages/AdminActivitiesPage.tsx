@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
@@ -15,6 +15,8 @@ import {
 import type { ActivityTemplateListItem } from "@/services/activityTemplateService";
 import TemplateSelector from "@/components/activity/TemplateSelector";
 import RoleRosterEditor from "@/components/activity/RoleRosterEditor";
+import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
+import { ActivityRosterView } from "@/components/activity/ActivityRosterView";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import {
   createActivitySchema,
@@ -290,6 +292,54 @@ function ActivityForm({
   );
 }
 
+/** Read-only roster panel content — extracted to avoid triple .find() on activities array */
+function RosterPanelContent({
+  viewActivity,
+  activities,
+  formatTime,
+}: {
+  viewActivity: ActivityResponse;
+  activities: ActivityListItem[] | undefined;
+  formatTime: (time: string) => string;
+}) {
+  // Single lookup for list-level staffing data (server-computed StaffingStatus)
+  const listItem = useMemo(
+    () => activities?.find((a) => a.id === viewActivity.id),
+    [activities, viewActivity.id],
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <span>{viewActivity.date}</span>
+        <span>
+          {formatTime(viewActivity.startTime)}–
+          {formatTime(viewActivity.endTime)}
+        </span>
+        <Badge
+          variant="secondary"
+          className="text-xs"
+          style={{
+            backgroundColor: listItem?.departmentColor
+              ? `${listItem.departmentColor}20`
+              : undefined,
+            color: listItem?.departmentColor || undefined,
+          }}
+        >
+          {viewActivity.departmentName}
+        </Badge>
+      </div>
+      <StaffingIndicator
+        staffingStatus={listItem?.staffingStatus ?? "NoRoles"}
+        assigned={listItem?.assignedCount ?? 0}
+        total={listItem?.totalHeadcount ?? 0}
+      />
+      <Separator />
+      <ActivityRosterView roles={viewActivity.roles} />
+    </div>
+  );
+}
+
 export default function AdminActivitiesPage() {
   const { t } = useTranslation();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -305,6 +355,7 @@ export default function AdminActivitiesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<ActivityTemplateListItem | null>(null);
   const [editActivity, setEditActivity] = useState<ActivityResponse | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ActivityListItem | null>(null);
+  const [viewActivityId, setViewActivityId] = useState<number | null>(null);
 
   // For admin, use first departmentId; owner sees all
   const adminDeptId = user?.departmentIds?.[0];
@@ -329,6 +380,15 @@ export default function AdminActivitiesPage() {
     enabled: canAccess,
   });
 
+  const { data: viewActivity, isLoading: isViewLoading } = useQuery({
+    queryKey: ["activity", viewActivityId],
+    queryFn: async () => {
+      const res = await activityService.getById(viewActivityId!);
+      return res.data;
+    },
+    enabled: !!viewActivityId,
+  });
+
   // Filter departments based on role
   const availableDepartments = isOwner
     ? (departments ?? [])
@@ -343,6 +403,7 @@ export default function AdminActivitiesPage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities"] });
+      queryClient.invalidateQueries({ queryKey: ["activity"] });
       setShowCreateForm(false);
       setCreateStep("template");
       setSelectedTemplate(null);
@@ -366,6 +427,7 @@ export default function AdminActivitiesPage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities"] });
+      queryClient.invalidateQueries({ queryKey: ["activity"] });
       setEditActivity(null);
       toast.success(t("pages.adminActivities.toast.updated"));
     },
@@ -382,6 +444,7 @@ export default function AdminActivitiesPage() {
     mutationFn: (id: number) => activityService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities"] });
+      queryClient.invalidateQueries({ queryKey: ["activity"] });
       setDeleteTarget(null);
       toast.success(t("pages.adminActivities.toast.deleted"));
     },
@@ -488,6 +551,7 @@ export default function AdminActivitiesPage() {
                   {t("pages.adminActivities.form.startTime")}
                 </TableHead>
                 <TableHead>{t("pages.adminActivities.form.department")}</TableHead>
+                <TableHead>{t("pages.adminActivities.staffing.column")}</TableHead>
                 <TableHead className="hidden sm:table-cell">
                   {t("pages.adminActivities.form.visibility")}
                 </TableHead>
@@ -496,7 +560,11 @@ export default function AdminActivitiesPage() {
             </TableHeader>
             <TableBody>
               {activities.map((activity) => (
-                <TableRow key={activity.id}>
+                <TableRow
+                  key={activity.id}
+                  className="cursor-pointer"
+                  onClick={() => setViewActivityId(activity.id)}
+                >
                   <TableCell className="font-medium">
                     {activity.title}
                     {activity.specialType && (
@@ -524,6 +592,14 @@ export default function AdminActivitiesPage() {
                       {activity.departmentName}
                     </Badge>
                   </TableCell>
+                  <TableCell>
+                    <StaffingIndicator
+                      staffingStatus={activity.staffingStatus}
+                      assigned={activity.assignedCount}
+                      total={activity.totalHeadcount}
+                      size="sm"
+                    />
+                  </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <Badge variant={activity.visibility === "public" ? "default" : "outline"}>
                       {t(`pages.adminActivities.visibility.${activity.visibility}`)}
@@ -535,7 +611,7 @@ export default function AdminActivitiesPage() {
                         variant="ghost"
                         size="icon"
                         className="min-h-[44px] min-w-[44px]"
-                        onClick={() => handleEdit(activity)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(activity); }}
                         aria-label={t("pages.adminActivities.form.editTitle")}
                       >
                         <Pencil className="h-4 w-4" />
@@ -544,7 +620,7 @@ export default function AdminActivitiesPage() {
                         variant="ghost"
                         size="icon"
                         className="min-h-[44px] min-w-[44px] text-destructive"
-                        onClick={() => setDeleteTarget(activity)}
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(activity); }}
                         aria-label={t("pages.adminActivities.deleteConfirmTitle")}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -670,6 +746,41 @@ export default function AdminActivitiesPage() {
           </FormWrapper>
         );
       })()}
+
+      {/* Roster View Panel */}
+      <FormWrapper
+        open={!!viewActivityId}
+        onOpenChange={(open) => !open && setViewActivityId(null)}
+      >
+        <FormContent
+          side={isMobile ? "bottom" : undefined}
+          className={isMobile ? "h-[85vh]" : ""}
+        >
+          <FormHeader>
+            <FormTitle>
+              {viewActivity
+                ? viewActivity.title
+                : t("pages.adminActivities.roster.title")}
+            </FormTitle>
+          </FormHeader>
+          <div className={isMobile ? "overflow-y-auto flex-1 px-1" : ""}>
+            {isViewLoading ? (
+              <div className="space-y-3 py-4">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ) : viewActivity ? (
+              <RosterPanelContent
+                viewActivity={viewActivity}
+                activities={activities}
+                formatTime={formatTime}
+              />
+            ) : null}
+          </div>
+        </FormContent>
+      </FormWrapper>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

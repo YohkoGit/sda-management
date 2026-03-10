@@ -82,7 +82,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
     expect(screen.getByText("Reunion JA")).toBeInTheDocument();
-    expect(screen.getByText("MIFEM")).toBeInTheDocument();
+    expect(screen.getAllByText("MIFEM").length).toBeGreaterThanOrEqual(1);
   });
 
   it("create flow shows template selector as first step", async () => {
@@ -417,6 +417,9 @@ describe("AdminActivitiesPage", () => {
               visibility: "public",
               specialType: null,
               roleCount: 0,
+              totalHeadcount: 0,
+              assignedCount: 0,
+              staffingStatus: "NoRoles",
               createdAt: "2026-03-01T00:00:00Z",
             },
           ]);
@@ -1029,5 +1032,84 @@ describe("AdminActivitiesPage", () => {
     const reunionRow = screen.getByText("Reunion JA").closest("tr")!;
     const specialBadges = reunionRow.querySelectorAll('[data-testid="special-type-badge"]');
     expect(specialBadges).toHaveLength(0);
+  });
+
+  // --- Staffing Indicator Tests (Story 4.7) ---
+
+  it("activity table rows show staffing indicator column", async () => {
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Check that the staffing column header is present
+    expect(screen.getByText("Effectif")).toBeInTheDocument();
+
+    // "Culte du Sabbat" has CriticalGap (Predicateur empty) — should show "Critique"
+    expect(screen.getByText("Critique")).toBeInTheDocument();
+
+    // "Reunion JA" has NoRoles — should show "Aucun rôle" (may appear in multiple rows)
+    expect(screen.getAllByText("Aucun rôle").length).toBeGreaterThanOrEqual(1);
+
+    // "Ecole du Sabbat" is FullyStaffed — should show "Complet"
+    expect(screen.getByText("Complet")).toBeInTheDocument();
+  });
+
+  it("clicking activity row opens read-only roster panel", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Click on the row (not the edit button)
+    const row = screen.getByText("Culte du Sabbat").closest("tr")!;
+    await user.click(row);
+
+    // Roster panel should open with activity details
+    await waitFor(() => {
+      // The detail endpoint returns roles — check that the roster view renders
+      expect(screen.getByText("Predicateur")).toBeInTheDocument();
+    });
+
+    // Should show headcount badge for the Ancien de Service role
+    await waitFor(() => {
+      expect(screen.getByText("Dupont, J.")).toBeInTheDocument();
+    });
+  });
+
+  it("edit button still opens edit form via stopPropagation", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Click the edit button (should NOT open the roster panel)
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    // Should open the edit form, NOT the roster view
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // The edit form should have the "Enregistrer" submit button
+    expect(screen.getByRole("button", { name: /enregistrer/i })).toBeInTheDocument();
   });
 });
