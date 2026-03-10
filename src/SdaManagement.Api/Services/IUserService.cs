@@ -12,4 +12,5 @@ public interface IUserService
     Task<UserResponse?> UpdateAsync(int userId, UpdateUserRequest request);
     Task<bool> DeleteAsync(int userId);
     Task<List<AssignableOfficerResponse>> GetAssignableOfficersAsync(string? search);
+    Task<GuestCreatedResponse> CreateGuestAsync(CreateGuestRequest request);
 }

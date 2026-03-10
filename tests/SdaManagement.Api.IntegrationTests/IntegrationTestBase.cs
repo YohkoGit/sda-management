@@ -1,10 +1,12 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Respawn;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.IntegrationTests.Auth;
+using Dtos = SdaManagement.Api.Dtos;
 
 namespace SdaManagement.Api.IntegrationTests;
 
@@ -246,6 +248,17 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         dbContext.Set<ActivityTemplate>().Add(template);
         await dbContext.SaveChangesAsync();
         return template;
+    }
+
+    /// <summary>
+    /// Creates a guest user via the POST /api/users/guests endpoint.
+    /// Returns the deserialized GuestCreatedResponse.
+    /// </summary>
+    protected async Task<Dtos.User.GuestCreatedResponse> CreateTestGuest(string name, string? phone = null)
+    {
+        var response = await AdminClient.PostAsJsonAsync("/api/users/guests", new { name, phone });
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<Dtos.User.GuestCreatedResponse>())!;
     }
 
     private HttpClient CreateClientWithRole(string role)

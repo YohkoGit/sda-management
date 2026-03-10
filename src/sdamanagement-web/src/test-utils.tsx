@@ -369,6 +369,7 @@ testI18n.use(initReactI18next).init({
               duplicateRoleName: "Les noms de rôle doivent être uniques.",
               roleNameRequired: "Le nom du rôle est requis.",
               roleNameTooLong: "Le nom du rôle ne doit pas dépasser 100 caractères.",
+              guestLabel: "(Invité)",
             },
             contactPicker: {
               searchPlaceholder: "Rechercher un membre...",
@@ -381,6 +382,13 @@ testI18n.use(initReactI18next).init({
               frequentlyAssigned: "Fréquemment assignés",
               addGuest: "Ajouter un invité",
               showMore: "Afficher plus...",
+              guestName: "Nom complet",
+              guestPhone: "Téléphone",
+              createGuest: "Créer",
+              guestCreating: "Création...",
+              guestCreated: "Invité créé",
+              guestError: "Échec de création",
+              guestBack: "Retour à la recherche",
             },
             templateSelector: {
               title: "Choisir un modèle",

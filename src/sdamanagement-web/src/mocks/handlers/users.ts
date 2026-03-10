@@ -138,6 +138,25 @@ export const userHandlers = [
   }),
 ];
 
+let guestIdCounter = 500;
+
+/** Set of userIds created via the guest mock handler. Used by activity mocks. */
+export const mockGuestUserIds = new Set<number>();
+
+export const guestHandler = http.post("/api/users/guests", async ({ request }) => {
+  const body = (await request.json()) as { name: string; phone?: string };
+  const name = body.name.trim();
+  const lastSpace = name.lastIndexOf(" ");
+  const firstName = lastSpace >= 0 ? name.slice(0, lastSpace) : name;
+  const lastName = lastSpace >= 0 ? name.slice(lastSpace + 1) : "";
+  const userId = guestIdCounter++;
+  mockGuestUserIds.add(userId);
+  return HttpResponse.json(
+    { userId, firstName, lastName, isGuest: true },
+    { status: 201 }
+  );
+});
+
 export const userHandlersEmpty = [
   http.get("/api/users", () => {
     return HttpResponse.json(mockEmptyResponse);

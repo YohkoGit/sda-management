@@ -8,6 +8,7 @@ public class User
     public string LastName { get; set; } = string.Empty;
     public UserRole Role { get; set; }
     public bool IsGuest { get; set; }
+    public string? Phone { get; set; }
     public string? PasswordHash { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

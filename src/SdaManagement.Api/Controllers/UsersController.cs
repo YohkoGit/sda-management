@@ -131,6 +131,25 @@ public class UsersController(
         }
     }
 
+    [HttpPost("guests")]
+    public async Task<IActionResult> CreateGuest(
+        [FromBody] CreateGuestRequest request,
+        [FromServices] IValidator<CreateGuestRequest> validator)
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        if (currentUser.Role < UserRole.Admin)
+            return Forbid();
+
+        var validation = await validator.ValidateAsync(request);
+        if (!validation.IsValid)
+            return ValidationError(validation);
+
+        var guest = await userService.CreateGuestAsync(request);
+        return StatusCode(201, guest);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateUserRequest request,

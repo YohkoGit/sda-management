@@ -5,6 +5,7 @@ import type {
   ActivityRoleResponse,
 } from "@/services/activityService";
 import type { ActivityTemplateListItem } from "@/services/activityTemplateService";
+import { mockGuestUserIds } from "./users";
 
 const mockActivities: ActivityResponse[] = [
   {
@@ -32,7 +33,7 @@ const mockActivities: ActivityResponse[] = [
         headcount: 1,
         sortOrder: 1,
         assignments: [
-          { id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null },
+          { id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
         ],
       },
     ],
@@ -149,6 +150,7 @@ export const activityHandlers = [
           firstName: "User",
           lastName: `${a.userId}`,
           avatarUrl: null,
+          isGuest: mockGuestUserIds.has(a.userId),
         })),
       }));
     } else if (templateId) {
@@ -194,6 +196,7 @@ export const activityHandlers = [
               firstName: "User",
               lastName: `${a.userId}`,
               avatarUrl: null,
+              isGuest: mockGuestUserIds.has(a.userId),
             }))
           : existingRole?.assignments ?? [];
         return {

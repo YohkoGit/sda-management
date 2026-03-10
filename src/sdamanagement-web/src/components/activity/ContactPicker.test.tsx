@@ -290,7 +290,7 @@ describe("ContactPicker", () => {
     expect(onOpenChange).toHaveBeenCalledWith(true);
   });
 
-  it("shows no results message and disabled add guest button", async () => {
+  it("shows no results message without add guest button when onCreateGuest NOT provided", async () => {
     const user = userEvent.setup();
     renderPicker();
 
@@ -300,7 +300,78 @@ describe("ContactPicker", () => {
     await user.type(searchInput, "zzzzzzz");
 
     expect(screen.getByText("Aucun membre trouvé.")).toBeInTheDocument();
-    const addGuestBtn = screen.getByText("Ajouter un invité");
-    expect(addGuestBtn).toBeDisabled();
+    expect(screen.queryByText("Ajouter un invité")).not.toBeInTheDocument();
+  });
+
+  it("shows enabled add guest button when onCreateGuest IS provided and no results", async () => {
+    const user = userEvent.setup();
+    renderPicker({ onCreateGuest: vi.fn() });
+
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    const searchInput = screen.getByPlaceholderText("Rechercher un membre...");
+    await user.type(searchInput, "zzzzzzz");
+
+    const addGuestBtn = screen.getByTestId("add-guest-button");
+    expect(addGuestBtn).not.toBeDisabled();
+  });
+
+  it("does NOT show add guest button when onCreateGuest is NOT provided (no results)", async () => {
+    const user = userEvent.setup();
+    renderPicker();
+
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    const searchInput = screen.getByPlaceholderText("Rechercher un membre...");
+    await user.type(searchInput, "zzzzzzz");
+
+    expect(screen.queryByTestId("add-guest-button")).not.toBeInTheDocument();
+  });
+
+  it("opens guest form when Enter pressed in search input with no results and onCreateGuest provided", async () => {
+    const user = userEvent.setup();
+    renderPicker({ onCreateGuest: vi.fn() });
+
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    const searchInput = screen.getByPlaceholderText("Rechercher un membre...");
+    await user.type(searchInput, "Pasteur Damien");
+    await user.keyboard("{Enter}");
+
+    // Guest form should be visible with name pre-filled
+    const nameInput = screen.getByLabelText("Nom complet") as HTMLInputElement;
+    expect(nameInput.value).toBe("Pasteur Damien");
+  });
+
+  it("does NOT open guest form on Enter when results exist", async () => {
+    const user = userEvent.setup();
+    renderPicker({ onCreateGuest: vi.fn() });
+
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    const searchInput = screen.getByPlaceholderText("Rechercher un membre...");
+    // "Dupont" matches an officer — results exist
+    await user.type(searchInput, "Dupont");
+    await user.keyboard("{Enter}");
+
+    // Should NOT show guest form
+    expect(screen.queryByLabelText("Nom complet")).not.toBeInTheDocument();
+  });
+
+  it("opens guest form with search text pre-filled when add guest clicked", async () => {
+    const user = userEvent.setup();
+    renderPicker({ onCreateGuest: vi.fn() });
+
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    const searchInput = screen.getByPlaceholderText("Rechercher un membre...");
+    await user.type(searchInput, "Pasteur Damien");
+
+    const addGuestBtn = screen.getByTestId("add-guest-button");
+    await user.click(addGuestBtn);
+
+    // Guest form should be visible with name pre-filled
+    const nameInput = screen.getByLabelText("Nom complet") as HTMLInputElement;
+    expect(nameInput.value).toBe("Pasteur Damien");
   });
 });

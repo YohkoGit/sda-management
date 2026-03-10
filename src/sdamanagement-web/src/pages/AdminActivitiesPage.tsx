@@ -66,6 +66,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { AssignableOfficer } from "@/services/userService";
 import type { AxiosError } from "axios";
 
 function ActivityForm({
@@ -74,12 +75,14 @@ function ActivityForm({
   departments,
   defaultValues,
   existingAssignments,
+  initialGuestOfficers,
 }: {
   onSubmit: (data: CreateActivityFormData) => void;
   isPending: boolean;
   departments: DepartmentListItem[];
   defaultValues?: Partial<CreateActivityFormData>;
   existingAssignments?: Map<number, number>;
+  initialGuestOfficers?: AssignableOfficer[];
 }) {
   const { t } = useTranslation();
 
@@ -272,6 +275,7 @@ function ActivityForm({
           setValue={setValue}
           errors={errors}
           existingAssignments={existingAssignments}
+          initialGuestOfficers={initialGuestOfficers}
         />
       </div>
 
@@ -614,41 +618,58 @@ export default function AdminActivitiesPage() {
       </FormWrapper>
 
       {/* Edit Form */}
-      {editActivity && (
-        <FormWrapper open={!!editActivity} onOpenChange={(open) => !open && setEditActivity(null)}>
-          <FormContent side={isMobile ? "bottom" : undefined} className={isMobile ? "h-[90vh]" : ""}>
-            <FormHeader>
-              <FormTitle>{t("pages.adminActivities.form.editTitle")}</FormTitle>
-            </FormHeader>
-            <div className={isMobile ? "overflow-y-auto flex-1 px-1" : ""}>
-              <ActivityForm
-                onSubmit={handleEditSubmit}
-                isPending={updateMutation.isPending}
-                departments={availableDepartments}
-                defaultValues={{
-                  title: editActivity.title,
-                  description: editActivity.description ?? "",
-                  date: editActivity.date,
-                  startTime: formatTime(editActivity.startTime),
-                  endTime: formatTime(editActivity.endTime),
-                  departmentId: editActivity.departmentId ?? 0,
-                  visibility: editActivity.visibility as "public" | "authenticated",
-                  specialType: editActivity.specialType as CreateActivityFormData["specialType"],
-                  roles: editActivity.roles.map((r) => ({
-                    id: r.id,
-                    roleName: r.roleName,
-                    headcount: r.headcount,
-                    assignments: r.assignments.map((a) => ({ userId: a.userId })),
-                  })),
-                }}
-                existingAssignments={
-                  new Map(editActivity.roles.map((r) => [r.id, r.assignments.length]))
-                }
-              />
-            </div>
-          </FormContent>
-        </FormWrapper>
-      )}
+      {editActivity && (() => {
+        // Extract guest officers from the fetched activity for RoleRosterEditor
+        const guestAssignments = editActivity.roles
+          .flatMap((role) => role.assignments)
+          .filter((a) => a.isGuest);
+        const uniqueGuestOfficers: AssignableOfficer[] = guestAssignments
+          .filter((g, i, arr) => arr.findIndex((o) => o.userId === g.userId) === i)
+          .map((a) => ({
+            userId: a.userId,
+            firstName: a.firstName,
+            lastName: a.lastName,
+            avatarUrl: a.avatarUrl ?? null,
+            departments: [],
+            isGuest: true,
+          }));
+        return (
+          <FormWrapper open={!!editActivity} onOpenChange={(open) => !open && setEditActivity(null)}>
+            <FormContent side={isMobile ? "bottom" : undefined} className={isMobile ? "h-[90vh]" : ""}>
+              <FormHeader>
+                <FormTitle>{t("pages.adminActivities.form.editTitle")}</FormTitle>
+              </FormHeader>
+              <div className={isMobile ? "overflow-y-auto flex-1 px-1" : ""}>
+                <ActivityForm
+                  onSubmit={handleEditSubmit}
+                  isPending={updateMutation.isPending}
+                  departments={availableDepartments}
+                  defaultValues={{
+                    title: editActivity.title,
+                    description: editActivity.description ?? "",
+                    date: editActivity.date,
+                    startTime: formatTime(editActivity.startTime),
+                    endTime: formatTime(editActivity.endTime),
+                    departmentId: editActivity.departmentId ?? 0,
+                    visibility: editActivity.visibility as "public" | "authenticated",
+                    specialType: editActivity.specialType as CreateActivityFormData["specialType"],
+                    roles: editActivity.roles.map((r) => ({
+                      id: r.id,
+                      roleName: r.roleName,
+                      headcount: r.headcount,
+                      assignments: r.assignments.map((a) => ({ userId: a.userId })),
+                    })),
+                  }}
+                  existingAssignments={
+                    new Map(editActivity.roles.map((r) => [r.id, r.assignments.length]))
+                  }
+                  initialGuestOfficers={uniqueGuestOfficers.length > 0 ? uniqueGuestOfficers : undefined}
+                />
+              </div>
+            </FormContent>
+          </FormWrapper>
+        );
+      })()}
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

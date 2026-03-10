@@ -364,7 +364,8 @@
         "removeAssignment": "{{name}} \u2014 tap to remove",
         "duplicateRoleName": "Role names must be unique.",
         "roleNameRequired": "Role name is required.",
-        "roleNameTooLong": "Role name must not exceed 100 characters."
+        "roleNameTooLong": "Role name must not exceed 100 characters.",
+        "guestLabel": "(Guest)"
       },
       "contactPicker": {
         "searchPlaceholder": "Search member...",
@@ -376,7 +377,14 @@
         "emptySystem": "No members registered. Add members in Administration.",
         "frequentlyAssigned": "Frequently assigned",
         "addGuest": "Add a guest",
-        "showMore": "Show more..."
+        "showMore": "Show more...",
+        "guestName": "Full name",
+        "guestPhone": "Phone",
+        "createGuest": "Create",
+        "guestCreating": "Creating...",
+        "guestCreated": "Guest created",
+        "guestError": "Creation failed",
+        "guestBack": "Back to search"
       },
       "templateSelector": {
         "title": "Choose a Template",

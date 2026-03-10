@@ -77,7 +77,7 @@ development_status:
   4-3-role-roster-customization: done
   4-4-role-assignment-via-contact-picker: done
   4-5-special-activity-tagging-and-visibility-control: done
-  4-6-inline-guest-speaker-creation: backlog
+  4-6-inline-guest-speaker-creation: done
   4-7-activity-roster-view-and-staffing-indicators: backlog
   4-8-concurrent-edit-detection: backlog
   epic-4-retrospective: optional

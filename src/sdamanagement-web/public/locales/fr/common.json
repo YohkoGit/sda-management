@@ -364,7 +364,8 @@
         "removeAssignment": "{{name}} \u2014 appuyer pour retirer",
         "duplicateRoleName": "Les noms de r\u00f4le doivent \u00eatre uniques.",
         "roleNameRequired": "Le nom du r\u00f4le est requis.",
-        "roleNameTooLong": "Le nom du r\u00f4le ne doit pas d\u00e9passer 100 caract\u00e8res."
+        "roleNameTooLong": "Le nom du r\u00f4le ne doit pas d\u00e9passer 100 caract\u00e8res.",
+        "guestLabel": "(Invit\u00e9)"
       },
       "contactPicker": {
         "searchPlaceholder": "Rechercher un membre...",
@@ -376,7 +377,14 @@
         "emptySystem": "Aucun membre enregistr\u00e9. Ajoutez des membres dans Administration.",
         "frequentlyAssigned": "Fr\u00e9quemment assign\u00e9s",
         "addGuest": "Ajouter un invit\u00e9",
-        "showMore": "Afficher plus..."
+        "showMore": "Afficher plus...",
+        "guestName": "Nom complet",
+        "guestPhone": "T\u00e9l\u00e9phone",
+        "createGuest": "Cr\u00e9er",
+        "guestCreating": "Cr\u00e9ation...",
+        "guestCreated": "Invit\u00e9 cr\u00e9\u00e9",
+        "guestError": "\u00c9chec de cr\u00e9ation",
+        "guestBack": "Retour \u00e0 la recherche"
       },
       "templateSelector": {
         "title": "Choisir un mod\u00e8le",

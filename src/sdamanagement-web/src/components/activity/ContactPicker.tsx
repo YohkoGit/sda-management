@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ContactPickerGroup } from "./ContactPickerGroup";
+import GuestInlineForm from "./GuestInlineForm";
 import { groupByDepartment } from "@/hooks/useAssignableOfficers";
 import type { AssignableOfficer } from "@/services/userService";
 
@@ -45,6 +46,7 @@ export default function ContactPicker({
   roleName,
   onSelect,
   onOpenChange,
+  onCreateGuest,
   trigger,
   frequentUserIds = [],
 }: ContactPickerProps) {
@@ -53,6 +55,8 @@ export default function ContactPicker({
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [search, setSearch] = useState("");
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [isCreatingGuest, setIsCreatingGuest] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const isFullyStaffed = assignedUserIds.length >= headcount;
@@ -63,6 +67,7 @@ export default function ContactPicker({
     if (!newOpen) {
       setShowAll(false);
       setSearch("");
+      setShowGuestForm(false);
     }
   };
 
@@ -85,8 +90,31 @@ export default function ContactPicker({
 
   const hasMoreThanLimit = officers.length > 20;
   const isSearching = search.length > 0;
+  const noFilteredResults = isSearching && officers.length > 0 &&
+    !officers.some(o =>
+      normalize(`${o.lastName} ${o.firstName}`).includes(normalize(search))
+    );
 
-  const commandContent = (
+  const guestFormContent = onCreateGuest ? (
+    <GuestInlineForm
+      defaultName={search}
+      onSubmit={async (data) => {
+        setIsCreatingGuest(true);
+        try {
+          await onCreateGuest(data);
+          updateOpen(false);
+        } catch {
+          // Error handled by parent (toast) — form stays open
+        } finally {
+          setIsCreatingGuest(false);
+        }
+      }}
+      onCancel={() => setShowGuestForm(false)}
+      isSubmitting={isCreatingGuest}
+    />
+  ) : null;
+
+  const commandContent = showGuestForm && guestFormContent ? guestFormContent : (
     <Command
       filter={(value, search) =>
         normalize(value).includes(normalize(search)) ? 1 : 0
@@ -98,6 +126,12 @@ export default function ContactPicker({
         autoFocus
         value={search}
         onValueChange={setSearch}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && noFilteredResults && onCreateGuest) {
+            e.preventDefault();
+            setShowGuestForm(true);
+          }
+        }}
       />
       <CommandList
         className={showAll || isSearching ? "max-h-[400px]" : "max-h-[300px]"}
@@ -113,13 +147,22 @@ export default function ContactPicker({
               <span className="block text-sm text-muted-foreground">
                 {t("pages.adminActivities.contactPicker.noResults")}
               </span>
-              <button
-                type="button"
-                disabled
-                className="mt-1 text-xs text-muted-foreground/60 cursor-not-allowed"
-              >
-                {t("pages.adminActivities.contactPicker.addGuest")}
-              </button>
+              {onCreateGuest && (
+                <button
+                  type="button"
+                  data-testid="add-guest-button"
+                  className="mt-1 text-xs text-primary hover:underline"
+                  onClick={() => setShowGuestForm(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setShowGuestForm(true);
+                    }
+                  }}
+                >
+                  {t("pages.adminActivities.contactPicker.addGuest")}
+                </button>
+              )}
             </CommandEmpty>
             {frequentOfficers.length > 0 && (
               <ContactPickerGroup

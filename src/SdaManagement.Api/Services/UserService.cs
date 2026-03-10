@@ -318,6 +318,45 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
         return items;
     }
 
+    public async Task<GuestCreatedResponse> CreateGuestAsync(CreateGuestRequest request)
+    {
+        var (firstName, lastName) = ParseGuestName(sanitizer.Sanitize(request.Name));
+        var now = DateTime.UtcNow;
+
+        var user = new User
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            Email = $"guest-{Guid.NewGuid():N}@guest.internal",
+            Role = UserRole.Viewer,
+            IsGuest = true,
+            Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : sanitizer.Sanitize(request.Phone),
+            PasswordHash = null,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return new GuestCreatedResponse
+        {
+            UserId = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            IsGuest = true,
+        };
+    }
+
+    private static (string FirstName, string LastName) ParseGuestName(string fullName)
+    {
+        var trimmed = fullName.Trim();
+        var lastSpace = trimmed.LastIndexOf(' ');
+        if (lastSpace < 0)
+            return (trimmed, string.Empty);
+        return (trimmed[..lastSpace], trimmed[(lastSpace + 1)..]);
+    }
+
     public async Task<bool> DeleteAsync(int userId)
     {
         var user = await db.Users.FindAsync(userId);

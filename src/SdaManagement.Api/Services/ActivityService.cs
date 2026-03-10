@@ -309,14 +309,14 @@ public class ActivityService(
     private async Task ValidateAssignmentUsersAsync(List<int> userIds)
     {
         var validUsers = await dbContext.Users
-            .Where(u => userIds.Contains(u.Id) && !u.IsGuest && u.DeletedAt == null)
+            .Where(u => userIds.Contains(u.Id) && u.DeletedAt == null)
             .Select(u => u.Id)
             .ToListAsync();
 
         var invalidIds = userIds.Except(validUsers).ToList();
         if (invalidIds.Count > 0)
             throw new InvalidOperationException(
-                $"Invalid assignment userId(s): {string.Join(", ", invalidIds)}. Users must exist, not be guests, and not be deleted.");
+                $"Invalid assignment userId(s): {string.Join(", ", invalidIds)}. Users must exist and not be deleted.");
     }
 
     private ActivityResponse MapToResponse(Activity activity)
@@ -348,6 +348,7 @@ public class ActivityService(
                         FirstName = ra.User.FirstName,
                         LastName = ra.User.LastName,
                         AvatarUrl = avatarService.GetAvatarUrl(ra.UserId),
+                        IsGuest = ra.User.IsGuest,
                     }).ToList(),
                 })
                 .ToList(),

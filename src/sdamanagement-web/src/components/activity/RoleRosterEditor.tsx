@@ -19,7 +19,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import ContactPicker from "./ContactPicker";
+import { toast } from "sonner";
 import { useAssignableOfficers } from "@/hooks/useAssignableOfficers";
+import { userService } from "@/services/userService";
 import type { CreateActivityFormData } from "@/schemas/activitySchema";
 import type { AssignableOfficer } from "@/services/userService";
 
@@ -98,17 +100,31 @@ function AssignmentChip({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
-  const displayName = `${officer.lastName}, ${officer.firstName.charAt(0)}.`;
+  const isGuest = officer.isGuest === true;
+  const displayName = isGuest
+    ? `${officer.firstName} ${officer.lastName}`.trim()
+    : `${officer.lastName}, ${officer.firstName.charAt(0)}.`;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-xl border bg-background px-2 py-1">
+    <span
+      className="inline-flex items-center gap-1 rounded-xl border bg-background px-2 py-1"
+      data-testid={isGuest ? "guest-assignment-chip" : undefined}
+    >
       <InitialsAvatar
         firstName={officer.firstName}
         lastName={officer.lastName}
         size="xs"
         avatarUrl={officer.avatarUrl ?? undefined}
+        className={isGuest ? "!bg-slate-200" : undefined}
       />
-      <span className="max-w-[10rem] truncate text-sm">{displayName}</span>
+      <span className="flex flex-col">
+        <span className="max-w-[10rem] truncate text-sm">{displayName}</span>
+        {isGuest && (
+          <span className="text-[10px] text-muted-foreground leading-none">
+            {t("pages.adminActivities.roleRoster.guestLabel")}
+          </span>
+        )}
+      </span>
       <button
         type="button"
         className="p-2 -mr-1 text-muted-foreground hover:text-foreground"
@@ -131,6 +147,7 @@ const RoleRow = memo(function RoleRow({
   errors,
   officers,
   allAssignments,
+  onCreateGuest,
 }: {
   index: number;
   control: Control<CreateActivityFormData>;
@@ -139,6 +156,7 @@ const RoleRow = memo(function RoleRow({
   errors: FieldErrors<CreateActivityFormData>;
   officers: AssignableOfficer[];
   allAssignments: { userId: number }[][];
+  onCreateGuest?: (data: { name: string; phone?: string }) => void;
 }) {
   const { t } = useTranslation();
   const [pickerActive, setPickerActive] = useState(false);
@@ -244,6 +262,7 @@ const RoleRow = memo(function RoleRow({
           roleName={watchedRoleName}
           onSelect={handleAddAssignment}
           onOpenChange={setPickerActive}
+          onCreateGuest={onCreateGuest}
           frequentUserIds={frequentUserIds}
           trigger={<Plus className="h-4 w-4" />}
         />
@@ -258,18 +277,45 @@ export default function RoleRosterEditor({
   setValue,
   errors,
   existingAssignments,
+  initialGuestOfficers,
 }: {
   control: Control<CreateActivityFormData>;
   register: UseFormRegister<CreateActivityFormData>;
   setValue: UseFormSetValue<CreateActivityFormData>;
   errors: FieldErrors<CreateActivityFormData>;
   existingAssignments?: Map<number, number>;
+  initialGuestOfficers?: AssignableOfficer[];
 }) {
   const { t } = useTranslation();
   const { fields, append, remove } = useFieldArray({ control, name: "roles" });
   const watchedRoles = useWatch({ control, name: "roles" });
   const [roleToRemove, setRoleToRemove] = useState<{ index: number; assignmentCount: number } | null>(null);
   const { officers } = useAssignableOfficers();
+  const [guestOfficers, setGuestOfficers] = useState<AssignableOfficer[]>(
+    initialGuestOfficers ?? []
+  );
+
+  const handleCreateGuest = async (data: { name: string; phone?: string }, roleIndex: number) => {
+    try {
+      const response = await userService.createGuest(data);
+      const guestOfficer: AssignableOfficer = {
+        userId: response.data.userId,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        avatarUrl: null,
+        departments: [],
+        isGuest: true,
+      };
+      setGuestOfficers((prev) => [...prev, guestOfficer]);
+      const currentAssignments = watchedRoles?.[roleIndex]?.assignments ?? [];
+      setValue(`roles.${roleIndex}.assignments`, [...currentAssignments, { userId: response.data.userId }]);
+    } catch (error) {
+      toast.error(t("pages.adminActivities.contactPicker.guestError"));
+      throw error;
+    }
+  };
+
+  const mergedOfficers = [...officers, ...guestOfficers];
 
   const handleRemove = (index: number) => {
     const dbId = watchedRoles?.[index]?.id;
@@ -313,8 +359,9 @@ export default function RoleRosterEditor({
                 register={register}
                 setValue={setValue}
                 errors={errors}
-                officers={officers}
+                officers={mergedOfficers}
                 allAssignments={allAssignments}
+                onCreateGuest={(data) => handleCreateGuest(data, index)}
               />
               <Button
                 type="button"

@@ -48,6 +48,14 @@ export interface AssignableOfficer {
   lastName: string;
   avatarUrl: string | null;
   departments: { id: number; name: string; abbreviation: string; color: string }[];
+  isGuest?: boolean;
+}
+
+export interface GuestCreatedResponse {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  isGuest: boolean;
 }
 
 export const userService = {
@@ -64,6 +72,8 @@ export const userService = {
     api.post<BulkCreateUsersResponse>("/api/users/bulk", data),
   updateUser: (id: number, data: UpdateUserFormData) =>
     api.put<UserResponse>(`/api/users/${id}`, data),
+  createGuest: (data: { name: string; phone?: string }) =>
+    api.post<GuestCreatedResponse>("/api/users/guests", data),
   deleteUser: (id: number) => api.delete(`/api/users/${id}`),
   uploadAvatar: (userId: number, file: File) => {
     const formData = new FormData();

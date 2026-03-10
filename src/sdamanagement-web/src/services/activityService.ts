@@ -7,6 +7,7 @@ export interface RoleAssignmentResponse {
   firstName: string;
   lastName: string;
   avatarUrl: string | null;
+  isGuest?: boolean;
 }
 
 export interface ActivityRoleResponse {

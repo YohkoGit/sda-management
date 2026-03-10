@@ -86,10 +86,12 @@ beforeEach(() => {
 function TestWrapper({
   defaultRoles = [],
   existingAssignments,
+  initialGuestOfficers,
   showSubmit = false,
 }: {
   defaultRoles?: CreateActivityFormData["roles"];
   existingAssignments?: Map<number, number>;
+  initialGuestOfficers?: AssignableOfficer[];
   showSubmit?: boolean;
 }) {
   const {
@@ -120,6 +122,7 @@ function TestWrapper({
         setValue={setValue}
         errors={errors}
         existingAssignments={existingAssignments}
+        initialGuestOfficers={initialGuestOfficers}
       />
       {showSubmit && <button type="submit">Submit</button>}
     </form>
@@ -508,5 +511,92 @@ describe("RoleRosterEditor", () => {
     );
 
     expect(screen.queryByText("Non assigné")).not.toBeInTheDocument();
+  });
+
+  // ---- Guest assignment tests (Story 4.6) ----
+
+  it("renders guest assignment chip with '(Invité)' label and data-testid", () => {
+    const guestOfficer: AssignableOfficer = {
+      userId: 500,
+      firstName: "Pasteur",
+      lastName: "Damien",
+      avatarUrl: null,
+      departments: [],
+      isGuest: true,
+    };
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 1,
+            assignments: [{ userId: 500 }],
+          },
+        ]}
+        initialGuestOfficers={[guestOfficer]}
+      />
+    );
+
+    // Guest chip shows full name (not "LastName, F." format)
+    expect(screen.getByText("Pasteur Damien")).toBeInTheDocument();
+    // Guest label
+    expect(screen.getByText("(Invité)")).toBeInTheDocument();
+    // Guest chip data-testid
+    expect(screen.getByTestId("guest-assignment-chip")).toBeInTheDocument();
+  });
+
+  it("renders regular member chip without '(Invité)' label", () => {
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 1,
+            assignments: [{ userId: 5 }],
+          },
+        ]}
+      />
+    );
+
+    // Regular chip shows "LastName, F." format
+    expect(screen.getByText("Dupont, J.")).toBeInTheDocument();
+    // No guest label
+    expect(screen.queryByText("(Invité)")).not.toBeInTheDocument();
+    // No guest data-testid
+    expect(screen.queryByTestId("guest-assignment-chip")).not.toBeInTheDocument();
+  });
+
+  it("shows guest chip after guest creation via initialGuestOfficers (edit mode)", () => {
+    const guestOfficers: AssignableOfficer[] = [
+      {
+        userId: 501,
+        firstName: "Jean",
+        lastName: "Remy",
+        avatarUrl: null,
+        departments: [],
+        isGuest: true,
+      },
+    ];
+    render(
+      <TestWrapper
+        defaultRoles={[
+          {
+            roleName: "Predicateur",
+            headcount: 2,
+            assignments: [{ userId: 5 }, { userId: 501 }],
+          },
+        ]}
+        initialGuestOfficers={guestOfficers}
+      />
+    );
+
+    // Regular officer
+    expect(screen.getByText("Dupont, J.")).toBeInTheDocument();
+    // Guest officer with full name
+    expect(screen.getByText("Jean Remy")).toBeInTheDocument();
+    // Guest label on guest chip only
+    expect(screen.getByText("(Invité)")).toBeInTheDocument();
+    // Badge shows 2/2
+    expect(screen.getByText("2/2")).toBeInTheDocument();
   });
 });
