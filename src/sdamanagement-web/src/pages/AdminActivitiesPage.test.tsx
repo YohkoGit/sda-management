@@ -7,8 +7,9 @@ import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { activityHandlers, activityHandlersEmpty, activityTemplateHandlers } from "@/mocks/handlers/activities";
 import { departmentHandlers } from "@/mocks/handlers/departments";
-import { activityService } from "@/services/activityService";
+import { activityService, type ActivityResponse } from "@/services/activityService";
 import { activityTemplateService } from "@/services/activityTemplateService";
+import type { AxiosError } from "axios";
 import AdminActivitiesPage from "./AdminActivitiesPage";
 
 // Radix UI jsdom polyfills
@@ -1111,5 +1112,321 @@ describe("AdminActivitiesPage", () => {
 
     // The edit form should have the "Enregistrer" submit button
     expect(screen.getByRole("button", { name: /enregistrer/i })).toBeInTheDocument();
+  });
+
+  // --- Conflict Dialog Tests (Story 4.8) ---
+
+  it("update mutation receiving 409 opens conflict dialog (not a toast)", async () => {
+    const user = userEvent.setup();
+    const error409 = Object.assign(new Error("Conflict"), {
+      response: { status: 409 },
+      isAxiosError: true,
+    }) as AxiosError;
+
+    const updateSpy = vi.spyOn(activityService, "update").mockRejectedValueOnce(error409);
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Open edit form
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Submit the form
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    // Conflict dialog should open
+    await waitFor(() => {
+      expect(screen.getByText("Conflit de modification")).toBeInTheDocument();
+    });
+
+    // Both action buttons should be present
+    expect(screen.getByText("Recharger les données")).toBeInTheDocument();
+    expect(screen.getByText("Écraser avec mes modifications")).toBeInTheDocument();
+
+    updateSpy.mockRestore();
+  });
+
+  it("edit form remains open when conflict dialog appears", async () => {
+    const user = userEvent.setup();
+    const error409 = Object.assign(new Error("Conflict"), {
+      response: { status: 409 },
+      isAxiosError: true,
+    }) as AxiosError;
+
+    const updateSpy = vi.spyOn(activityService, "update").mockRejectedValueOnce(error409);
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Conflit de modification")).toBeInTheDocument();
+    });
+
+    // The edit form title should still be visible behind the dialog
+    expect(screen.getByText("Modifier l\u2019activité")).toBeInTheDocument();
+
+    updateSpy.mockRestore();
+  });
+
+  it("clicking 'Recharger' in conflict dialog fetches fresh data and resets form", async () => {
+    const user = userEvent.setup();
+    const error409 = Object.assign(new Error("Conflict"), {
+      response: { status: 409 },
+      isAxiosError: true,
+    }) as AxiosError;
+
+    const freshActivity: ActivityResponse = {
+      id: 1,
+      title: "Updated By Admin B",
+      description: null,
+      date: "2026-03-07",
+      startTime: "10:00:00",
+      endTime: "12:00:00",
+      departmentId: 1,
+      departmentName: "MIFEM",
+      visibility: "public",
+      specialType: null,
+      roles: [],
+      concurrencyToken: 999,
+      createdAt: "2026-03-01T00:00:00Z",
+      updatedAt: "2026-03-05T00:00:00Z",
+    };
+
+    const updateSpy = vi.spyOn(activityService, "update").mockRejectedValueOnce(error409);
+    const getByIdSpy = vi.spyOn(activityService, "getById")
+      .mockResolvedValueOnce({
+        data: {
+          id: 1,
+          title: "Culte du Sabbat",
+          description: "Service principal du samedi matin",
+          date: "2026-03-07",
+          startTime: "10:00:00",
+          endTime: "12:00:00",
+          departmentId: 1,
+          departmentName: "MIFEM",
+          visibility: "public",
+          specialType: "sainte-cene",
+          roles: [
+            { id: 1, roleName: "Predicateur", headcount: 1, sortOrder: 0, assignments: [] },
+            { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, assignments: [{ id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false }] },
+          ],
+          concurrencyToken: 42,
+          createdAt: "2026-03-01T00:00:00Z",
+          updatedAt: "2026-03-01T00:00:00Z",
+        },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as never,
+      })
+      .mockResolvedValueOnce({
+        data: freshActivity,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as never,
+      });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Conflit de modification")).toBeInTheDocument();
+    });
+
+    // Click Reload
+    await user.click(screen.getByText("Recharger les données"));
+
+    // After reload, the form should show updated data
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Updated By Admin B")).toBeInTheDocument();
+    });
+
+    // AC3: success toast confirms "Données rechargées"
+    await waitFor(() => {
+      expect(screen.getByText("Données rechargées")).toBeInTheDocument();
+    });
+
+    updateSpy.mockRestore();
+    getByIdSpy.mockRestore();
+  });
+
+  it("clicking 'Écraser' in conflict dialog retries with force=true", async () => {
+    const user = userEvent.setup();
+    const error409 = Object.assign(new Error("Conflict"), {
+      response: { status: 409 },
+      isAxiosError: true,
+    }) as AxiosError;
+
+    const updateSpy = vi.spyOn(activityService, "update")
+      .mockRejectedValueOnce(error409)
+      .mockResolvedValueOnce({
+        data: {
+          id: 1,
+          title: "Culte du Sabbat",
+          description: "Service principal du samedi matin",
+          date: "2026-03-07",
+          startTime: "10:00:00",
+          endTime: "12:00:00",
+          departmentId: 1,
+          departmentName: "MIFEM",
+          visibility: "public",
+          specialType: "sainte-cene",
+          roles: [],
+          concurrencyToken: 200,
+          createdAt: "2026-03-01T00:00:00Z",
+          updatedAt: new Date().toISOString(),
+        },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as never,
+      });
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Conflit de modification")).toBeInTheDocument();
+    });
+
+    // Click Overwrite
+    await user.click(screen.getByText("Écraser avec mes modifications"));
+
+    // The update should be retried with force=true
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledTimes(2);
+    });
+
+    // Second call should have force=true (third argument)
+    const secondCallArgs = updateSpy.mock.calls[1];
+    expect(secondCallArgs[2]).toBe(true);
+
+    // AC4: normal success toast appears after overwrite
+    await waitFor(() => {
+      expect(screen.getByText("Activité modifiée")).toBeInTheDocument();
+    });
+
+    // AC4: edit form closes after successful overwrite
+    await waitFor(() => {
+      expect(screen.queryByText("Modifier l\u2019activité")).not.toBeInTheDocument();
+    });
+
+    updateSpy.mockRestore();
+  });
+
+  it("force-save 409 falls back to toast instead of reopening dialog (loop guard)", async () => {
+    const user = userEvent.setup();
+    const error409 = Object.assign(new Error("Conflict"), {
+      response: { status: 409 },
+      isAxiosError: true,
+    }) as AxiosError;
+
+    // Both calls return 409 — first triggers dialog, second (force=true) triggers toast fallback
+    const updateSpy = vi.spyOn(activityService, "update")
+      .mockRejectedValueOnce(error409)
+      .mockRejectedValueOnce(error409);
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AdminActivitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Open edit form
+    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    await user.click(editButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Culte du Sabbat")).toBeInTheDocument();
+    });
+
+    // Submit → first 409 → opens conflict dialog
+    await user.click(screen.getByRole("button", { name: /enregistrer/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Conflit de modification")).toBeInTheDocument();
+    });
+
+    // Click Overwrite → force=true retry → second 409
+    await user.click(screen.getByText("Écraser avec mes modifications"));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledTimes(2);
+    });
+
+    // Loop guard: toast.error should appear (fallback), NOT a re-opened conflict dialog
+    await waitFor(() => {
+      expect(screen.getByText("Cette activité a été modifiée par un autre utilisateur. Rechargez et réessayez.")).toBeInTheDocument();
+    });
+
+    // Conflict dialog should NOT reopen
+    expect(screen.queryByText("Conflit de modification")).not.toBeInTheDocument();
+
+    updateSpy.mockRestore();
   });
 });

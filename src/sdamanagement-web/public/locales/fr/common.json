@@ -338,6 +338,14 @@
       "deleteConfirmWarning": "Cette action supprimera \u00e9galement tous les r\u00f4les et assignations associ\u00e9s.",
       "deleteConfirmAction": "Supprimer",
       "conflictError": "Cette activit\u00e9 a \u00e9t\u00e9 modifi\u00e9e par un autre utilisateur. Rechargez et r\u00e9essayez.",
+      "conflict": {
+        "title": "Conflit de modification",
+        "description": "Cette activit\u00e9 a \u00e9t\u00e9 modifi\u00e9e par un autre administrateur pendant votre session. Vous pouvez recharger les donn\u00e9es actuelles ou \u00e9craser avec vos modifications.",
+        "reload": "Recharger les donn\u00e9es",
+        "overwrite": "\u00c9craser avec mes modifications",
+        "reloaded": "Donn\u00e9es recharg\u00e9es",
+        "reloadError": "Impossible de recharger les donn\u00e9es."
+      },
       "assignmentError": "Erreur de validation des assignations. V\u00e9rifiez les r\u00f4les et r\u00e9essayez.",
       "visibility": {
         "public": "Publique",

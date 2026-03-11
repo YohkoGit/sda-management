@@ -338,6 +338,14 @@
       "deleteConfirmWarning": "This will also delete all associated roles and assignments.",
       "deleteConfirmAction": "Delete",
       "conflictError": "This activity was modified by another user. Reload and try again.",
+      "conflict": {
+        "title": "Edit Conflict",
+        "description": "This activity was modified by another administrator during your session. You can reload the current data or overwrite with your changes.",
+        "reload": "Reload data",
+        "overwrite": "Overwrite with my changes",
+        "reloaded": "Data reloaded",
+        "reloadError": "Unable to reload data."
+      },
       "assignmentError": "Assignment validation error. Check roles and try again.",
       "visibility": {
         "public": "Public",

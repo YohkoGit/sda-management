@@ -79,7 +79,7 @@ development_status:
   4-5-special-activity-tagging-and-visibility-control: done
   4-6-inline-guest-speaker-creation: done
   4-7-activity-roster-view-and-staffing-indicators: done
-  4-8-concurrent-edit-detection: backlog
+  4-8-concurrent-edit-detection: done
   epic-4-retrospective: optional
 
   # Epic 5: Public Dashboard & Anonymous Experience

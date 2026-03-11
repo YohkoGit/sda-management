@@ -173,7 +173,7 @@ public class ActivityService(
         return (await GetByIdAsync(activity.Id))!;
     }
 
-    public async Task<ActivityResponse?> UpdateAsync(int id, UpdateActivityRequest request)
+    public async Task<ActivityResponse?> UpdateAsync(int id, UpdateActivityRequest request, bool force = false)
     {
         var activity = await dbContext.Activities
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -181,8 +181,9 @@ public class ActivityService(
         if (activity is null)
             return null;
 
-        // Set original version for concurrency check
-        dbContext.Entry(activity).Property(a => a.Version).OriginalValue = request.ConcurrencyToken;
+        // Set original version for concurrency check (skip when force-saving)
+        if (!force)
+            dbContext.Entry(activity).Property(a => a.Version).OriginalValue = request.ConcurrencyToken;
 
         var now = DateTime.UtcNow;
 

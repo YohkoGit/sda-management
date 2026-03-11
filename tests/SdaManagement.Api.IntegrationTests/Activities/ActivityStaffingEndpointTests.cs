@@ -19,8 +19,8 @@ public class ActivityStaffingEndpointTests : IntegrationTestBase
 
     protected override async Task SeedTestData()
     {
-        var owner = await CreateTestUser("staffing-owner@test.local", UserRole.Owner);
-        var user1 = await CreateTestUser("staffing-user1@test.local", UserRole.Viewer);
+        var owner = await CreateTestUser("test-owner@test.local", UserRole.Owner);
+        var user1 = await CreateTestUser("test-viewer@test.local", UserRole.Viewer);
         var user2 = await CreateTestUser("staffing-user2@test.local", UserRole.Viewer);
         var user3 = await CreateTestUser("staffing-user3@test.local", UserRole.Viewer);
 

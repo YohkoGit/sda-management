@@ -17,6 +17,7 @@ import TemplateSelector from "@/components/activity/TemplateSelector";
 import RoleRosterEditor from "@/components/activity/RoleRosterEditor";
 import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
 import { ActivityRosterView } from "@/components/activity/ActivityRosterView";
+import { ConflictAlertDialog } from "@/components/activity/ConflictAlertDialog";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import {
   createActivitySchema,
@@ -356,6 +357,7 @@ export default function AdminActivitiesPage() {
   const [editActivity, setEditActivity] = useState<ActivityResponse | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ActivityListItem | null>(null);
   const [viewActivityId, setViewActivityId] = useState<number | null>(null);
+  const [conflictState, setConflictState] = useState<{ activityId: number; formData: UpdateActivityFormData } | null>(null);
 
   // For admin, use first departmentId; owner sees all
   const adminDeptId = user?.departmentIds?.[0];
@@ -419,21 +421,26 @@ export default function AdminActivitiesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateActivityFormData }) =>
+    mutationFn: ({ id, data, force }: { id: number; data: UpdateActivityFormData; force?: boolean }) =>
       activityService.update(id, {
         ...data,
         startTime: data.startTime.length === 5 ? data.startTime + ":00" : data.startTime,
         endTime: data.endTime.length === 5 ? data.endTime + ":00" : data.endTime,
-      }),
+      }, force),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities"] });
       queryClient.invalidateQueries({ queryKey: ["activity"] });
       setEditActivity(null);
       toast.success(t("pages.adminActivities.toast.updated"));
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError, variables) => {
       if (error.response?.status === 409) {
-        toast.error(t("pages.adminActivities.conflictError"));
+        // If force-save also got 409 (ultra-rare race), fall back to toast to prevent infinite dialog loop
+        if (variables.force) {
+          toast.error(t("pages.adminActivities.conflictError"));
+        } else {
+          setConflictState({ activityId: variables.id, formData: variables.data });
+        }
       } else if (error.response?.status === 422) {
         toast.error(t("pages.adminActivities.assignmentError"));
       }
@@ -465,6 +472,25 @@ export default function AdminActivitiesPage() {
     },
     [editActivity, updateMutation]
   );
+
+  const handleConflictReload = useCallback(async () => {
+    const activityId = conflictState!.activityId;
+    setConflictState(null);
+    try {
+      const res = await activityService.getById(activityId);
+      setEditActivity(res.data);
+      toast.success(t("pages.adminActivities.conflict.reloaded"));
+    } catch {
+      toast.error(t("pages.adminActivities.conflict.reloadError"));
+      setEditActivity(null);
+    }
+  }, [conflictState, t]);
+
+  const handleConflictOverwrite = useCallback(() => {
+    const { activityId, formData } = conflictState!;
+    setConflictState(null);
+    updateMutation.mutate({ id: activityId, data: formData, force: true });
+  }, [conflictState, updateMutation]);
 
   const formatTime = (time: string) => time.slice(0, 5);
 
@@ -717,6 +743,7 @@ export default function AdminActivitiesPage() {
               </FormHeader>
               <div className={isMobile ? "overflow-y-auto flex-1 px-1" : ""}>
                 <ActivityForm
+                  key={`${editActivity.id}-${editActivity.concurrencyToken}`}
                   onSubmit={handleEditSubmit}
                   isPending={updateMutation.isPending}
                   departments={availableDepartments}
@@ -808,6 +835,14 @@ export default function AdminActivitiesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Conflict Dialog */}
+      <ConflictAlertDialog
+        open={!!conflictState}
+        onReload={handleConflictReload}
+        onOverwrite={handleConflictOverwrite}
+        onOpenChange={(open) => { if (!open) setConflictState(null); }}
+      />
     </div>
   );
 }

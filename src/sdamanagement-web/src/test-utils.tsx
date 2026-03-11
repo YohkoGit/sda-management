@@ -342,6 +342,14 @@ testI18n.use(initReactI18next).init({
             deleteConfirmWarning: "Cette action supprimera également tous les rôles et assignations associés.",
             deleteConfirmAction: "Supprimer",
             conflictError: "Cette activité a été modifiée par un autre utilisateur. Rechargez et réessayez.",
+            conflict: {
+              title: "Conflit de modification",
+              description: "Cette activité a été modifiée par un autre administrateur pendant votre session. Vous pouvez recharger les données actuelles ou écraser avec vos modifications.",
+              reload: "Recharger les données",
+              overwrite: "Écraser avec mes modifications",
+              reloaded: "Données rechargées",
+              reloadError: "Impossible de recharger les données.",
+            },
             assignmentError: "Erreur de validation des assignations. Vérifiez les rôles et réessayez.",
             visibility: {
               public: "Publique",

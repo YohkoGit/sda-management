@@ -1298,8 +1298,9 @@ public class ActivityEndpointTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CreateActivity_GuestUserId_Returns422()
+    public async Task CreateActivity_GuestUserId_SucceedsWithAssignment()
     {
+        // Guest users ARE valid for assignment (Story 4.6 — inline guest speaker creation)
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var guest = new User
@@ -1335,7 +1336,15 @@ public class ActivityEndpointTests : IntegrationTestBase
         };
 
         var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
-        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var roles = doc.RootElement.GetProperty("roles");
+        roles.GetArrayLength().ShouldBe(1);
+        var assignments = roles[0].GetProperty("assignments");
+        assignments.GetArrayLength().ShouldBe(1);
+        assignments[0].GetProperty("userId").GetInt32().ShouldBe(guest.Id);
     }
 
     [Fact]
@@ -1473,7 +1482,10 @@ public class ActivityEndpointTests : IntegrationTestBase
 
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
-        doc.RootElement.GetProperty("specialType").ValueKind.ShouldBe(JsonValueKind.Null);
+        // With WhenWritingNull, null specialType is omitted from JSON
+        if (doc.RootElement.TryGetProperty("specialType", out var specialTypeProp))
+            specialTypeProp.ValueKind.ShouldBe(JsonValueKind.Null);
+        // If missing, that also means null — both are acceptable
     }
 
     [Fact]
@@ -1521,7 +1533,10 @@ public class ActivityEndpointTests : IntegrationTestBase
 
         var clearJson = await clearResponse.Content.ReadAsStringAsync();
         using var clearDoc = JsonDocument.Parse(clearJson);
-        clearDoc.RootElement.GetProperty("specialType").ValueKind.ShouldBe(JsonValueKind.Null);
+        // With WhenWritingNull, null specialType is omitted from JSON
+        if (clearDoc.RootElement.TryGetProperty("specialType", out var clearedProp))
+            clearedProp.ValueKind.ShouldBe(JsonValueKind.Null);
+        // If missing, that also means null — both are acceptable
     }
 
     [Fact]
@@ -1605,5 +1620,219 @@ public class ActivityEndpointTests : IntegrationTestBase
     {
         var response = await OwnerClient.GetAsync("/api/activities?visibility=invalid");
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    // --- Force-save (Story 4.8) ---
+
+    [Fact]
+    public async Task UpdateActivity_ForceSave_WithStaleToken_Returns200()
+    {
+        var (activityId, originalToken) = await CreateActivityAndGetIdAndToken();
+
+        // First update succeeds (Admin B), changing the xmin
+        var firstUpdate = new
+        {
+            title = "Admin B Update",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        var firstResponse = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", firstUpdate);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Force-save with stale token (Admin A overwrite) should return 200
+        var forceUpdate = new
+        {
+            title = "Admin A Force Update",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}?force=true", forceUpdate);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("title").GetString().ShouldBe("Admin A Force Update");
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ForceSave_AppliesChanges()
+    {
+        var (activityId, originalToken) = await CreateActivityAndGetIdAndToken();
+
+        // Admin B updates
+        var adminBUpdate = new
+        {
+            title = "Admin B Title",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", adminBUpdate);
+
+        // Admin A force-saves with stale token
+        var forceUpdate = new
+        {
+            title = "Admin A Overwrites",
+            date = "2026-03-20",
+            startTime = "08:00:00",
+            endTime = "10:00:00",
+            departmentId = _deptMifemId,
+            visibility = "authenticated",
+            concurrencyToken = originalToken,
+        };
+        await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}?force=true", forceUpdate);
+
+        // Verify final state
+        var getResponse = await OwnerClient.GetAsync($"/api/activities/{activityId}");
+        var json = await getResponse.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("title").GetString().ShouldBe("Admin A Overwrites");
+        doc.RootElement.GetProperty("visibility").GetString().ShouldBe("authenticated");
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ForceSave_ReturnsUpdatedConcurrencyToken()
+    {
+        var (activityId, originalToken) = await CreateActivityAndGetIdAndToken();
+
+        // Admin B updates (changes xmin)
+        var adminBUpdate = new
+        {
+            title = "Admin B",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", adminBUpdate);
+
+        // Admin A force-saves
+        var forceUpdate = new
+        {
+            title = "Admin A Force",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}?force=true", forceUpdate);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var newToken = doc.RootElement.GetProperty("concurrencyToken").GetUInt32();
+        newToken.ShouldNotBe(originalToken);
+        newToken.ShouldBeGreaterThan(0u);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_NormalSaveWithValidToken_StillWorks()
+    {
+        var (activityId, token) = await CreateActivityAndGetIdAndToken();
+
+        var updatePayload = new
+        {
+            title = "Normal Update",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("title").GetString().ShouldBe("Normal Update");
+    }
+
+    [Fact]
+    public async Task UpdateActivity_WithStaleConcurrencyToken_StillReturns409_WithoutForce()
+    {
+        var (activityId, originalToken) = await CreateActivityAndGetIdAndToken();
+
+        // Admin B updates
+        var firstUpdate = new
+        {
+            title = "Admin B",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", firstUpdate);
+
+        // Admin A tries normal save (no force) with stale token — should still get 409
+        var staleUpdate = new
+        {
+            title = "Admin A Stale",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", staleUpdate);
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_ForceSave_AsAdmin_WithStaleToken_Returns200()
+    {
+        // Activity created by Owner in MIFEM department (admin is assigned to MIFEM)
+        var (activityId, originalToken) = await CreateActivityAndGetIdAndToken();
+
+        // Owner updates first, changing the xmin
+        var ownerUpdate = new
+        {
+            title = "Owner Update",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        var firstResponse = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", ownerUpdate);
+        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Admin force-saves with stale token — should succeed (admin has MIFEM access)
+        var adminForceUpdate = new
+        {
+            title = "Admin Force Update",
+            date = "2026-03-14",
+            startTime = "09:00:00",
+            endTime = "11:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = originalToken,
+        };
+        var response = await AdminClient.PutAsJsonAsync($"/api/activities/{activityId}?force=true", adminForceUpdate);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("title").GetString().ShouldBe("Admin Force Update");
     }
 }

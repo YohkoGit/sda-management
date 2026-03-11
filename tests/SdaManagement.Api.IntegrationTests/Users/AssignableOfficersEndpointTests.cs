@@ -221,7 +221,9 @@ public class AssignableOfficersEndpointTests : IntegrationTestBase
         var root = doc.RootElement;
 
         root.TryGetProperty("items", out _).ShouldBeTrue();
-        root.TryGetProperty("nextCursor", out var cursor).ShouldBeTrue();
-        cursor.ValueKind.ShouldBe(JsonValueKind.Null);
+        // With WhenWritingNull, null nextCursor is omitted from JSON
+        if (root.TryGetProperty("nextCursor", out var cursor))
+            cursor.ValueKind.ShouldBe(JsonValueKind.Null);
+        // If missing, that also means null (no more pages) — both are acceptable
     }
 }

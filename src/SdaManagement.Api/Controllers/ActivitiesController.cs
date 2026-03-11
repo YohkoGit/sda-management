@@ -102,7 +102,8 @@ public class ActivitiesController(
     public async Task<IActionResult> Update(
         int id,
         [FromBody] UpdateActivityRequest request,
-        [FromServices] IValidator<UpdateActivityRequest> validator)
+        [FromServices] IValidator<UpdateActivityRequest> validator,
+        [FromQuery] bool force = false)
     {
         // Verify the existing activity exists and check auth on its current department
         var existing = await activityService.GetByIdAsync(id);
@@ -122,7 +123,7 @@ public class ActivitiesController(
 
         try
         {
-            var activity = await activityService.UpdateAsync(id, request);
+            var activity = await activityService.UpdateAsync(id, request, force);
             return activity is not null ? Ok(activity) : NotFound();
         }
         catch (DbUpdateConcurrencyException)

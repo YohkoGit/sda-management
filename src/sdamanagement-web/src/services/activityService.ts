@@ -62,7 +62,7 @@ export const activityService = {
     api.get<ActivityResponse>(`/api/activities/${id}`),
   create: (data: CreateActivityFormData) =>
     api.post<ActivityResponse>("/api/activities", data),
-  update: (id: number, data: UpdateActivityFormData) =>
-    api.put<ActivityResponse>(`/api/activities/${id}`, data),
+  update: (id: number, data: UpdateActivityFormData, force = false) =>
+    api.put<ActivityResponse>(`/api/activities/${id}${force ? '?force=true' : ''}`, data),
   delete: (id: number) => api.delete(`/api/activities/${id}`),
 };
