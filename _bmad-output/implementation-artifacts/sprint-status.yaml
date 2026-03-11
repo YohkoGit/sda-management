@@ -71,7 +71,7 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Activity Scheduling & Role Assignment
-  epic-4: in-progress
+  epic-4: done
   4-1-activity-data-model-and-basic-crud: done
   4-2-activity-creation-from-templates: done
   4-3-role-roster-customization: done
