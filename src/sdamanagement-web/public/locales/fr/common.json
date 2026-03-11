@@ -38,7 +38,22 @@
   "pages": {
     "home": {
       "title": "Accueil",
-      "subtitle": "Bienvenue \u00e0 l\u2019Eglise Adventiste du 7e Jour de Saint-Hubert"
+      "subtitle": "Bienvenue \u00e0 l\u2019Eglise Adventiste du 7e Jour de Saint-Hubert",
+      "thisSabbath": "Ce Sabbat",
+      "noActivities": "Aucune activit\u00e9 \u00e0 venir \u2014 revenez bient\u00f4t!",
+      "predicateur": "Pr\u00e9dicateur",
+      "loadingActivity": "Chargement\u2026",
+      "loadError": "Impossible de charger les activit\u00e9s",
+      "welcomeDefault": "Bienvenue",
+      "specialType": {
+        "sainte-cene": "Sainte-C\u00e8ne",
+        "week-of-prayer": "Semaine de pri\u00e8re",
+        "camp-meeting": "Camp Meeting",
+        "youth-day": "Journ\u00e9e de la jeunesse",
+        "family-day": "Journ\u00e9e de la famille",
+        "womens-day": "Journ\u00e9e de la femme",
+        "evangelism": "\u00c9vang\u00e9lisation"
+      }
     },
     "dashboard": {
       "title": "Tableau de Bord",

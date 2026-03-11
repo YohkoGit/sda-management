@@ -1,12 +1,18 @@
-import { useTranslation } from "react-i18next";
+import HeroSection from "@/components/public/HeroSection";
 
 export default function HomePage() {
-  const { t } = useTranslation();
-
   return (
     <div>
-      <h1 className="text-2xl font-black">{t("pages.home.title")}</h1>
-      <p className="mt-2 text-muted-foreground">{t("pages.home.subtitle")}</p>
+      <HeroSection />
+
+      {/* Future: Story 5.2 — YouTube live stream embed */}
+      <section className="mx-auto max-w-7xl px-4 py-6">{/* YouTube embed */}</section>
+
+      {/* Future: Story 5.3 — Upcoming activities & program times */}
+      <section className="mx-auto max-w-7xl px-4 py-6">{/* Upcoming activities */}</section>
+
+      {/* Future: Story 5.4 — Public department overview */}
+      <section className="mx-auto max-w-7xl px-4 py-6">{/* Departments */}</section>
     </div>
   );
 }

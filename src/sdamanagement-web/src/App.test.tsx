@@ -5,19 +5,21 @@ import userEvent from "@testing-library/user-event";
 import { Routes, Route } from "react-router-dom";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
+import { configHandlers } from "@/mocks/handlers/config";
+import { publicHandlers } from "@/mocks/handlers/public";
 import PublicLayout from "@/layouts/PublicLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import HomePage from "@/pages/HomePage";
 import DashboardPage from "@/pages/DashboardPage";
 
-const server = setupServer(...authHandlers);
+const server = setupServer(...authHandlers, ...configHandlers, ...publicHandlers);
 
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("Route navigation integration", () => {
-  it("/ renders public home page with TopNav", () => {
+  it("/ renders public home page with TopNav", async () => {
     render(
       <Routes>
         <Route element={<PublicLayout />}>
@@ -27,12 +29,13 @@ describe("Route navigation integration", () => {
       { routerProps: { initialEntries: ["/"] } }
     );
 
-    // Public TopNav is present (use role selector — "Accueil" exists in both nav and heading)
+    // Public TopNav is present
     expect(screen.getByRole("link", { name: "Accueil" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Connexion" })).toBeInTheDocument();
-    // Home page content is rendered
-    expect(screen.getByRole("heading", { name: "Accueil" })).toBeInTheDocument();
-    expect(screen.getByText("Bienvenue à l'Eglise Adventiste du 7e Jour de Saint-Hubert")).toBeInTheDocument();
+    // HeroSection renders church identity from API
+    await waitFor(() => {
+      expect(screen.getByText("Eglise Adventiste du 7e Jour de Saint-Hubert")).toBeInTheDocument();
+    });
   });
 
   it("/dashboard redirects to /login when unauthenticated", async () => {

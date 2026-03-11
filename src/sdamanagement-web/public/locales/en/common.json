@@ -38,7 +38,22 @@
   "pages": {
     "home": {
       "title": "Home",
-      "subtitle": "Welcome to the Seventh-day Adventist Church of Saint-Hubert"
+      "subtitle": "Welcome to the Seventh-day Adventist Church of Saint-Hubert",
+      "thisSabbath": "This Sabbath",
+      "noActivities": "No upcoming activities \u2014 check back soon!",
+      "predicateur": "Speaker",
+      "loadingActivity": "Loading\u2026",
+      "loadError": "Unable to load activities",
+      "welcomeDefault": "Welcome",
+      "specialType": {
+        "sainte-cene": "Communion",
+        "week-of-prayer": "Week of Prayer",
+        "camp-meeting": "Camp Meeting",
+        "youth-day": "Youth Day",
+        "family-day": "Family Day",
+        "womens-day": "Women's Day",
+        "evangelism": "Evangelism"
+      }
     },
     "dashboard": {
       "title": "Dashboard",

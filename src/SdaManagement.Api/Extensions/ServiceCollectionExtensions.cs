@@ -66,6 +66,11 @@ public static class ServiceCollectionExtensions
                 limiterOptions.PermitLimit = authRateLimit;
                 limiterOptions.Window = TimeSpan.FromMinutes(1);
             });
+            options.AddFixedWindowLimiter("public", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = configuration.GetValue("RateLimiting:PublicPermitLimit", 30);
+                limiterOptions.Window = TimeSpan.FromMinutes(1);
+            });
         });
 
         // Controllers + JSON
@@ -167,6 +172,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddSingleton<IAvatarService, AvatarService>();
         services.AddScoped<IActivityService, ActivityService>();
+        services.AddScoped<IPublicService, PublicService>();
 
         // FluentValidation — auto-register all validators from assembly
         services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();

@@ -14,7 +14,7 @@ export default function PublicLayout() {
         {t("layout.skipToContent")}
       </a>
       <TopNav />
-      <main id="main-content" className="mx-auto max-w-7xl px-4 py-6">
+      <main id="main-content">
         <Outlet />
       </main>
     </div>
