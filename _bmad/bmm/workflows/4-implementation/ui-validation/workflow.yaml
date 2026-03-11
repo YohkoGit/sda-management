@@ -1,0 +1,42 @@
+# UI Validation Workflow
+name: ui-validation
+description: 'Visual verification of frontend against UX spec via Playwright screenshots. Use when the user says "run ui validation" or "validate the ui"'
+author: "Elisha"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmm/config.yaml"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+user_skill_level: "{config_source}:user_skill_level"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+planning_artifacts: "{config_source}:planning_artifacts"
+implementation_artifacts: "{config_source}:implementation_artifacts"
+sprint_status: "{implementation_artifacts}/sprint-status.yaml"
+
+# Workflow components
+installed_path: "{project-root}/_bmad/bmm/workflows/4-implementation/ui-validation"
+instructions: "{installed_path}/instructions.md"
+template: false
+
+project_context: "**/project-context.md"
+
+# Screenshot system paths
+screenshots_dir: "{project-root}/screenshots"
+manifest_file: "{project-root}/screenshots/manifest.yaml"
+capture_plans_dir: "{project-root}/screenshots/capture-plans"
+compliance_dir: "{project-root}/screenshots/compliance"
+
+# Smart input file references
+input_file_patterns:
+  ux_design:
+    description: "UX design specification for visual compliance checks"
+    whole: "{planning_artifacts}/*ux-design*.md"
+    sharded: "{planning_artifacts}/*ux*/*.md"
+    load_strategy: "FULL_LOAD"
+  epics:
+    description: "Epic containing story being validated"
+    whole: "{planning_artifacts}/*epic*.md"
+    sharded_index: "{planning_artifacts}/*epic*/index.md"
+    sharded_single: "{planning_artifacts}/*epic*/epic-{{epic_num}}.md"
+    load_strategy: "SELECTIVE_LOAD"

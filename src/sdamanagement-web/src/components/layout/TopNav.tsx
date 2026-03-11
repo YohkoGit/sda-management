@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const publicLinks = [
   { to: "/", labelKey: "nav.public.home" },
@@ -24,6 +25,7 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 export default function TopNav() {
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 640px)");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -62,7 +64,7 @@ export default function TopNav() {
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
+            <SheetContent side={isDesktop ? "right" : "bottom"} className={isDesktop ? "w-64" : ""}>
               <SheetTitle className="sr-only">{t("nav.public.menu", "Menu")}</SheetTitle>
               <div className="flex flex-col gap-4 pt-8">
                 {publicLinks.map((link) => (

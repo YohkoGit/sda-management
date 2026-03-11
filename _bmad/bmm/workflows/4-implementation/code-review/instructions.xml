@@ -171,8 +171,17 @@
   <step n="5" goal="Update story status and sync sprint tracking">
     <!-- Determine new status based on review outcome -->
     <check if="all HIGH and MEDIUM issues fixed AND all ACs implemented">
-      <action>Set {{new_status}} = "done"</action>
-      <action>Update story Status field to "done"</action>
+      <!-- Route to UI validation if story has frontend screens in the screenshot manifest -->
+      <action>Check if {project-root}/screenshots/manifest.yaml exists AND contains {{story_key}}</action>
+      <check if="story found in screenshot manifest">
+        <action>Set {{new_status}} = "ui-review"</action>
+        <action>Update story Status field to "ui-review"</action>
+        <output>📸 Story has frontend screens — routing to UI validation next.</output>
+      </check>
+      <check if="story NOT in screenshot manifest OR manifest does not exist">
+        <action>Set {{new_status}} = "done"</action>
+        <action>Update story Status field to "done"</action>
+      </check>
     </check>
     <check if="HIGH or MEDIUM issues remain OR ACs not fully implemented">
       <action>Set {{new_status}} = "in-progress"</action>
@@ -199,6 +208,12 @@
         <output>✅ Sprint status synced: {{story_key}} → done</output>
       </check>
 
+      <check if="{{new_status}} == 'ui-review'">
+        <action>Update development_status[{{story_key}}] = "ui-review"</action>
+        <action>Save file, preserving ALL comments and structure</action>
+        <output>📸 Sprint status synced: {{story_key}} → ui-review</output>
+      </check>
+
       <check if="{{new_status}} == 'in-progress'">
         <action>Update development_status[{{story_key}}] = "in-progress"</action>
         <action>Save file, preserving ALL comments and structure</action>
@@ -220,7 +235,9 @@
       **Issues Fixed:** {{fixed_count}}
       **Action Items Created:** {{action_count}}
 
-      {{#if new_status == "done"}}Code review complete!{{else}}Address the action items and continue development.{{/if}}
+      {{#if new_status == "done"}}Code review complete! Story done.{{/if}}
+      {{#if new_status == "ui-review"}}Code review passed! Next: run `/bmad-bmm-ui-validation` for visual verification.{{/if}}
+      {{#if new_status == "in-progress"}}Address the action items and continue development.{{/if}}
     </output>
   </step>
 

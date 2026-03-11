@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { isAxiosError } from "axios";
+import { toast } from "sonner";
 import api from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { stopConnection } from "@/lib/signalr";
@@ -79,10 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const params = new URLSearchParams(window.location.search);
     const errorParam = params.get("error");
     if (errorParam === "user_not_found") {
-      setError("Contactez votre administrateur pour obtenir un accès.");
+      const msg = "Contactez votre administrateur pour obtenir un accès.";
+      setError(msg);
+      toast.error(msg, { duration: Infinity });
       window.history.replaceState({}, "", window.location.pathname);
     } else if (errorParam === "auth_failed") {
-      setError("L'authentification a échoué. Veuillez réessayer.");
+      const msg = "L'authentification a échoué. Veuillez réessayer.";
+      setError(msg);
+      toast.error(msg, { duration: Infinity });
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);

@@ -42,14 +42,14 @@ Run `/bmad:bmm:workflows:sprint-planning` to generate it, then rerun sprint-stat
   - Retrospectives: keys ending with "-retrospective"
   - Stories: everything else (e.g., 1-2-login-form)
   <action>Map legacy story status "drafted" → "ready-for-dev"</action>
-  <action>Count story statuses: backlog, ready-for-dev, in-progress, review, done</action>
+  <action>Count story statuses: backlog, ready-for-dev, in-progress, review, ui-review, done</action>
   <action>Map legacy epic status "contexted" → "in-progress"</action>
   <action>Count epic statuses: backlog, in-progress, done</action>
   <action>Count retrospective statuses: optional, done</action>
 
 <action>Validate all statuses against known values:</action>
 
-- Valid story statuses: backlog, ready-for-dev, in-progress, review, done, drafted (legacy)
+- Valid story statuses: backlog, ready-for-dev, in-progress, review, ui-review, done, drafted (legacy)
 - Valid epic statuses: backlog, in-progress, done, contexted (legacy)
 - Valid retrospective statuses: optional, done
 
@@ -82,6 +82,7 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
 <action>Detect risks:</action>
 
 - IF any story has status "review": suggest `/bmad:bmm:workflows:code-review`
+- IF any story has status "ui-review": suggest `/bmad-bmm-ui-validation`
 - IF any story has status "in-progress" AND no stories have status "ready-for-dev": recommend staying focused on active story
 - IF all epics have status "backlog" AND no stories have status "ready-for-dev": prompt `/bmad:bmm:workflows:create-story`
 - IF `generated` timestamp is more than 7 days old: warn "sprint-status.yaml may be stale"
@@ -94,10 +95,11 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
   <note>When selecting "first" story: sort by epic number, then story number (e.g., 1-1 before 1-2 before 2-1)</note>
   1. If any story status == in-progress → recommend `dev-story` for the first in-progress story
   2. Else if any story status == review → recommend `code-review` for the first review story
-  3. Else if any story status == ready-for-dev → recommend `dev-story`
-  4. Else if any story status == backlog → recommend `create-story`
-  5. Else if any retrospective status == optional → recommend `retrospective`
-  6. Else → All implementation items done; congratulate the user - you both did amazing work together!
+  3. Else if any story status == ui-review → recommend `ui-validation` for the first ui-review story
+  4. Else if any story status == ready-for-dev → recommend `dev-story`
+  5. Else if any story status == backlog → recommend `create-story`
+  6. Else if any retrospective status == optional → recommend `retrospective`
+  7. Else → All implementation items done; congratulate the user - you both did amazing work together!
   <action>Store selected recommendation as: next_story_id, next_workflow_id, next_agent (SM/DEV as appropriate)</action>
 </step>
 
@@ -109,7 +111,7 @@ Enter corrections (e.g., "1=in-progress, 2=backlog") or "skip" to continue witho
 - Tracking: {{tracking_system}}
 - Status file: {sprint_status_file}
 
-**Stories:** backlog {{count_backlog}}, ready-for-dev {{count_ready}}, in-progress {{count_in_progress}}, review {{count_review}}, done {{count_done}}
+**Stories:** backlog {{count_backlog}}, ready-for-dev {{count_ready}}, in-progress {{count_in_progress}}, review {{count_review}}, ui-review {{count_ui_review}}, done {{count_done}}
 
 **Epics:** backlog {{epic_backlog}}, in-progress {{epic_in_progress}}, done {{epic_done}}
 
@@ -144,6 +146,7 @@ If the command targets a story, set `story_key={{next_story_id}}` when prompted.
 ### Stories by Status
 - In Progress: {{stories_in_progress}}
 - Review: {{stories_in_review}}
+- UI Review: {{stories_in_ui_review}}
 - Ready for Dev: {{stories_ready_for_dev}}
 - Backlog: {{stories_backlog}}
 - Done: {{stories_done}}
@@ -172,6 +175,7 @@ If the command targets a story, set `story_key={{next_story_id}}` when prompted.
   <template-output>count_ready = {{count_ready}}</template-output>
   <template-output>count_in_progress = {{count_in_progress}}</template-output>
   <template-output>count_review = {{count_review}}</template-output>
+  <template-output>count_ui_review = {{count_ui_review}}</template-output>
   <template-output>count_done = {{count_done}}</template-output>
   <template-output>epic_backlog = {{epic_backlog}}</template-output>
   <template-output>epic_in_progress = {{epic_in_progress}}</template-output>
@@ -213,7 +217,7 @@ If the command targets a story, set `story_key={{next_story_id}}` when prompted.
 
 <action>Validate all status values against known valid statuses:</action>
 
-- Stories: backlog, ready-for-dev, in-progress, review, done (legacy: drafted)
+- Stories: backlog, ready-for-dev, in-progress, review, ui-review, done (legacy: drafted)
 - Epics: backlog, in-progress, done (legacy: contexted)
 - Retrospectives: optional, done
   <check if="any invalid status found">

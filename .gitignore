@@ -67,6 +67,11 @@ desktop.ini
 data/avatars/
 
 # =========================
+# Screenshots (local visual verification)
+# =========================
+/screenshots/
+
+# =========================
 # Misc
 # =========================
 *.tmp
