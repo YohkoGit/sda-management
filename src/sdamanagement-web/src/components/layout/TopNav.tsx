@@ -15,9 +15,9 @@ const publicLinks = [
 ] as const;
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
-  return `text-sm font-medium transition-colors hover:text-indigo-600 ${
+  return `text-sm font-medium transition-colors hover:text-primary ${
     isActive
-      ? "text-indigo-600 border-b-2 border-indigo-600"
+      ? "text-primary border-b-2 border-primary"
       : "text-foreground"
   }`;
 }
@@ -75,7 +75,7 @@ export default function TopNav() {
                     onClick={() => setMobileOpen(false)}
                     className={({ isActive }) =>
                       `block px-3 py-2 text-sm font-medium rounded-md ${
-                        isActive ? "bg-indigo-50 text-indigo-600" : "text-foreground hover:bg-muted"
+                        isActive ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
                       }`
                     }
                   >

@@ -55,7 +55,7 @@ describe("TopNav", () => {
 
     const calendarLink = screen.getByRole("link", { name: "Calendrier" });
     expect(calendarLink).toHaveAttribute("aria-current", "page");
-    expect(calendarLink.className).toContain("text-indigo-600");
+    expect(calendarLink.className).toContain("text-primary");
 
     // Non-active links should NOT have aria-current
     const homeLink = screen.getByRole("link", { name: "Accueil" });

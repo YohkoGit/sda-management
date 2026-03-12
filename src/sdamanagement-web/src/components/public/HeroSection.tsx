@@ -1,12 +1,17 @@
 import { useTranslation } from "react-i18next";
 import { getDay, addDays, isSameDay, format, parse } from "date-fns";
 import { fr } from "date-fns/locale/fr";
+import { enUS } from "date-fns/locale/en-US";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useNextActivity, useChurchInfo } from "@/hooks/usePublicDashboard";
 import type { PublicNextActivity } from "@/types/public";
 
-function formatActivityDate(dateStr: string, t: (key: string) => string): string {
+function getDateLocale(lang: string) {
+  return lang.startsWith("en") ? enUS : fr;
+}
+
+function formatActivityDate(dateStr: string, t: (key: string) => string, lang: string): string {
   const activityDate = parse(dateStr, "yyyy-MM-dd", new Date());
   const today = new Date();
   const dayOfWeek = getDay(today);
@@ -16,7 +21,7 @@ function formatActivityDate(dateStr: string, t: (key: string) => string): string
   if (isSameDay(activityDate, thisSaturday)) {
     return t("pages.home.thisSabbath");
   }
-  return format(activityDate, "EEEE d MMMM", { locale: fr });
+  return format(activityDate, "EEEE d MMMM", { locale: getDateLocale(lang) });
 }
 
 function formatTime(timeStr: string): string {
@@ -61,8 +66,8 @@ function ActivityContent({
 }: {
   activity: PublicNextActivity;
 }) {
-  const { t } = useTranslation();
-  const dateLabel = formatActivityDate(activity.date, t);
+  const { t, i18n } = useTranslation();
+  const dateLabel = formatActivityDate(activity.date, t, i18n.language);
   const startTime = formatTime(activity.startTime);
   const endTime = formatTime(activity.endTime);
 

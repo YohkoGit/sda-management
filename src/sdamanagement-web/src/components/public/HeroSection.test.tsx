@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
 import { setupServer } from "msw/node";
-import { render, screen, waitFor } from "@/test-utils";
+import { render, screen, waitFor, testI18n } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { configHandlers } from "@/mocks/handlers/config";
 import {
@@ -79,6 +79,25 @@ describe("HeroSection", () => {
       expect(screen.getByText(/samedi 14 mars/)).toBeInTheDocument();
     });
 
+    vi.useRealTimers();
+  });
+
+  it("renders English formatted date when language is switched to EN", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 2, 3, 12, 0, 0));
+
+    // Switch i18n to English before render
+    await testI18n.changeLanguage("en");
+
+    render(<HeroSection />);
+
+    await waitFor(() => {
+      // date-fns enUS locale: "Saturday 14 March"
+      expect(screen.getByText(/Saturday 14 March/)).toBeInTheDocument();
+    });
+
+    // Restore to French
+    await testI18n.changeLanguage("fr");
     vi.useRealTimers();
   });
 
