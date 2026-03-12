@@ -153,7 +153,7 @@ export function DepartmentCard({ department }: DepartmentCardProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMutation.mutate()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
             >
               {t("pages.adminDepartments.deleteConfirmAction")}
             </AlertDialogAction>

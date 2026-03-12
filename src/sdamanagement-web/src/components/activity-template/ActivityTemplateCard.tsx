@@ -119,7 +119,7 @@ export function ActivityTemplateCard({ template }: ActivityTemplateCardProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMutation.mutate()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
             >
               {t("pages.adminActivityTemplates.deleteConfirmAction")}
             </AlertDialogAction>

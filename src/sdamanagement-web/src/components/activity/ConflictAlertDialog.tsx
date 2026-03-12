@@ -42,7 +42,7 @@ export function ConflictAlertDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onOverwrite}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            variant="destructive"
           >
             {t("pages.adminActivities.conflict.overwrite")}
           </AlertDialogAction>

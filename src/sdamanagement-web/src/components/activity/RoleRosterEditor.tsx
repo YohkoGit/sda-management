@@ -413,7 +413,8 @@ export default function RoleRosterEditor({
               {t("pages.adminActivities.roleRoster.cancelButton")}
             </AlertDialogCancel>
             <AlertDialogAction
-              className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
+              className="min-h-[44px]"
               onClick={() => {
                 if (roleToRemove) {
                   remove(roleToRemove.index);
