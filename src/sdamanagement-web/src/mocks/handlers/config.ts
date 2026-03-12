@@ -58,3 +58,30 @@ export const configHandlersError = [
     );
   }),
 ];
+
+export const configHandlersNoYouTube = [
+  http.get("/api/config", () => {
+    return HttpResponse.json({
+      ...mockPublicConfig,
+      youTubeChannelUrl: null,
+    });
+  }),
+];
+
+export const configHandlersEmptyYouTube = [
+  http.get("/api/config", () => {
+    return HttpResponse.json({
+      ...mockPublicConfig,
+      youTubeChannelUrl: "",
+    });
+  }),
+];
+
+export const configHandlersWithVideoUrl = [
+  http.get("/api/config", () => {
+    return HttpResponse.json({
+      ...mockPublicConfig,
+      youTubeChannelUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    });
+  }),
+];

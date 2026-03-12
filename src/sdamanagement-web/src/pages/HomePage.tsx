@@ -1,12 +1,12 @@
 import HeroSection from "@/components/public/HeroSection";
+import YouTubeSection from "@/components/public/YouTubeSection";
 
 export default function HomePage() {
   return (
     <div>
       <HeroSection />
 
-      {/* Future: Story 5.2 — YouTube live stream embed */}
-      <section className="mx-auto max-w-7xl px-4 py-6">{/* YouTube embed */}</section>
+      <YouTubeSection />
 
       {/* Future: Story 5.3 — Upcoming activities & program times */}
       <section className="mx-auto max-w-7xl px-4 py-6">{/* Upcoming activities */}</section>

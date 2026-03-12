@@ -11,3 +11,9 @@ export interface PublicNextActivity {
   predicateurAvatarUrl: string | null;
   specialType: string | null;
 }
+
+export interface LiveStatus {
+  isLive: boolean;
+  liveVideoId: string | null;
+  liveTitle: string | null;
+}

@@ -28,6 +28,19 @@ Marking story as **done** (no UI validation needed).</output>
       <action>Jump to Step 6 with {{new_status}} = "done"</action>
     </check>
   </check>
+  <check if="manifest entry compliance == 'blocked'">
+    <output>🚫 Story `{{story_key}}` is **blocked** from full UI validation.
+**Blocker:** {{manifest_blocker_field}}
+**Screens captured:** {{screen_count}} (some/all screens could not be captured)</output>
+    <ask>Options:
+1. **Re-attempt** — blocker has been resolved, try capturing missing screens
+2. **Accept partial** — mark as done with current coverage
+3. **Skip** — leave as blocked
+Choice:</ask>
+    <check if="user chooses 1"><action>Continue to Step 2 (re-attempt capture)</action></check>
+    <check if="user chooses 2"><action>Jump to Step 6 with {{new_status}} = "done"</action></check>
+    <check if="user chooses 3"><action>STOP — story remains in ui-review</action></check>
+  </check>
 </step>
 
 <step n="2" goal="Ensure prerequisites for capture">
@@ -82,8 +95,43 @@ cd src/sdamanagement-web && npm run dev
     5. Take screenshot (browser_take_screenshot) → save to {screenshots_dir}/epic-{{epic_num}}/{{story_key}}/{screen_id}.png
   </action>
 
-  <action>Update {manifest_file}: set story status to "captured", screen_count, captured date</action>
-  <output>📸 Captured {{screen_count}} screenshots for `{{story_key}}`</output>
+  <!-- Track screens that could not be captured -->
+  <action>For each screen that CANNOT be captured, record the reason in {{skipped_screens}}:
+    - "mock-overrides" — requires API mock/intercept (e.g., 409 conflict, empty state, loading delay)
+    - "alt-role-credentials" — requires logging in as a different role (admin, viewer)
+    - "seed-data" — requires specific data state not present (uploaded avatars, specialType activities)
+    - "mobile-interaction" — requires click/tap interactions during capture on mobile viewport
+    - "interaction-capture" — requires multi-step user interaction that Playwright can't automate in this pass
+  </action>
+
+  <action>Update {manifest_file}: set story status to "captured", screen_count (only successfully captured), captured date</action>
+
+  <check if="{{skipped_screens}} is not empty">
+    <action>Set {{blocker_categories}} = unique blocker reasons from {{skipped_screens}}</action>
+    <action>Determine if skipped screens cover CORE acceptance criteria of the story (not just edge cases)</action>
+    <check if="skipped screens cover core ACs">
+      <action>Update manifest: compliance = "blocked", blocker = summary of {{blocker_categories}}</action>
+      <output>📸 Captured {{screen_count}} screenshots for `{{story_key}}`
+🚫 **{{skipped_count}} screens blocked** — core ACs not visually verifiable:
+{{#each skipped_screens}}
+- Screen {{screen_id}}: {{reason}} — {{description}}
+{{/each}}
+Blocker(s): {{blocker_categories}}</output>
+      <action>Continue to Step 4 to validate what WAS captured, then jump to Step 5 blocked path</action>
+    </check>
+    <check if="skipped screens are edge cases only (empty states, skeletons, rare states)">
+      <output>📸 Captured {{screen_count}} screenshots for `{{story_key}}`
+ℹ️ {{skipped_count}} edge-case screens skipped (not core ACs):
+{{#each skipped_screens}}
+- Screen {{screen_id}}: {{reason}}
+{{/each}}</output>
+      <action>Continue to Step 4 — these skips do NOT block validation</action>
+    </check>
+  </check>
+
+  <check if="{{skipped_screens}} is empty">
+    <output>📸 Captured {{screen_count}} screenshots for `{{story_key}}`</output>
+  </check>
 </step>
 
 <step n="4" goal="Validate screenshots against UX spec">
@@ -107,8 +155,10 @@ cd src/sdamanagement-web && npm run dev
 
   <action>Update {manifest_file}:
     - status: "validated"
-    - compliance: "pass" | "partial" | "fail"
+    - compliance: "pass" | "partial" | "fail" | "blocked"
     - findings: count of non-compliant items
+    - blocker: (if blocked) summary of what prevents full validation
+    - notes: any screens skipped and why
   </action>
 </step>
 
@@ -119,6 +169,38 @@ cd src/sdamanagement-web && npm run dev
 All {{screen_count}} screens comply with the UX design specification.
 Compliance report: {compliance_dir}/{{story_key}}.md</output>
     <action>Set {{new_status}} = "done"</action>
+  </check>
+
+  <check if="compliance == 'blocked'">
+    <output>🚫 **UI Validation BLOCKED** for `{{story_key}}`
+
+**Captured screens:** {{screen_count}} — all captured screens pass compliance checks.
+**Blocked screens:** {{skipped_count}} — core ACs cannot be visually verified.
+**Blocker(s):** {{blocker_categories}}
+
+{{#each skipped_screens}}
+- Screen {{screen_id}}: {{reason}} — {{description}}
+{{/each}}
+
+Compliance report: {compliance_dir}/{{story_key}}.md</output>
+
+    <ask>How to proceed?
+1. **Accept partial and mark done** — blocked screens are acceptable risk
+2. **Keep as ui-review** — story stays blocked until blockers are resolved
+3. **Show details** — view captured screenshots + blocker details
+Choice:</ask>
+
+    <check if="user chooses 1">
+      <action>Set {{new_status}} = "done"</action>
+      <action>Update manifest: compliance = "pass", add notes about accepted partial coverage</action>
+    </check>
+    <check if="user chooses 2">
+      <action>Set {{new_status}} = "ui-review"</action>
+    </check>
+    <check if="user chooses 3">
+      <action>For each blocker: explain what's needed to unblock, show captured screenshots</action>
+      <action>Return to this decision point</action>
+    </check>
   </check>
 
   <check if="compliance == 'partial' or 'fail'">
@@ -161,12 +243,18 @@ Choice:</ask>
   <check if="{{new_status}} == 'in-progress'">
     <action>Update story file Status field to "in-progress"</action>
   </check>
+  <check if="{{new_status}} == 'ui-review'">
+    <action>Update story file Status field to "ui-review"</action>
+  </check>
 
   <!-- Sync sprint-status.yaml -->
   <check if="{sprint_status} file exists">
     <action>Load the FULL file: {sprint_status}</action>
     <action>Find development_status key matching {{story_key}}</action>
     <action>Update development_status[{{story_key}}] = "{{new_status}}"</action>
+    <check if="{{new_status}} == 'ui-review'">
+      <action>Append inline comment: "# BLOCKED: {{blocker_summary}}"</action>
+    </check>
     <action>Save file, preserving ALL comments and structure</action>
     <output>📊 Sprint status synced: {{story_key}} → {{new_status}}</output>
   </check>
@@ -178,17 +266,23 @@ Choice:</ask>
       <action>Update development_status[epic-{{epic_num}}] = "done"</action>
       <output>🎉 Epic {{epic_num}} is now fully complete!</output>
     </check>
+    <check if="some stories are 'ui-review' (blocked)">
+      <action>Ensure development_status[epic-{{epic_num}}] = "in-progress"</action>
+      <output>⚠️ Epic {{epic_num}} has blocked stories — cannot mark as done.</output>
+    </check>
   </check>
 
-  <output>**✅ UI Validation Complete!**
+  <output>**UI Validation Complete!**
 
 **Story:** {{story_key}}
 **Status:** {{new_status}}
 {{#if compliance}}**Compliance:** {{compliance}} ({{findings_count}} findings){{/if}}
 {{#if skip_reason}}**Skipped:** {{skip_reason}}{{/if}}
+{{#if blocker_categories}}**Blocker(s):** {{blocker_categories}}{{/if}}
 
-{{#if new_status == "done"}}Story complete! Run `/bmad-bmm-sprint-status` to see what's next.
-{{else}}Fix the UI findings, then re-run `/bmad-bmm-ui-validation`.{{/if}}</output>
+{{#if new_status == "done"}}✅ Story complete! Run `/bmad-bmm-sprint-status` to see what's next.
+{{else if new_status == "ui-review"}}🚫 Story blocked. Resolve blocker(s), then re-run `/bmad-bmm-ui-validation`.
+{{else}}⚠️ Fix the UI findings, then re-run `/bmad-bmm-ui-validation`.{{/if}}</output>
 </step>
 
 </workflow>

@@ -7,7 +7,7 @@ namespace SdaManagement.Api.Controllers;
 
 [Route("api/public")]
 [ApiController]
-public class PublicController(IPublicService publicService) : ControllerBase
+public class PublicController(IPublicService publicService, IYouTubeService youTubeService) : ControllerBase
 {
     [AllowAnonymous]
     [HttpGet("next-activity")]
@@ -16,5 +16,14 @@ public class PublicController(IPublicService publicService) : ControllerBase
     {
         var result = await publicService.GetNextActivityAsync();
         return result is not null ? Ok(result) : NoContent();
+    }
+
+    [AllowAnonymous]
+    [HttpGet("live-status")]
+    [EnableRateLimiting("public")]
+    public async Task<IActionResult> GetLiveStatus()
+    {
+        var result = await youTubeService.GetLiveStatusAsync();
+        return Ok(result);
     }
 }

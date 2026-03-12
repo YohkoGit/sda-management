@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.IntegrationTests.Auth;
+using SdaManagement.Api.Services;
 using Testcontainers.PostgreSql;
 
 namespace SdaManagement.Api.IntegrationTests;
@@ -61,6 +62,8 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
                 ["RateLimiting:AuthPermitLimit"] = "10000",
                 // Prevent Program.cs seeder from querying DB before migrations are applied
                 ["OwnerEmail"] = "",
+                // Skip SeedDevDataAsync — tables don't exist until InitializeAsync runs migrations
+                ["SeedDevData"] = "false",
                 // Story 3.5: Avatar storage in isolated temp directory
                 ["AvatarStorage:Path"] = _avatarTestPath,
             });
@@ -95,6 +98,10 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                 TestAuthHandler.SchemeName, null);
 
+            // Replace YouTube service with fake (avoids real API calls in tests)
+            services.RemoveAll<IYouTubeService>();
+            services.AddSingleton<IYouTubeService>(
+                new Helpers.FakeYouTubeService(isLive: false));
         });
     }
 

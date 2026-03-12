@@ -63,6 +63,10 @@ testI18n.use(initReactI18next).init({
             loadingActivity: "Chargement…",
             loadError: "Impossible de charger les activités",
             welcomeDefault: "Bienvenue",
+            liveStreamTitle: "Suivez le culte en direct",
+            liveNow: "EN DIRECT",
+            watchOnYouTube: "Regarder sur YouTube",
+            liveStreamDescription: "Rejoignez-nous en direct chaque sabbat",
             specialType: {
               "sainte-cene": "Sainte-Cène",
               "week-of-prayer": "Semaine de prière",

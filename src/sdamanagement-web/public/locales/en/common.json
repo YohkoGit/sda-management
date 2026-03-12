@@ -334,6 +334,10 @@
         "saving": "Saving...",
         "cancel": "Cancel"
       },
+      "liveStreamTitle": "Watch the service live",
+      "liveNow": "LIVE NOW",
+      "watchOnYouTube": "Watch on YouTube",
+      "liveStreamDescription": "Join us live every Sabbath",
       "specialType": {
         "sainte-cene": "Sainte-Cene",
         "week-of-prayer": "Week of Prayer",

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import type { PublicNextActivity } from "@/types/public";
+import type { PublicNextActivity, LiveStatus } from "@/types/public";
 
 const mockNextActivity: PublicNextActivity = {
   id: 1,
@@ -13,6 +13,12 @@ const mockNextActivity: PublicNextActivity = {
   predicateurName: "Jean Dupont",
   predicateurAvatarUrl: null,
   specialType: null,
+};
+
+const mockLiveStatusNotLive: LiveStatus = {
+  isLive: false,
+  liveVideoId: null,
+  liveTitle: null,
 };
 
 export const publicHandlers = [
@@ -40,6 +46,28 @@ export const publicHandlersNoPredicateur = [
       predicateurName: null,
       predicateurAvatarUrl: null,
     });
+  }),
+];
+
+export const liveStatusHandlers = [
+  http.get("/api/public/live-status", () => {
+    return HttpResponse.json(mockLiveStatusNotLive);
+  }),
+];
+
+export const liveStatusHandlersLive = [
+  http.get("/api/public/live-status", () => {
+    return HttpResponse.json({
+      isLive: true,
+      liveVideoId: "dQw4w9WgXcQ",
+      liveTitle: "Culte du Sabbat — En Direct",
+    });
+  }),
+];
+
+export const liveStatusHandlersError = [
+  http.get("/api/public/live-status", () => {
+    return new HttpResponse(null, { status: 500 });
   }),
 ];
 

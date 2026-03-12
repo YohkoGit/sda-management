@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Caching.Memory;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Services;
@@ -173,6 +174,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAvatarService, AvatarService>();
         services.AddScoped<IActivityService, ActivityService>();
         services.AddScoped<IPublicService, PublicService>();
+        services.AddMemoryCache();
+        services.AddHttpClient("YouTube", client =>
+        {
+            client.BaseAddress = new Uri("https://www.googleapis.com/youtube/v3/");
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
+        services.AddScoped<IYouTubeService, YouTubeService>();
 
         // FluentValidation — auto-register all validators from assembly
         services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();

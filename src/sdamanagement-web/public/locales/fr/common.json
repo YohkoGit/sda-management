@@ -45,6 +45,10 @@
       "loadingActivity": "Chargement\u2026",
       "loadError": "Impossible de charger les activit\u00e9s",
       "welcomeDefault": "Bienvenue",
+      "liveStreamTitle": "Suivez le culte en direct",
+      "liveNow": "EN DIRECT",
+      "watchOnYouTube": "Regarder sur YouTube",
+      "liveStreamDescription": "Rejoignez-nous en direct chaque sabbat",
       "specialType": {
         "sainte-cene": "Sainte-C\u00e8ne",
         "week-of-prayer": "Semaine de pri\u00e8re",

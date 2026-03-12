@@ -27,6 +27,15 @@ using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
     await seeder.SeedAsync();
+
+    // Dev-only: seed test users with passwords, activities with specialType
+    // Enables UI validation for stories requiring alt-role logins and enriched data
+    // SeedDevData defaults to true; integration tests set it to false so the seeder
+    // doesn't query tables before migrations are applied.
+    if (app.Environment.IsDevelopment() && app.Configuration.GetValue("SeedDevData", true))
+    {
+        await seeder.SeedDevDataAsync();
+    }
 }
 
 // OpenAPI in development
