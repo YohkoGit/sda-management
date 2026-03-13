@@ -230,4 +230,75 @@ export const departmentHandlersError = [
   ),
 ];
 
-export { mockNextActivity, mockUpcomingActivities, mockProgramSchedules, mockDepartments };
+const mockCalendarActivities: PublicActivityListItem[] = [
+  {
+    id: 101,
+    title: "Culte du Sabbat",
+    date: "2026-03-14",
+    startTime: "09:30:00",
+    endTime: "12:00:00",
+    departmentName: "Culte",
+    departmentAbbreviation: "CU",
+    departmentColor: "#F43F5E",
+    predicateurName: "Pasteur Vicuna",
+    predicateurAvatarUrl: null,
+    specialType: null,
+  },
+  {
+    id: 102,
+    title: "Programme JA",
+    date: "2026-03-14",
+    startTime: "14:00:00",
+    endTime: "16:00:00",
+    departmentName: "Jeunesse Adventiste",
+    departmentAbbreviation: "JA",
+    departmentColor: "#14B8A6",
+    predicateurName: null,
+    predicateurAvatarUrl: null,
+    specialType: null,
+  },
+  {
+    id: 103,
+    title: "Sainte-Cene",
+    date: "2026-03-21",
+    startTime: "09:30:00",
+    endTime: "12:30:00",
+    departmentName: "Culte",
+    departmentAbbreviation: "CU",
+    departmentColor: "#F43F5E",
+    predicateurName: "Pasteur Vicuna",
+    predicateurAvatarUrl: null,
+    specialType: "sainte-cene",
+  },
+  {
+    id: 104,
+    title: "Reunion MIFEM",
+    date: "2026-03-18",
+    startTime: "19:00:00",
+    endTime: "20:30:00",
+    departmentName: "Ministere de la Femme",
+    departmentAbbreviation: "MIFEM",
+    departmentColor: "#8B5CF6",
+    predicateurName: null,
+    predicateurAvatarUrl: null,
+    specialType: null,
+  },
+];
+
+export const calendarHandlers = [
+  http.get("/api/public/calendar", () =>
+    HttpResponse.json(mockCalendarActivities)
+  ),
+];
+
+export const calendarHandlersEmpty = [
+  http.get("/api/public/calendar", () => HttpResponse.json([])),
+];
+
+export const calendarHandlersError = [
+  http.get("/api/public/calendar", () =>
+    new HttpResponse(null, { status: 500 })
+  ),
+];
+
+export { mockNextActivity, mockUpcomingActivities, mockProgramSchedules, mockDepartments, mockCalendarActivities };

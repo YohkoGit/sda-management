@@ -53,4 +53,15 @@ public class PublicController(IPublicService publicService, IYouTubeService youT
         var result = await publicService.GetPublicDepartmentsAsync();
         return Ok(result);
     }
+
+    [AllowAnonymous]
+    [HttpGet("calendar")]
+    [EnableRateLimiting("public")]
+    public async Task<IActionResult> GetCalendarActivities(
+        [FromQuery] DateOnly start,
+        [FromQuery] DateOnly end)
+    {
+        var result = await publicService.GetCalendarActivitiesAsync(start, end);
+        return Ok(result);
+    }
 }

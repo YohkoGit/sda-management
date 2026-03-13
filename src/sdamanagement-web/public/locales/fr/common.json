@@ -68,7 +68,9 @@
       "welcome": "Bienvenue, {{name}}"
     },
     "calendar": {
-      "title": "Calendrier"
+      "title": "Calendrier",
+      "loadError": "Impossible de charger le calendrier",
+      "retry": "Réessayer"
     },
     "departments": {
       "title": "D\u00e9partements"

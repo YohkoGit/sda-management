@@ -86,16 +86,16 @@ development_status:
   epic-4-retrospective: optional
 
   # Epic 5: Public Dashboard & Anonymous Experience
-  epic-5: in-progress
+  epic-5: done
   5-1-public-dashboard-hero-section-and-next-activity: done
   5-2-youtube-live-stream-embed: done
   5-3-upcoming-activities-and-program-times: done
   5-4-public-department-overview: done
-  5-5-public-calendar-view: backlog
+  5-5-public-calendar-view: done
   epic-5-retrospective: optional
 
   # Epic 6: Authenticated Dashboard & Personal Assignments
-  epic-6: backlog
+  epic-6: in-progress
   6-1-personal-assignments-view-my-assignments: backlog
   6-2-full-activity-roster-view: backlog
   6-3-authenticated-dashboard: backlog

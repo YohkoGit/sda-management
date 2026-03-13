@@ -82,7 +82,7 @@ testI18n.use(initReactI18next).init({
             },
           },
           dashboard: { title: "Tableau de Bord", welcome: "Bienvenue, {{name}}" },
-          calendar: { title: "Calendrier" },
+          calendar: { title: "Calendrier", loadError: "Impossible de charger le calendrier", retry: "Réessayer" },
           departments: { title: "Départements" },
           live: { title: "En Direct" },
           admin: { title: "Administration" },

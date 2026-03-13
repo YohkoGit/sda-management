@@ -10,10 +10,12 @@ import LoginPage from "@/pages/LoginPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import HomePage from "@/pages/HomePage";
-import PublicCalendarPage from "@/pages/PublicCalendarPage";
 import PublicDepartmentsPage from "@/pages/PublicDepartmentsPage";
 import LivePage from "@/pages/LivePage";
 import NotFoundPage from "@/pages/NotFoundPage";
+
+// Lazy-loaded public calendar — Schedule-X + temporal-polyfill bundle splitting
+const PublicCalendarPage = lazy(() => import("@/pages/PublicCalendarPage"));
 
 // Lazy-loaded authenticated layout — code splitting (NFR5)
 const AuthenticatedLayout = lazy(() => import("@/layouts/AuthenticatedLayout"));
@@ -43,7 +45,11 @@ function App() {
             {/* Public route tree */}
             <Route element={<PublicLayout />}>
               <Route index element={<HomePage />} />
-              <Route path="calendar" element={<PublicCalendarPage />} />
+              <Route path="calendar" element={
+                <Suspense fallback={<LoadingSpinner />}>
+                  <PublicCalendarPage />
+                </Suspense>
+              } />
               <Route path="departments" element={<PublicDepartmentsPage />} />
               <Route path="live" element={<LivePage />} />
             </Route>

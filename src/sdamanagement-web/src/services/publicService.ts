@@ -24,4 +24,11 @@ export const publicService = {
     api
       .get<PublicDepartment[]>("/api/public/departments")
       .then((res) => res.data),
+
+  getCalendarActivities: (start: string, end: string) =>
+    api
+      .get<PublicActivityListItem[]>("/api/public/calendar", {
+        params: { start, end },
+      })
+      .then((res) => res.data),
 };

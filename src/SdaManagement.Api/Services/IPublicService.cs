@@ -8,4 +8,5 @@ public interface IPublicService
     Task<List<PublicActivityListItem>> GetUpcomingActivitiesAsync();
     Task<List<PublicProgramScheduleResponse>> GetProgramSchedulesAsync();
     Task<List<PublicDepartmentResponse>> GetPublicDepartmentsAsync();
+    Task<List<PublicActivityListItem>> GetCalendarActivitiesAsync(DateOnly start, DateOnly end);
 }

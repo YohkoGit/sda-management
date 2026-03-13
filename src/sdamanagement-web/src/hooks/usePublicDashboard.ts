@@ -57,3 +57,13 @@ export function useDepartments() {
     retry: 1,
   });
 }
+
+export function useCalendarActivities(start: string, end: string) {
+  return useQuery<PublicActivityListItem[]>({
+    queryKey: ["public", "calendar", start, end],
+    queryFn: () => publicService.getCalendarActivities(start, end),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    enabled: !!start && !!end,
+  });
+}
