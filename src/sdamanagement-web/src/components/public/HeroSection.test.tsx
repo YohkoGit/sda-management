@@ -48,8 +48,8 @@ describe("HeroSection", () => {
 
     expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     expect(screen.getByText("CU")).toBeInTheDocument();
-    // Verify time formatting (09:30:00 → 09h30, 12:00:00 → 12h00)
-    expect(screen.getByText(/09h30/)).toBeInTheDocument();
+    // Verify time formatting (09:30:00 → 9h30, 12:00:00 → 12h00)
+    expect(screen.getByText(/9h30/)).toBeInTheDocument();
     expect(screen.getByText(/12h00/)).toBeInTheDocument();
   });
 

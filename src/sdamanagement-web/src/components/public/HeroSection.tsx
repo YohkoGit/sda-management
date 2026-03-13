@@ -1,34 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { getDay, addDays, isSameDay, format, parse } from "date-fns";
-import { fr } from "date-fns/locale/fr";
-import { enUS } from "date-fns/locale/en-US";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useNextActivity, useChurchInfo } from "@/hooks/usePublicDashboard";
+import { formatActivityDate, formatTime } from "@/lib/dateFormatting";
 import type { PublicNextActivity } from "@/types/public";
-
-function getDateLocale(lang: string) {
-  return lang.startsWith("en") ? enUS : fr;
-}
-
-function formatActivityDate(dateStr: string, t: (key: string) => string, lang: string): string {
-  const activityDate = parse(dateStr, "yyyy-MM-dd", new Date());
-  const today = new Date();
-  const dayOfWeek = getDay(today);
-  const daysUntilSat = dayOfWeek === 6 ? 0 : ((6 - dayOfWeek + 7) % 7);
-  const thisSaturday = addDays(today, daysUntilSat);
-
-  if (isSameDay(activityDate, thisSaturday)) {
-    return t("pages.home.thisSabbath");
-  }
-  return format(activityDate, "EEEE d MMMM", { locale: getDateLocale(lang) });
-}
-
-function formatTime(timeStr: string): string {
-  // timeStr comes as "HH:mm:ss" from backend
-  const [h, m] = timeStr.split(":");
-  return `${h}h${m}`;
-}
 
 function AvatarInitials({ name }: { name: string }) {
   const initials = name

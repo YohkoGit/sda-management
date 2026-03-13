@@ -26,4 +26,22 @@ public class PublicController(IPublicService publicService, IYouTubeService youT
         var result = await youTubeService.GetLiveStatusAsync();
         return Ok(result);
     }
+
+    [AllowAnonymous]
+    [HttpGet("upcoming-activities")]
+    [EnableRateLimiting("public")]
+    public async Task<IActionResult> GetUpcomingActivities()
+    {
+        var result = await publicService.GetUpcomingActivitiesAsync();
+        return Ok(result);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("program-schedules")]
+    [EnableRateLimiting("public")]
+    public async Task<IActionResult> GetProgramSchedules()
+    {
+        var result = await publicService.GetProgramSchedulesAsync();
+        return Ok(result);
+    }
 }

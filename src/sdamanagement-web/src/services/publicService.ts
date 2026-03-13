@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { PublicNextActivity, LiveStatus } from "@/types/public";
+import type { PublicNextActivity, LiveStatus, PublicActivityListItem, PublicProgramSchedule } from "@/types/public";
 
 export const publicService = {
   getNextActivity: () =>
@@ -9,4 +9,14 @@ export const publicService = {
 
   getLiveStatus: () =>
     api.get<LiveStatus>("/api/public/live-status").then((res) => res.data),
+
+  getUpcomingActivities: () =>
+    api
+      .get<PublicActivityListItem[]>("/api/public/upcoming-activities")
+      .then((res) => res.data),
+
+  getProgramSchedules: () =>
+    api
+      .get<PublicProgramSchedule[]>("/api/public/program-schedules")
+      .then((res) => res.data),
 };

@@ -66,6 +66,8 @@ testI18n.use(initReactI18next).init({
             liveStreamTitle: "Suivez le culte en direct",
             liveNow: "EN DIRECT",
             watchOnYouTube: "Regarder sur YouTube",
+            upcomingActivitiesTitle: "Activités à venir",
+            programSchedulesTitle: "Horaire des programmes",
             liveStreamDescription: "Rejoignez-nous en direct chaque sabbat",
             specialType: {
               "sainte-cene": "Sainte-Cène",

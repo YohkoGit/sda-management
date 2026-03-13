@@ -3,10 +3,22 @@ import { setupServer } from "msw/node";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { configHandlers } from "@/mocks/handlers/config";
-import { publicHandlers, liveStatusHandlers } from "@/mocks/handlers/public";
+import {
+  publicHandlers,
+  liveStatusHandlers,
+  upcomingActivitiesHandlers,
+  programScheduleHandlers,
+} from "@/mocks/handlers/public";
 import HomePage from "./HomePage";
 
-const server = setupServer(...authHandlers, ...configHandlers, ...publicHandlers, ...liveStatusHandlers);
+const server = setupServer(
+  ...authHandlers,
+  ...configHandlers,
+  ...publicHandlers,
+  ...liveStatusHandlers,
+  ...upcomingActivitiesHandlers,
+  ...programScheduleHandlers
+);
 
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterEach(() => server.resetHandlers());
@@ -27,7 +39,7 @@ describe("HomePage", () => {
     render(<HomePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+      expect(screen.getByText("Jean Dupont")).toBeInTheDocument();
     });
   });
 
@@ -36,6 +48,22 @@ describe("HomePage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Suivez le culte en direct")).toBeInTheDocument();
+    });
+  });
+
+  it("renders UpcomingActivitiesSection", async () => {
+    render(<HomePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Activités à venir")).toBeInTheDocument();
+    });
+  });
+
+  it("renders ProgramTimesSection when schedules exist", async () => {
+    render(<HomePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Horaire des programmes")).toBeInTheDocument();
     });
   });
 });

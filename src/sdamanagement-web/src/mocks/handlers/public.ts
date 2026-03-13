@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import type { PublicNextActivity, LiveStatus } from "@/types/public";
+import type { PublicNextActivity, LiveStatus, PublicActivityListItem, PublicProgramSchedule } from "@/types/public";
 
 const mockNextActivity: PublicNextActivity = {
   id: 1,
@@ -20,6 +20,78 @@ const mockLiveStatusNotLive: LiveStatus = {
   liveVideoId: null,
   liveTitle: null,
 };
+
+const mockUpcomingActivities: PublicActivityListItem[] = [
+  {
+    id: 2,
+    title: "Culte du Sabbat",
+    date: "2026-03-14",
+    startTime: "09:30:00",
+    endTime: "12:00:00",
+    departmentName: "Culte",
+    departmentAbbreviation: "CU",
+    departmentColor: "#F43F5E",
+    predicateurName: "Jean Dupont",
+    predicateurAvatarUrl: null,
+    specialType: null,
+  },
+  {
+    id: 3,
+    title: "Programme JA",
+    date: "2026-03-14",
+    startTime: "14:00:00",
+    endTime: "16:00:00",
+    departmentName: "Jeunesse Adventiste",
+    departmentAbbreviation: "JA",
+    departmentColor: "#14B8A6",
+    predicateurName: null,
+    predicateurAvatarUrl: null,
+    specialType: null,
+  },
+  {
+    id: 4,
+    title: "Sabbat de la Jeunesse",
+    date: "2026-03-21",
+    startTime: "09:30:00",
+    endTime: "12:00:00",
+    departmentName: "Jeunesse Adventiste",
+    departmentAbbreviation: "JA",
+    departmentColor: "#14B8A6",
+    predicateurName: "Marie Lafleur",
+    predicateurAvatarUrl: null,
+    specialType: "youth-day",
+  },
+];
+
+const mockProgramSchedules: PublicProgramSchedule[] = [
+  {
+    title: "École du Sabbat",
+    dayOfWeek: 6,
+    startTime: "09:30:00",
+    endTime: "10:30:00",
+    hostName: "Pierre Martin",
+    departmentName: "Culte",
+    departmentColor: "#F43F5E",
+  },
+  {
+    title: "Culte Divin",
+    dayOfWeek: 6,
+    startTime: "11:00:00",
+    endTime: "12:30:00",
+    hostName: null,
+    departmentName: "Culte",
+    departmentColor: "#F43F5E",
+  },
+  {
+    title: "Programme AY",
+    dayOfWeek: 6,
+    startTime: "14:00:00",
+    endTime: "16:00:00",
+    hostName: "Sophie Bernard",
+    departmentName: "Jeunesse Adventiste",
+    departmentColor: "#14B8A6",
+  },
+];
 
 export const publicHandlers = [
   http.get("/api/public/next-activity", () => {
@@ -71,4 +143,40 @@ export const liveStatusHandlersError = [
   }),
 ];
 
-export { mockNextActivity };
+export const upcomingActivitiesHandlers = [
+  http.get("/api/public/upcoming-activities", () =>
+    HttpResponse.json(mockUpcomingActivities)
+  ),
+];
+
+export const upcomingActivitiesHandlersEmpty = [
+  http.get("/api/public/upcoming-activities", () =>
+    HttpResponse.json([])
+  ),
+];
+
+export const upcomingActivitiesHandlersError = [
+  http.get("/api/public/upcoming-activities", () =>
+    new HttpResponse(null, { status: 500 })
+  ),
+];
+
+export const programScheduleHandlers = [
+  http.get("/api/public/program-schedules", () =>
+    HttpResponse.json(mockProgramSchedules)
+  ),
+];
+
+export const programScheduleHandlersEmpty = [
+  http.get("/api/public/program-schedules", () =>
+    HttpResponse.json([])
+  ),
+];
+
+export const programScheduleHandlersError = [
+  http.get("/api/public/program-schedules", () =>
+    new HttpResponse(null, { status: 500 })
+  ),
+];
+
+export { mockNextActivity, mockUpcomingActivities, mockProgramSchedules };

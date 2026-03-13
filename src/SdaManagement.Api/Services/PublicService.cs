@@ -26,23 +26,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
         if (activity is null)
             return null;
 
-        // Find prédicateur role and first assignment
-        var predicateurRole = activity.Roles.FirstOrDefault(r =>
-            r.RoleName.Equals("Predicateur", StringComparison.OrdinalIgnoreCase) ||
-            r.RoleName.Equals("Prédicateur", StringComparison.OrdinalIgnoreCase));
-
-        string? predicateurName = null;
-        string? predicateurAvatarUrl = null;
-
-        if (predicateurRole is not null)
-        {
-            var assignment = predicateurRole.Assignments.FirstOrDefault();
-            if (assignment is not null)
-            {
-                predicateurName = $"{assignment.User.FirstName} {assignment.User.LastName}";
-                predicateurAvatarUrl = avatarService.GetAvatarUrl(assignment.UserId);
-            }
-        }
+        var (predicateurName, predicateurAvatarUrl) = ExtractPredicateur(activity);
 
         return new PublicNextActivityResponse(
             Id: activity.Id,
@@ -56,5 +40,71 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
             PredicateurName: predicateurName,
             PredicateurAvatarUrl: predicateurAvatarUrl,
             SpecialType: activity.SpecialType);
+    }
+
+    public async Task<List<PublicActivityListItem>> GetUpcomingActivitiesAsync()
+    {
+        // TODO: If hosted outside America/Toronto timezone (e.g., Azure US West),
+        // replace with: TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Toronto"))
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var fourWeeksOut = today.AddDays(28);
+
+        var activities = await dbContext.Activities
+            .Include(a => a.Department)
+            .Include(a => a.Roles)
+                .ThenInclude(r => r.Assignments)
+                    .ThenInclude(ra => ra.User)
+            .Where(a => a.Visibility == ActivityVisibility.Public
+                     && a.Date >= today
+                     && a.Date <= fourWeeksOut)
+            .OrderBy(a => a.Date)
+                .ThenBy(a => a.StartTime)
+            .Take(20)
+            .ToListAsync();
+
+        return activities.Select(a =>
+        {
+            var (predicateurName, predicateurAvatarUrl) = ExtractPredicateur(a);
+            return new PublicActivityListItem(
+                Id: a.Id,
+                Title: a.Title,
+                Date: a.Date,
+                StartTime: a.StartTime,
+                EndTime: a.EndTime,
+                DepartmentName: a.Department?.Name,
+                DepartmentAbbreviation: a.Department?.Abbreviation,
+                DepartmentColor: a.Department?.Color,
+                PredicateurName: predicateurName,
+                PredicateurAvatarUrl: predicateurAvatarUrl,
+                SpecialType: a.SpecialType);
+        }).ToList();
+    }
+
+    public async Task<List<PublicProgramScheduleResponse>> GetProgramSchedulesAsync()
+    {
+        return await dbContext.ProgramSchedules
+            .OrderBy(ps => ps.DayOfWeek)
+                .ThenBy(ps => ps.StartTime)
+            .Select(ps => new PublicProgramScheduleResponse(
+                ps.Title,
+                ps.DayOfWeek,
+                ps.StartTime,
+                ps.EndTime,
+                ps.HostName,
+                ps.Department != null ? ps.Department.Name : null,
+                ps.Department != null ? ps.Department.Color : null))
+            .ToListAsync();
+    }
+
+    private (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
+    {
+        var role = activity.Roles.FirstOrDefault(r =>
+            r.RoleName.Equals("Predicateur", StringComparison.OrdinalIgnoreCase) ||
+            r.RoleName.Equals("Prédicateur", StringComparison.OrdinalIgnoreCase));
+        if (role is null) return (null, null);
+        var assignment = role.Assignments.FirstOrDefault();
+        if (assignment is null) return (null, null);
+        return ($"{assignment.User.FirstName} {assignment.User.LastName}",
+                avatarService.GetAvatarUrl(assignment.UserId));
     }
 }
