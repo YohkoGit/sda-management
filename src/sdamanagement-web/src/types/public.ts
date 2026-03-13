@@ -32,6 +32,17 @@ export interface PublicActivityListItem {
   specialType: string | null;
 }
 
+export interface PublicDepartment {
+  id: number;
+  name: string;
+  abbreviation: string;
+  color: string;
+  description: string | null;
+  nextActivityTitle: string | null;
+  nextActivityDate: string | null;
+  nextActivityStartTime: string | null;
+}
+
 export interface PublicProgramSchedule {
   title: string;
   dayOfWeek: number; // 0=Sunday, 6=Saturday

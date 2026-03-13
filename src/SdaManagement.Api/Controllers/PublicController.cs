@@ -44,4 +44,13 @@ public class PublicController(IPublicService publicService, IYouTubeService youT
         var result = await publicService.GetProgramSchedulesAsync();
         return Ok(result);
     }
+
+    [AllowAnonymous]
+    [HttpGet("departments")]
+    [EnableRateLimiting("public")]
+    public async Task<IActionResult> GetPublicDepartments()
+    {
+        var result = await publicService.GetPublicDepartmentsAsync();
+        return Ok(result);
+    }
 }

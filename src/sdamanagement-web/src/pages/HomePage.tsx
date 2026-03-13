@@ -2,6 +2,7 @@ import HeroSection from "@/components/public/HeroSection";
 import YouTubeSection from "@/components/public/YouTubeSection";
 import UpcomingActivitiesSection from "@/components/public/UpcomingActivitiesSection";
 import ProgramTimesSection from "@/components/public/ProgramTimesSection";
+import DepartmentOverviewSection from "@/components/public/DepartmentOverviewSection";
 
 export default function HomePage() {
   return (
@@ -14,8 +15,7 @@ export default function HomePage() {
 
       <ProgramTimesSection />
 
-      {/* Future: Story 5.4 — Public department overview */}
-      <section className="mx-auto max-w-7xl px-4 py-6">{/* Departments */}</section>
+      <DepartmentOverviewSection />
     </div>
   );
 }

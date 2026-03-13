@@ -96,6 +96,45 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
             .ToListAsync();
     }
 
+    public async Task<List<PublicDepartmentResponse>> GetPublicDepartmentsAsync()
+    {
+        // TODO: If hosted outside America/Toronto timezone (e.g., Azure US West),
+        // replace with: TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Toronto"))
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+        var departments = await dbContext.Departments
+            .AsNoTracking()
+            .OrderBy(d => d.Name)
+            .Select(d => new
+            {
+                d.Id,
+                d.Name,
+                d.Abbreviation,
+                d.Color,
+                d.Description,
+                NextActivity = dbContext.Activities
+                    .Where(a => a.DepartmentId == d.Id
+                             && a.Visibility == ActivityVisibility.Public
+                             && a.Date >= today)
+                    .OrderBy(a => a.Date)
+                        .ThenBy(a => a.StartTime)
+                    .Select(a => new { a.Title, a.Date, a.StartTime })
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return departments.Select(d => new PublicDepartmentResponse(
+            d.Id,
+            d.Name,
+            d.Abbreviation,
+            d.Color,
+            d.Description,
+            d.NextActivity?.Title,
+            d.NextActivity?.Date,
+            d.NextActivity?.StartTime))
+            .ToList();
+    }
+
     private (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
     {
         var role = activity.Roles.FirstOrDefault(r =>

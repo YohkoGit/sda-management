@@ -8,6 +8,7 @@ import {
   liveStatusHandlers,
   upcomingActivitiesHandlers,
   programScheduleHandlers,
+  departmentHandlers,
 } from "@/mocks/handlers/public";
 import HomePage from "./HomePage";
 
@@ -17,7 +18,8 @@ const server = setupServer(
   ...publicHandlers,
   ...liveStatusHandlers,
   ...upcomingActivitiesHandlers,
-  ...programScheduleHandlers
+  ...programScheduleHandlers,
+  ...departmentHandlers
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
@@ -64,6 +66,14 @@ describe("HomePage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Horaire des programmes")).toBeInTheDocument();
+    });
+  });
+
+  it("renders DepartmentOverviewSection", async () => {
+    render(<HomePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Nos Départements")).toBeInTheDocument();
     });
   });
 });

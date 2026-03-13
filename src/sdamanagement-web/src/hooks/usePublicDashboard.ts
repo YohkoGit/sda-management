@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { publicService } from "@/services/publicService";
 import { configService } from "@/services/configService";
-import type { PublicNextActivity, LiveStatus, PublicActivityListItem, PublicProgramSchedule } from "@/types/public";
+import type { PublicNextActivity, LiveStatus, PublicActivityListItem, PublicProgramSchedule, PublicDepartment } from "@/types/public";
 
 export function useNextActivity() {
   return useQuery<PublicNextActivity | null>({
@@ -44,6 +44,15 @@ export function useProgramSchedules() {
   return useQuery<PublicProgramSchedule[]>({
     queryKey: ["public", "program-schedules"],
     queryFn: publicService.getProgramSchedules,
+    staleTime: 30 * 60 * 1000,
+    retry: 1,
+  });
+}
+
+export function useDepartments() {
+  return useQuery<PublicDepartment[]>({
+    queryKey: ["public", "departments"],
+    queryFn: publicService.getDepartments,
     staleTime: 30 * 60 * 1000,
     retry: 1,
   });

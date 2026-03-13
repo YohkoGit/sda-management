@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import type { PublicNextActivity, LiveStatus, PublicActivityListItem, PublicProgramSchedule } from "@/types/public";
+import type { PublicNextActivity, LiveStatus, PublicActivityListItem, PublicProgramSchedule, PublicDepartment } from "@/types/public";
 
 const mockNextActivity: PublicNextActivity = {
   id: 1,
@@ -179,4 +179,55 @@ export const programScheduleHandlersError = [
   ),
 ];
 
-export { mockNextActivity, mockUpcomingActivities, mockProgramSchedules };
+const mockDepartments: PublicDepartment[] = [
+  {
+    id: 1,
+    name: "Culte",
+    abbreviation: "CU",
+    color: "#F43F5E",
+    description: "Organisation des cultes et services religieux chaque sabbat.",
+    nextActivityTitle: "Culte du Sabbat",
+    nextActivityDate: "2026-03-14",
+    nextActivityStartTime: "09:30:00",
+  },
+  {
+    id: 2,
+    name: "Jeunesse Adventiste",
+    abbreviation: "JA",
+    color: "#14B8A6",
+    description: "Activit\u00e9s pour les jeunes et les Explorateurs de notre communaut\u00e9.",
+    nextActivityTitle: "Programme JA",
+    nextActivityDate: "2026-03-14",
+    nextActivityStartTime: "14:00:00",
+  },
+  {
+    id: 3,
+    name: "Minist\u00e8re de la Femme",
+    abbreviation: "MIFEM",
+    color: "#8B5CF6",
+    description: "Soutien, formation et activit\u00e9s pour les femmes de la communaut\u00e9.",
+    nextActivityTitle: null,
+    nextActivityDate: null,
+    nextActivityStartTime: null,
+  },
+];
+
+export const departmentHandlers = [
+  http.get("/api/public/departments", () =>
+    HttpResponse.json(mockDepartments)
+  ),
+];
+
+export const departmentHandlersEmpty = [
+  http.get("/api/public/departments", () =>
+    HttpResponse.json([])
+  ),
+];
+
+export const departmentHandlersError = [
+  http.get("/api/public/departments", () =>
+    new HttpResponse(null, { status: 500 })
+  ),
+];
+
+export { mockNextActivity, mockUpcomingActivities, mockProgramSchedules, mockDepartments };

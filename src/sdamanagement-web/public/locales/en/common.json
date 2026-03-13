@@ -51,6 +51,8 @@
       "liveStreamDescription": "Join us live every Sabbath",
       "upcomingActivitiesTitle": "Upcoming Activities",
       "programSchedulesTitle": "Program Schedule",
+      "departmentsTitle": "Our Departments",
+      "noPlannedActivity": "No planned activities",
       "specialType": {
         "sainte-cene": "Communion",
         "week-of-prayer": "Week of Prayer",

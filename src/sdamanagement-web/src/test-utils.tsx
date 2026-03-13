@@ -68,6 +68,8 @@ testI18n.use(initReactI18next).init({
             watchOnYouTube: "Regarder sur YouTube",
             upcomingActivitiesTitle: "Activités à venir",
             programSchedulesTitle: "Horaire des programmes",
+            departmentsTitle: "Nos Départements",
+            noPlannedActivity: "Aucune activité planifiée",
             liveStreamDescription: "Rejoignez-nous en direct chaque sabbat",
             specialType: {
               "sainte-cene": "Sainte-Cène",
