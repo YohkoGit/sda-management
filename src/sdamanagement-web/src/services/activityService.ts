@@ -1,5 +1,6 @@
 import api from "@/lib/api";
 import type { CreateActivityFormData, UpdateActivityFormData } from "@/schemas/activitySchema";
+import type { MyAssignmentItem } from "@/types/assignment";
 
 export interface RoleAssignmentResponse {
   id: number;
@@ -65,4 +66,6 @@ export const activityService = {
   update: (id: number, data: UpdateActivityFormData, force = false) =>
     api.put<ActivityResponse>(`/api/activities/${id}${force ? '?force=true' : ''}`, data),
   delete: (id: number) => api.delete(`/api/activities/${id}`),
+  getMyAssignments: () =>
+    api.get<MyAssignmentItem[]>("/api/activities/my-assignments"),
 };

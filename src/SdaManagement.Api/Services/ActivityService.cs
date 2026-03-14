@@ -306,6 +306,53 @@ public class ActivityService(
         return true;
     }
 
+    public async Task<List<MyAssignmentListItem>> GetMyAssignmentsAsync(int userId)
+    {
+        // Step A — Load entities via .Include() chain
+        // Cannot use .Select() projection because avatarService.GetAvatarUrl() is not translatable to SQL
+        // Note: no .AsNoTracking() because ActivityRole→Assignments creates a cycle back to RoleAssignment.
+        // Tracking queries handle cycles via identity map. Same pattern as GetByIdAsync().
+        var assignments = await dbContext.RoleAssignments
+            .Include(ra => ra.ActivityRole)
+                .ThenInclude(ar => ar.Activity)
+                    .ThenInclude(a => a.Department)
+            .Include(ra => ra.ActivityRole)
+                .ThenInclude(ar => ar.Assignments)
+                    .ThenInclude(ra2 => ra2.User)
+            .Where(ra => ra.UserId == userId)
+            .Where(ra => ra.ActivityRole.Activity.Date >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .OrderBy(ra => ra.ActivityRole.Activity.Date)
+                .ThenBy(ra => ra.ActivityRole.Activity.StartTime)
+            .Take(50)
+            .ToListAsync();
+
+        // Step B — Map to DTOs after materialization
+        return assignments.Select(ra => new MyAssignmentListItem
+        {
+            ActivityId = ra.ActivityRole.Activity.Id,
+            ActivityTitle = ra.ActivityRole.Activity.Title,
+            Date = ra.ActivityRole.Activity.Date,
+            StartTime = ra.ActivityRole.Activity.StartTime,
+            EndTime = ra.ActivityRole.Activity.EndTime,
+            DepartmentName = ra.ActivityRole.Activity.Department?.Name ?? string.Empty,
+            DepartmentAbbreviation = ra.ActivityRole.Activity.Department?.Abbreviation ?? string.Empty,
+            DepartmentColor = ra.ActivityRole.Activity.Department?.Color ?? string.Empty,
+            SpecialType = ra.ActivityRole.Activity.SpecialType,
+            RoleName = ra.ActivityRole.RoleName,
+            CoAssignees = ra.ActivityRole.Assignments
+                .Where(a => a.UserId != userId)
+                .Select(a => new CoAssigneeResponse
+                {
+                    UserId = a.UserId,
+                    FirstName = a.User.FirstName,
+                    LastName = a.User.LastName,
+                    AvatarUrl = avatarService.GetAvatarUrl(a.UserId),
+                    IsGuest = a.User.IsGuest,
+                })
+                .ToList(),
+        }).ToList();
+    }
+
     private void ReconcileAssignments(ActivityRole existingRole, ActivityRoleInput roleInput, DateTime now)
     {
         if (roleInput.Assignments is null)

@@ -65,7 +65,16 @@
     },
     "dashboard": {
       "title": "Tableau de Bord",
-      "welcome": "Bienvenue, {{name}}"
+      "welcome": "Bienvenue, {{name}}",
+      "myAssignments": {
+        "title": "Mes Affectations",
+        "empty": "Aucune affectation \u00e0 venir",
+        "emptyHint": "Les affectations apparaissent ici lorsqu\u2019un administrateur vous assigne un r\u00f4le dans une activit\u00e9.",
+        "loadError": "Impossible de charger vos affectations",
+        "retry": "R\u00e9essayer",
+        "coAssignees": "Aussi assign\u00e9(s)",
+        "guest": "Invit\u00e9"
+      }
     },
     "calendar": {
       "title": "Calendrier",

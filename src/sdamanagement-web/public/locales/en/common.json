@@ -65,7 +65,16 @@
     },
     "dashboard": {
       "title": "Dashboard",
-      "welcome": "Welcome, {{name}}"
+      "welcome": "Welcome, {{name}}",
+      "myAssignments": {
+        "title": "My Assignments",
+        "empty": "No upcoming assignments",
+        "emptyHint": "Assignments appear here when an administrator assigns you a role in an activity.",
+        "loadError": "Failed to load your assignments",
+        "retry": "Retry",
+        "coAssignees": "Also assigned",
+        "guest": "Guest"
+      }
     },
     "calendar": {
       "title": "Calendar",

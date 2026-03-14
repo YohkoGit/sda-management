@@ -9,4 +9,5 @@ public interface IActivityService
     Task<ActivityResponse> CreateAsync(CreateActivityRequest request);
     Task<ActivityResponse?> UpdateAsync(int id, UpdateActivityRequest request, bool force = false);
     Task<bool> DeleteAsync(int id);
+    Task<List<MyAssignmentListItem>> GetMyAssignmentsAsync(int userId);
 }

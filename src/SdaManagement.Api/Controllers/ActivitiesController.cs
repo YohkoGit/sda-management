@@ -16,7 +16,8 @@ namespace SdaManagement.Api.Controllers;
 [EnableRateLimiting("auth")]
 public class ActivitiesController(
     IActivityService activityService,
-    SdacAuth.IAuthorizationService auth) : ControllerBase
+    SdacAuth.IAuthorizationService auth,
+    SdacAuth.ICurrentUserContext currentUser) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? departmentId, [FromQuery] string? visibility = null)
@@ -44,6 +45,16 @@ public class ActivitiesController(
 
         var activities = await activityService.GetAllAsync(departmentId, visibility);
         return Ok(activities);
+    }
+
+    [HttpGet("my-assignments")]
+    public async Task<IActionResult> GetMyAssignments()
+    {
+        if (!auth.CanView())
+            return Forbid();
+
+        var assignments = await activityService.GetMyAssignmentsAsync(currentUser.UserId);
+        return Ok(assignments);
     }
 
     [HttpGet("{id:int}")]

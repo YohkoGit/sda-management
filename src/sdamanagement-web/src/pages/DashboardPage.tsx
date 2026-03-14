@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { SetupChecklist } from "@/components/setup";
+import { MyAssignmentsSection } from "@/components/assignments/MyAssignmentsSection";
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -18,6 +19,9 @@ export default function DashboardPage() {
       <p className="mt-2 text-muted-foreground">
         {t("pages.dashboard.welcome", { name: user?.firstName })}
       </p>
+      <div className="mt-6">
+        <MyAssignmentsSection />
+      </div>
     </div>
   );
 }
