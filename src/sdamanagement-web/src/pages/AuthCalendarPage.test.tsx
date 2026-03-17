@@ -4,12 +4,9 @@ import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import {
   calendarHandlers,
-  calendarHandlersEmpty,
-  calendarHandlersError,
   departmentHandlers,
-  departmentHandlersError,
 } from "@/mocks/handlers/public";
-import PublicCalendarPage from "./PublicCalendarPage";
+import AuthCalendarPage from "./AuthCalendarPage";
 
 vi.mock("@schedule-x/react", () => ({
   useCalendarApp: () => ({}),
@@ -58,70 +55,26 @@ beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("PublicCalendarPage", () => {
-  it("renders skeleton while loading departments", () => {
-    render(<PublicCalendarPage />);
-    const skeletons = document.querySelectorAll('[data-slot="skeleton"]');
-    expect(skeletons.length).toBeGreaterThan(0);
-  });
-
-  it("renders department error state", async () => {
-    server.use(...departmentHandlersError);
-
-    render(<PublicCalendarPage />);
-
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText("Impossible de charger le calendrier"),
-        ).toBeInTheDocument();
-      },
-      { timeout: 5000 },
-    );
-  });
-
-  it("renders CalendarView when departments loaded", async () => {
-    render(<PublicCalendarPage />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
-    });
-  });
-
-  it("renders page heading", async () => {
-    render(<PublicCalendarPage />);
+describe("AuthCalendarPage", () => {
+  it("renders calendar heading", async () => {
+    render(<AuthCalendarPage />);
 
     await waitFor(() => {
       expect(screen.getByText("Calendrier")).toBeInTheDocument();
     });
   });
 
-  it("renders calendar with empty event list without crashing", async () => {
-    server.use(...calendarHandlersEmpty);
-
-    render(<PublicCalendarPage />);
+  it("renders calendar container", async () => {
+    render(<AuthCalendarPage />);
 
     await waitFor(() => {
       expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
     });
-
-    expect(
-      screen.queryByText("Impossible de charger le calendrier"),
-    ).not.toBeInTheDocument();
   });
 
-  it("shows error when calendar API fails", async () => {
-    server.use(...calendarHandlersError);
-
-    render(<PublicCalendarPage />);
-
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText("Impossible de charger le calendrier"),
-        ).toBeInTheDocument();
-      },
-      { timeout: 5000 },
-    );
+  it("renders skeleton while loading", () => {
+    render(<AuthCalendarPage />);
+    const skeletons = document.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 });

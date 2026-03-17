@@ -102,8 +102,8 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: Calendar
-  epic-7: backlog
-  7-1-calendar-core-sunday-first-with-multiple-views: backlog
+  epic-7: in-progress
+  7-1-calendar-core-sunday-first-with-multiple-views: done
   7-2-calendar-visibility-and-department-filtering: backlog
   7-3-admin-quick-create-from-calendar: backlog
   epic-7-retrospective: optional

@@ -60,6 +60,7 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
                 // Story 1.4: Higher rate limit for tests so functional tests don't
                 // interfere with each other via shared rate limit budget
                 ["RateLimiting:AuthPermitLimit"] = "10000",
+                ["RateLimiting:PublicPermitLimit"] = "10000",
                 // Prevent Program.cs seeder from querying DB before migrations are applied
                 ["OwnerEmail"] = "",
                 // Skip SeedDevDataAsync — tables don't exist until InitializeAsync runs migrations
