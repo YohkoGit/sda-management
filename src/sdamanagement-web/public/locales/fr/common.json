@@ -464,6 +464,25 @@
         "moreUnassigned": "+{{count}} de plus"
       }
     },
+    "activityDetail": {
+      "back": "Retour",
+      "edit": "Modifier",
+      "notFound": "Activité non trouvée",
+      "notFoundHint": "Cette activité n'existe pas ou a été supprimée.",
+      "backToDashboard": "Retour au tableau de bord",
+      "loadError": "Impossible de charger l'activité",
+      "retry": "Réessayer",
+      "description": "Description",
+      "roster": {
+        "title": "Composition de l'activité",
+        "noRoles": "Aucun rôle défini pour cette activité",
+        "unassigned": "Non assigné",
+        "unassignedPosition": "Position non assignée",
+        "guest": "(Invité)",
+        "assigned": "{{assigned}}/{{total}}",
+        "ariaRoleStatus": "{{role}}: {{assigned}} sur {{total}} assigné(s)"
+      }
+    },
     "notFound": {
       "title": "Page introuvable",
       "message": "La page que vous recherchez n\u2019existe pas.",

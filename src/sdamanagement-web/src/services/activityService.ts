@@ -8,7 +8,7 @@ export interface RoleAssignmentResponse {
   firstName: string;
   lastName: string;
   avatarUrl: string | null;
-  isGuest?: boolean;
+  isGuest: boolean;
 }
 
 export interface ActivityRoleResponse {
@@ -22,15 +22,21 @@ export interface ActivityRoleResponse {
 export interface ActivityResponse {
   id: number;
   title: string;
-  description: string | null;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  description?: string | null;
   date: string;
   startTime: string;
   endTime: string;
-  departmentId: number | null;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  departmentId?: number | null;
   departmentName: string;
+  departmentAbbreviation: string;
+  departmentColor: string;
   visibility: string;
-  specialType: string | null;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  specialType?: string | null;
   roles: ActivityRoleResponse[];
+  staffingStatus: string;
   concurrencyToken: number;
   createdAt: string;
   updatedAt: string;
@@ -42,11 +48,11 @@ export interface ActivityListItem {
   date: string;
   startTime: string;
   endTime: string;
-  departmentId: number | null;
+  departmentId?: number | null;
   departmentName: string;
   departmentColor: string;
   visibility: string;
-  specialType: string | null;
+  specialType?: string | null;
   roleCount: number;
   totalHeadcount: number;
   assignedCount: number;

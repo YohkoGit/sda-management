@@ -30,6 +30,7 @@ const AdminProgramSchedulesPage = lazy(() => import("@/pages/AdminProgramSchedul
 const AdminSystemHealthPage = lazy(() => import("@/pages/AdminSystemHealthPage"));
 const AdminUsersPage = lazy(() => import("@/pages/AdminUsersPage"));
 const AdminActivitiesPage = lazy(() => import("@/pages/AdminActivitiesPage"));
+const ActivityDetailPage = lazy(() => import("@/pages/ActivityDetailPage"));
 
 function App() {
   return (
@@ -64,6 +65,7 @@ function App() {
                 }
               >
                 <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="activities/:id" element={<ActivityDetailPage />} />
                 <Route path="my-calendar" element={<AuthCalendarPage />} />
                 <Route path="my-departments" element={<AuthDepartmentsPage />} />
                 <Route path="admin/users" element={<AdminUsersPage />} />

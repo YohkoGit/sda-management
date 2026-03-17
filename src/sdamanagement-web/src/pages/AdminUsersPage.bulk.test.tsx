@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor, within } from "@/test-utils";
+import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { userHandlers } from "@/mocks/handlers/users";
 import { departmentHandlers } from "@/mocks/handlers/departments";

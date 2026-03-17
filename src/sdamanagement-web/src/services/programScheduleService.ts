@@ -7,9 +7,9 @@ export interface ProgramScheduleResponse {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
-  hostName: string | null;
-  departmentId: number | null;
-  departmentName: string | null;
+  hostName?: string | null;
+  departmentId?: number | null;
+  departmentName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,9 +20,9 @@ export interface ProgramScheduleListItem {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
-  hostName: string | null;
-  departmentId: number | null;
-  departmentName: string | null;
+  hostName?: string | null;
+  departmentId?: number | null;
+  departmentName?: string | null;
 }
 
 export const programScheduleService = {

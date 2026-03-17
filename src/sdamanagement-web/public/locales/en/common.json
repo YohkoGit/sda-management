@@ -455,6 +455,25 @@
         "moreUnassigned": "+{{count}} more"
       }
     },
+    "activityDetail": {
+      "back": "Back",
+      "edit": "Edit",
+      "notFound": "Activity not found",
+      "notFoundHint": "This activity doesn't exist or has been deleted.",
+      "backToDashboard": "Back to dashboard",
+      "loadError": "Failed to load activity",
+      "retry": "Retry",
+      "description": "Description",
+      "roster": {
+        "title": "Activity Roster",
+        "noRoles": "No roles defined for this activity",
+        "unassigned": "Unassigned",
+        "unassignedPosition": "Unassigned position",
+        "guest": "(Guest)",
+        "assigned": "{{assigned}}/{{total}}",
+        "ariaRoleStatus": "{{role}}: {{assigned}} of {{total}} assigned"
+      }
+    },
     "notFound": {
       "title": "Page Not Found",
       "message": "The page you are looking for does not exist.",

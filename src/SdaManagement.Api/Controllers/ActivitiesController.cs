@@ -60,12 +60,12 @@ public class ActivitiesController(
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
+        if (!auth.CanView())
+            return Forbid();
+
         var activity = await activityService.GetByIdAsync(id);
         if (activity is null)
             return NotFound();
-
-        if (!HasActivityAccess(activity))
-            return Forbid();
 
         return Ok(activity);
     }

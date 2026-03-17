@@ -431,6 +431,8 @@ public class ActivityService(
             EndTime = activity.EndTime,
             DepartmentId = activity.DepartmentId,
             DepartmentName = activity.Department?.Name ?? string.Empty,
+            DepartmentAbbreviation = activity.Department?.Abbreviation ?? string.Empty,
+            DepartmentColor = activity.Department?.Color ?? string.Empty,
             Visibility = activity.Visibility.ToString().ToLowerInvariant(),
             SpecialType = activity.SpecialType,
             Roles = activity.Roles
@@ -452,6 +454,10 @@ public class ActivityService(
                     }).ToList(),
                 })
                 .ToList(),
+            StaffingStatus = ComputeStaffingStatus(
+                activity.Roles.Sum(r => r.Headcount),
+                activity.Roles.Sum(r => r.Assignments.Count),
+                activity.Roles.Select(r => (r.RoleName, r.Assignments.Count))),
             ConcurrencyToken = activity.Version,
             CreatedAt = activity.CreatedAt,
             UpdatedAt = activity.UpdatedAt,

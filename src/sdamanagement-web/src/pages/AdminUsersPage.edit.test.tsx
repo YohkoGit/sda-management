@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor, within } from "@/test-utils";
+import { render, screen, waitFor } from "@/test-utils";
 
 // Polyfills for Radix Select in jsdom
 if (!Element.prototype.hasPointerCapture) {

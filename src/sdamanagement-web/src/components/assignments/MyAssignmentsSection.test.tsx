@@ -127,15 +127,17 @@ describe("MyAssignmentsSection", () => {
     });
     expect(heading).toBeInTheDocument();
 
-    // Cards are focusable (tabIndex)
+    // Cards are wrapped in links (focusable natively)
     const articles = screen.getAllByRole("article");
     articles.forEach((article) => {
-      expect(article.getAttribute("tabindex")).toBe("0");
+      // Each article is inside a <Link> (rendered as <a>)
+      expect(article.closest("a")).toBeTruthy();
     });
 
-    // Cards have aria-label
-    articles.forEach((article) => {
-      expect(article.getAttribute("aria-label")).toBeTruthy();
+    // Links have aria-label for accessibility
+    const links = articles.map((article) => article.closest("a")!);
+    links.forEach((link) => {
+      expect(link.getAttribute("aria-label")).toBeTruthy();
     });
   });
 });

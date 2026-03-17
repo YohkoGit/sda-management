@@ -15,7 +15,7 @@ export const createUserSchema = z.object({
     .email({ message: "Courriel invalide" })
     .max(255),
   role: z.enum(["Viewer", "Admin", "Owner"], {
-    errorMap: () => ({ message: "Sélectionnez un rôle" }),
+    error: () => "Sélectionnez un rôle",
   }),
   departmentIds: z
     .array(z.number())
