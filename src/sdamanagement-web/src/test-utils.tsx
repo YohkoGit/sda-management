@@ -84,6 +84,23 @@ testI18n.use(initReactI18next).init({
           dashboard: {
             title: "Tableau de Bord",
             welcome: "Bienvenue, {{name}}",
+            commandCenter: "CENTRE DE COMMANDE",
+            greeting: "Bonjour, {{name}}",
+            personalRegister: "REGISTRE PERSONNEL",
+            role: {
+              viewer: "Membre",
+              admin: "Directeur",
+              owner: "Propriétaire",
+            },
+            upcoming: {
+              title: "Activités à Venir",
+              overview: "Vue d'ensemble",
+              empty: "Aucune activité à venir",
+              emptyHintAdmin: "Créez une activité depuis la page d'administration.",
+              loadError: "Impossible de charger les activités",
+              retry: "Réessayer",
+              viewAll: "Voir tout",
+            },
             myAssignments: {
               title: "Mes Affectations",
               empty: "Aucune affectation à venir",
@@ -615,6 +632,23 @@ testI18n.use(initReactI18next).init({
           dashboard: {
             title: "Dashboard",
             welcome: "Welcome, {{name}}",
+            commandCenter: "COMMAND CENTER",
+            greeting: "Hello, {{name}}",
+            personalRegister: "PERSONAL REGISTER",
+            role: {
+              viewer: "Member",
+              admin: "Director",
+              owner: "Owner",
+            },
+            upcoming: {
+              title: "Upcoming Activities",
+              overview: "Overview",
+              empty: "No upcoming activities",
+              emptyHintAdmin: "Create an activity from the admin page.",
+              loadError: "Failed to load activities",
+              retry: "Retry",
+              viewAll: "View all",
+            },
             myAssignments: {
               title: "My Assignments",
               empty: "No upcoming assignments",

@@ -66,6 +66,23 @@
     "dashboard": {
       "title": "Tableau de Bord",
       "welcome": "Bienvenue, {{name}}",
+      "commandCenter": "CENTRE DE COMMANDE",
+      "greeting": "Bonjour, {{name}}",
+      "personalRegister": "REGISTRE PERSONNEL",
+      "role": {
+        "viewer": "Membre",
+        "admin": "Directeur",
+        "owner": "Propri\u00e9taire"
+      },
+      "upcoming": {
+        "title": "Activit\u00e9s \u00e0 Venir",
+        "overview": "Vue d\u2019ensemble",
+        "empty": "Aucune activit\u00e9 \u00e0 venir",
+        "emptyHintAdmin": "Cr\u00e9ez une activit\u00e9 depuis la page d\u2019administration.",
+        "loadError": "Impossible de charger les activit\u00e9s",
+        "retry": "R\u00e9essayer",
+        "viewAll": "Voir tout"
+      },
       "myAssignments": {
         "title": "Mes Affectations",
         "empty": "Aucune affectation \u00e0 venir",

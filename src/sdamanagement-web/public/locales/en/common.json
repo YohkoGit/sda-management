@@ -66,6 +66,23 @@
     "dashboard": {
       "title": "Dashboard",
       "welcome": "Welcome, {{name}}",
+      "commandCenter": "COMMAND CENTER",
+      "greeting": "Hello, {{name}}",
+      "personalRegister": "PERSONAL REGISTER",
+      "role": {
+        "viewer": "Member",
+        "admin": "Director",
+        "owner": "Owner"
+      },
+      "upcoming": {
+        "title": "Upcoming Activities",
+        "overview": "Overview",
+        "empty": "No upcoming activities",
+        "emptyHintAdmin": "Create an activity from the admin page.",
+        "loadError": "Failed to load activities",
+        "retry": "Retry",
+        "viewAll": "View all"
+      },
       "myAssignments": {
         "title": "My Assignments",
         "empty": "No upcoming assignments",

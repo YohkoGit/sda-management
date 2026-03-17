@@ -60,6 +60,26 @@ export interface ActivityListItem {
   createdAt: string;
 }
 
+export interface DashboardActivityItem {
+  id: number;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  departmentId: number | null;
+  departmentName: string;
+  departmentAbbreviation: string;
+  departmentColor: string;
+  visibility: string;
+  specialType: string | null;
+  predicateurName: string | null;
+  predicateurAvatarUrl: string | null;
+  roleCount: number;
+  totalHeadcount: number;
+  assignedCount: number;
+  staffingStatus: string;
+}
+
 export const activityService = {
   getByDepartment: (departmentId: number) =>
     api.get<ActivityListItem[]>(`/api/activities?departmentId=${departmentId}`),
@@ -74,4 +94,6 @@ export const activityService = {
   delete: (id: number) => api.delete(`/api/activities/${id}`),
   getMyAssignments: () =>
     api.get<MyAssignmentItem[]>("/api/activities/my-assignments"),
+  getDashboardActivities: () =>
+    api.get<DashboardActivityItem[]>("/api/activities/dashboard"),
 };

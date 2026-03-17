@@ -47,6 +47,17 @@ public class ActivitiesController(
         return Ok(activities);
     }
 
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> GetDashboardActivities()
+    {
+        if (!auth.CanView())
+            return Forbid();
+
+        var activities = await activityService.GetDashboardActivitiesAsync(
+            currentUser.Role, currentUser.DepartmentIds);
+        return Ok(activities);
+    }
+
     [HttpGet("my-assignments")]
     public async Task<IActionResult> GetMyAssignments()
     {

@@ -1,4 +1,4 @@
-# generated: 2026-03-16
+# generated: 2026-03-17
 # project: sda-management
 # project_key: NOKEY
 # tracking_system: file-system
@@ -36,7 +36,7 @@
 # - Code review passes → 'ui-review' (if story has frontend screens) or 'done' (backend-only)
 # - UI validation passes → 'done'
 
-generated: 2026-03-16
+generated: 2026-03-17
 project: sda-management
 project_key: NOKEY
 tracking_system: file-system
@@ -95,10 +95,10 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Authenticated Dashboard & Personal Assignments
-  epic-6: in-progress
+  epic-6: done
   6-1-personal-assignments-view-my-assignments: done
   6-2-full-activity-roster-view: done
-  6-3-authenticated-dashboard: backlog
+  6-3-authenticated-dashboard: done
   epic-6-retrospective: optional
 
   # Epic 7: Calendar

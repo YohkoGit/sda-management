@@ -9,9 +9,12 @@ export function MyAssignmentsSection() {
 
   return (
     <section aria-labelledby="my-assignments-heading">
+      <p className="text-xs font-black uppercase tracking-widest text-primary">
+        {t("pages.dashboard.personalRegister")}
+      </p>
       <h2
         id="my-assignments-heading"
-        className="text-xl font-bold text-foreground"
+        className="mt-1 text-xl font-bold text-foreground"
       >
         {t("pages.dashboard.myAssignments.title")}
       </h2>

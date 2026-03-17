@@ -353,6 +353,70 @@ public class ActivityService(
         }).ToList();
     }
 
+    public async Task<List<DashboardActivityItem>> GetDashboardActivitiesAsync(
+        UserRole role, IReadOnlyList<int> departmentIds)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var query = dbContext.Activities
+            .Include(a => a.Department)
+            .Include(a => a.Roles)
+                .ThenInclude(r => r.Assignments)
+                    .ThenInclude(ra => ra.User)
+            .Where(a => a.Date >= today);
+
+        // Role-based department filtering
+        if (role == UserRole.Admin)
+            query = query.Where(a => a.DepartmentId.HasValue
+                && departmentIds.Contains(a.DepartmentId.Value));
+        // VIEWER and OWNER see all activities (no filter)
+
+        var activities = await query
+            .OrderBy(a => a.Date)
+                .ThenBy(a => a.StartTime)
+            .Take(20)
+            .ToListAsync();
+
+        return activities.Select(activity =>
+        {
+            // Extract predicateur from roles
+            var predicateurRole = activity.Roles
+                .FirstOrDefault(r => r.RoleName.Contains("prédicateur", StringComparison.OrdinalIgnoreCase)
+                    || r.RoleName.Contains("predicateur", StringComparison.OrdinalIgnoreCase));
+            var predicateur = predicateurRole?.Assignments.FirstOrDefault()?.User;
+
+            // Compute staffing
+            var totalHeadcount = activity.Roles.Sum(r => r.Headcount);
+            var assignedCount = activity.Roles.Sum(r => r.Assignments.Count);
+            var roleDetails = activity.Roles.Select(r => (r.RoleName, r.Assignments.Count));
+            var staffingStatus = ComputeStaffingStatus(totalHeadcount, assignedCount, roleDetails);
+
+            return new DashboardActivityItem
+            {
+                Id = activity.Id,
+                Title = activity.Title,
+                Date = activity.Date,
+                StartTime = activity.StartTime,
+                EndTime = activity.EndTime,
+                DepartmentId = activity.DepartmentId,
+                DepartmentName = activity.Department?.Name ?? string.Empty,
+                DepartmentAbbreviation = activity.Department?.Abbreviation ?? string.Empty,
+                DepartmentColor = activity.Department?.Color ?? string.Empty,
+                Visibility = activity.Visibility.ToString().ToLowerInvariant(),
+                SpecialType = activity.SpecialType,
+                PredicateurName = predicateur is not null
+                    ? $"{predicateur.FirstName} {predicateur.LastName}"
+                    : null,
+                PredicateurAvatarUrl = predicateur is not null
+                    ? avatarService.GetAvatarUrl(predicateur.Id)
+                    : null,
+                RoleCount = activity.Roles.Count,
+                TotalHeadcount = totalHeadcount,
+                AssignedCount = assignedCount,
+                StaffingStatus = staffingStatus,
+            };
+        }).ToList();
+    }
+
     private void ReconcileAssignments(ActivityRole existingRole, ActivityRoleInput roleInput, DateTime now)
     {
         if (roleInput.Assignments is null)

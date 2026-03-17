@@ -79,9 +79,9 @@ describe("Route navigation integration", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
+      expect(screen.getByText("CENTRE DE COMMANDE")).toBeInTheDocument();
     });
-    expect(screen.getByText("Bienvenue, Test")).toBeInTheDocument();
+    expect(screen.getByText("Bonjour, Test")).toBeInTheDocument();
   });
 });
 
