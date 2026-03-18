@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 import type {
   DepartmentListItem,
   DepartmentResponse,
+  DepartmentWithStaffingListItem,
 } from "@/services/departmentService";
 
 const mockDepartments: DepartmentResponse[] = [
@@ -51,7 +52,25 @@ function toListItem(dept: DepartmentResponse): DepartmentListItem {
   };
 }
 
+const mockStaffingStatuses: Record<number, string> = {
+  1: "FullyStaffed",
+  2: "CriticalGap",
+  3: "NoActivities",
+};
+
+function toWithStaffingItem(dept: DepartmentResponse): DepartmentWithStaffingListItem {
+  return {
+    ...toListItem(dept),
+    upcomingActivityCount: dept.id === 3 ? 0 : 2,
+    aggregateStaffingStatus: mockStaffingStatuses[dept.id] ?? "NoActivities",
+  };
+}
+
 export const departmentHandlers = [
+  http.get("/api/departments/with-staffing", () => {
+    return HttpResponse.json(mockDepartments.map(toWithStaffingItem));
+  }),
+
   http.get("/api/departments", () => {
     return HttpResponse.json(mockDepartments.map(toListItem));
   }),

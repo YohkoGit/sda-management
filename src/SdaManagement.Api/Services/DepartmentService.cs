@@ -24,6 +24,90 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
             .ToListAsync();
     }
 
+    public async Task<List<DepartmentWithStaffingListItem>> GetAllWithStaffingAsync()
+    {
+        // Query 1: Departments with SubMinistryCount
+        var departments = await dbContext.Departments
+            .OrderBy(d => d.Name)
+            .Select(d => new
+            {
+                d.Id, d.Name, d.Abbreviation, d.Color, d.Description,
+                SubMinistryCount = d.SubMinistries.Count,
+            })
+            .ToListAsync();
+
+        // Query 2: Upcoming activities with role details
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var activityData = await dbContext.Activities
+            .Where(a => a.DepartmentId.HasValue && a.Date >= today)
+            .Select(a => new
+            {
+                DepartmentId = a.DepartmentId!.Value,
+                TotalHeadcount = a.Roles.Sum(r => r.Headcount),
+                AssignedCount = a.Roles.Sum(r => r.Assignments.Count),
+                RoleDetails = a.Roles.Select(r => new
+                {
+                    r.RoleName,
+                    AssignmentCount = r.Assignments.Count,
+                }).ToList(),
+            })
+            .ToListAsync();
+
+        // In-memory: group by department, compute worst-case staffing
+        var staffingByDept = activityData
+            .GroupBy(a => a.DepartmentId)
+            .ToDictionary(
+                g => g.Key,
+                g => new
+                {
+                    Count = g.Count(),
+                    AggregateStatus = ComputeAggregateStaffing(g.Select(a => new ActivityStaffingData(
+                        a.TotalHeadcount,
+                        a.AssignedCount,
+                        a.RoleDetails.Select(r => (r.RoleName, r.AssignmentCount))))),
+                });
+
+        return departments.Select(d =>
+        {
+            var staffing = staffingByDept.GetValueOrDefault(d.Id);
+            return new DepartmentWithStaffingListItem
+            {
+                Id = d.Id,
+                Name = d.Name,
+                Abbreviation = d.Abbreviation,
+                Color = d.Color,
+                Description = d.Description,
+                SubMinistryCount = d.SubMinistryCount,
+                UpcomingActivityCount = staffing?.Count ?? 0,
+                AggregateStaffingStatus = staffing?.AggregateStatus ?? "NoActivities",
+            };
+        }).ToList();
+    }
+
+    private static string ComputeAggregateStaffing(IEnumerable<ActivityStaffingData> activities)
+    {
+        var hasAny = false;
+        var worstCase = "FullyStaffed";
+        foreach (var a in activities)
+        {
+            var status = ActivityService.ComputeStaffingStatus(
+                a.TotalHeadcount, a.AssignedCount, a.RoleDetails);
+            if (status == "NoRoles")
+                continue;
+            hasAny = true;
+            if (status == "CriticalGap")
+                return "CriticalGap";
+            if (status == "PartiallyStaffed")
+                worstCase = "PartiallyStaffed";
+        }
+        return hasAny ? worstCase : "NoActivities";
+    }
+
+    private sealed record ActivityStaffingData(
+        int TotalHeadcount,
+        int AssignedCount,
+        IEnumerable<(string RoleName, int AssignmentCount)> RoleDetails);
+
     public async Task<DepartmentResponse?> GetByIdAsync(int id)
     {
         return await dbContext.Departments

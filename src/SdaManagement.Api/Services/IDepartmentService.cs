@@ -5,6 +5,7 @@ namespace SdaManagement.Api.Services;
 public interface IDepartmentService
 {
     Task<List<DepartmentListItem>> GetAllAsync();
+    Task<List<DepartmentWithStaffingListItem>> GetAllWithStaffingAsync();
     Task<DepartmentResponse?> GetByIdAsync(int id);
     Task<DepartmentResponse> CreateAsync(CreateDepartmentRequest request);
     Task<DepartmentResponse?> UpdateAsync(int id, UpdateDepartmentRequest request);

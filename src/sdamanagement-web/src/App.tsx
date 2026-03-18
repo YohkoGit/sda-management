@@ -22,6 +22,7 @@ const AuthenticatedLayout = lazy(() => import("@/layouts/AuthenticatedLayout"));
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const AuthCalendarPage = lazy(() => import("@/pages/AuthCalendarPage"));
 const AuthDepartmentsPage = lazy(() => import("@/pages/AuthDepartmentsPage"));
+const DepartmentDetailPage = lazy(() => import("@/pages/DepartmentDetailPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 const AdminDepartmentsPage = lazy(() => import("@/pages/AdminDepartmentsPage"));
@@ -68,6 +69,7 @@ function App() {
                 <Route path="activities/:id" element={<ActivityDetailPage />} />
                 <Route path="my-calendar" element={<AuthCalendarPage />} />
                 <Route path="my-departments" element={<AuthDepartmentsPage />} />
+                <Route path="my-departments/:id" element={<DepartmentDetailPage />} />
                 <Route path="admin/users" element={<AdminUsersPage />} />
               </Route>
             </Route>

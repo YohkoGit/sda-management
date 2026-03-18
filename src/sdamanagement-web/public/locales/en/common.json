@@ -125,6 +125,20 @@
     "departments": {
       "title": "Departments"
     },
+    "authDepartments": {
+      "title": "Ministry Units",
+      "subMinistries": "Sub-ministries",
+      "noSubMinistries": "No sub-ministries",
+      "upcomingActivities": "Upcoming Activities",
+      "noActivitiesAdmin": "Ready to plan. Create your first activity.",
+      "noActivitiesViewer": "No activities planned",
+      "departmentNotFound": "Department not found",
+      "backToList": "Ministry Units",
+      "subMinistryCount": "{{count}} sub-ministry(ies)",
+      "loadError": "Loading error",
+      "retry": "Retry",
+      "noDepartments": "No departments configured"
+    },
     "live": {
       "title": "Live"
     },
@@ -486,7 +500,8 @@
         "ariaLabel": "Staffing: {{assigned}} of {{total}} roles filled",
         "ariaLabelCritical": "Staffing: {{assigned}} of {{total}} roles filled, critical gap",
         "ariaLabelNoRoles": "No roles defined",
-        "column": "Staffing"
+        "column": "Staffing",
+        "partialLabel": "Partially staffed"
       },
       "roster": {
         "title": "Activity Roster",

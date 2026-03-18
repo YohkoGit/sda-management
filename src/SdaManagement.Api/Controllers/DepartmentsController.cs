@@ -28,6 +28,16 @@ public class DepartmentsController(
         return Ok(departments);
     }
 
+    [HttpGet("with-staffing")]
+    public async Task<IActionResult> GetAllWithStaffing()
+    {
+        if (!auth.IsAuthenticated())
+            return Forbid();
+
+        var departments = await departmentService.GetAllWithStaffingAsync();
+        return Ok(departments);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {

@@ -11,6 +11,7 @@ interface StaffingIndicatorProps {
   assigned: number;
   total: number;
   size?: "sm" | "md";
+  showLabel?: boolean;
 }
 
 export function StaffingIndicator({
@@ -18,6 +19,7 @@ export function StaffingIndicator({
   assigned,
   total,
   size = "md",
+  showLabel = true,
 }: StaffingIndicatorProps) {
   const { t } = useTranslation();
 
@@ -34,8 +36,15 @@ export function StaffingIndicator({
           })
         : t("pages.adminActivities.staffing.ariaLabel", { assigned, total });
 
-  const tooltipText =
-    staffingStatus === "NoRoles"
+  const tooltipText = !showLabel
+    ? staffingStatus === "FullyStaffed"
+      ? t("pages.adminActivities.staffing.fullyStaffed")
+      : staffingStatus === "CriticalGap"
+        ? t("pages.adminActivities.staffing.criticalGap")
+        : staffingStatus === "PartiallyStaffed"
+          ? t("pages.adminActivities.staffing.partialLabel")
+          : t("pages.adminActivities.staffing.noRoles")
+    : staffingStatus === "NoRoles"
       ? t("pages.adminActivities.staffing.noRoles")
       : t("pages.adminActivities.staffing.filled", { assigned, total });
 
@@ -48,13 +57,15 @@ export function StaffingIndicator({
           role="status"
         >
           <StatusIcon status={staffingStatus} className={iconSize} />
-          <StatusLabel
-            status={staffingStatus}
-            assigned={assigned}
-            total={total}
-            t={t}
-          />
-          {staffingStatus === "CriticalGap" && (
+          {showLabel && (
+            <StatusLabel
+              status={staffingStatus}
+              assigned={assigned}
+              total={total}
+              t={t}
+            />
+          )}
+          {showLabel && staffingStatus === "CriticalGap" && (
             <Badge variant="destructive" className="px-1.5 py-0 text-[10px] leading-4">
               {t("pages.adminActivities.staffing.criticalGap")}
             </Badge>

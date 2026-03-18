@@ -125,6 +125,20 @@
     "departments": {
       "title": "D\u00e9partements"
     },
+    "authDepartments": {
+      "title": "Unit\u00e9s Minist\u00e9rielles",
+      "subMinistries": "Sous-minist\u00e8res",
+      "noSubMinistries": "Aucun sous-minist\u00e8re",
+      "upcomingActivities": "Activit\u00e9s \u00e0 venir",
+      "noActivitiesAdmin": "Pr\u00eat \u00e0 planifier. Cr\u00e9ez votre premi\u00e8re activit\u00e9.",
+      "noActivitiesViewer": "Aucune activit\u00e9 planifi\u00e9e",
+      "departmentNotFound": "D\u00e9partement non trouv\u00e9",
+      "backToList": "Unit\u00e9s Minist\u00e9rielles",
+      "subMinistryCount": "{{count}} sous-minist\u00e8re(s)",
+      "loadError": "Erreur de chargement",
+      "retry": "R\u00e9essayer",
+      "noDepartments": "Aucun d\u00e9partement configur\u00e9"
+    },
     "live": {
       "title": "En Direct"
     },
@@ -495,7 +509,8 @@
         "ariaLabel": "Effectif\u00a0: {{assigned}} sur {{total}} postes pourvus",
         "ariaLabelCritical": "Effectif\u00a0: {{assigned}} sur {{total}} postes pourvus, lacune critique",
         "ariaLabelNoRoles": "Aucun r\u00f4le d\u00e9fini",
-        "column": "Effectif"
+        "column": "Effectif",
+        "partialLabel": "Partiellement pourvu"
       },
       "roster": {
         "title": "Composition de l\u2019activit\u00e9",

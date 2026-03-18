@@ -29,8 +29,15 @@ export interface DepartmentListItem {
   subMinistryCount: number;
 }
 
+export interface DepartmentWithStaffingListItem extends DepartmentListItem {
+  upcomingActivityCount: number;
+  aggregateStaffingStatus: string;
+}
+
 export const departmentService = {
   getAll: () => api.get<DepartmentListItem[]>("/api/departments"),
+  getDepartmentsWithStaffing: () =>
+    api.get<DepartmentWithStaffingListItem[]>("/api/departments/with-staffing"),
   getById: (id: number) =>
     api.get<DepartmentResponse>(`/api/departments/${id}`),
   create: (data: DepartmentFormData) =>

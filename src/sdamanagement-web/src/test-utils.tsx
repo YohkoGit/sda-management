@@ -141,6 +141,20 @@ testI18n.use(initReactI18next).init({
             },
           },
           departments: { title: "Départements" },
+          authDepartments: {
+            title: "Unités Ministérielles",
+            subMinistries: "Sous-ministères",
+            noSubMinistries: "Aucun sous-ministère",
+            upcomingActivities: "Activités à venir",
+            noActivitiesAdmin: "Prêt à planifier. Créez votre première activité.",
+            noActivitiesViewer: "Aucune activité planifiée",
+            departmentNotFound: "Département non trouvé",
+            backToList: "Unités Ministérielles",
+            subMinistryCount: "{{count}} sous-ministère(s)",
+            loadError: "Erreur de chargement",
+            retry: "Réessayer",
+            noDepartments: "Aucun département configuré",
+          },
           live: { title: "En Direct" },
           admin: { title: "Administration" },
           settings: {
@@ -527,6 +541,7 @@ testI18n.use(initReactI18next).init({
               ariaLabelCritical: "Effectif\u00a0: {{assigned}} sur {{total}} postes pourvus, lacune critique",
               ariaLabelNoRoles: "Aucun rôle défini",
               column: "Effectif",
+              partialLabel: "Partiellement pourvu",
             },
             roster: {
               title: "Composition de l\u2019activité",

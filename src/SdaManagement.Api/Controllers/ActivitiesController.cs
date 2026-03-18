@@ -24,7 +24,8 @@ public class ActivitiesController(
     {
         if (departmentId.HasValue)
         {
-            if (!auth.CanManage(departmentId.Value))
+            // Read: any authenticated user can filter by department. Write: requires CanManage(departmentId).
+            if (!auth.CanView())
                 return Forbid();
         }
         else
