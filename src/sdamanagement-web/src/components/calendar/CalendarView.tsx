@@ -34,6 +34,8 @@ interface CalendarViewProps {
   yearIsPending?: boolean;
   yearIsError?: boolean;
   onYearRetry?: () => void;
+  /** Optional slot rendered between the heading row and the calendar body. */
+  filterSlot?: React.ReactNode;
 }
 
 export default function CalendarView({
@@ -48,6 +50,7 @@ export default function CalendarView({
   yearIsPending,
   yearIsError,
   onYearRetry,
+  filterSlot,
 }: CalendarViewProps) {
   const { t, i18n } = useTranslation();
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
@@ -155,6 +158,8 @@ export default function CalendarView({
         </h1>
         <ViewSwitcher activeView={activeView} onViewChange={handleViewChange} />
       </div>
+
+      {filterSlot}
 
       {isError && (
         <div className="mt-4 flex items-center gap-3">

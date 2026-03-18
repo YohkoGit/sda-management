@@ -126,6 +126,10 @@ testI18n.use(initReactI18next).init({
               monthAbbr: "M",
               yearAbbr: "A",
             },
+            filter: {
+              all: "Tous",
+              label: "Filtrer par département",
+            },
           },
           departments: { title: "Départements" },
           live: { title: "En Direct" },
@@ -688,6 +692,10 @@ testI18n.use(initReactI18next).init({
               weekAbbr: "W",
               monthAbbr: "M",
               yearAbbr: "Y",
+            },
+            filter: {
+              all: "All",
+              label: "Filter by department",
             },
           },
           activityDetail: {

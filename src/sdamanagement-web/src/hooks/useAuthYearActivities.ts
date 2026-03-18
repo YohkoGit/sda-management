@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { publicService } from "@/services/publicService";
+import { calendarService } from "@/services/calendarService";
 import type { PublicActivityListItem } from "@/types/public";
 
 function quarterRange(year: number, q: number) {
@@ -12,39 +12,49 @@ function quarterRange(year: number, q: number) {
   return { start, end };
 }
 
-export function useYearActivities(year: number, enabled: boolean) {
+export function useAuthYearActivities(
+  year: number,
+  enabled: boolean,
+  departmentIds?: number[]
+) {
   const q1 = quarterRange(year, 1);
   const q2 = quarterRange(year, 2);
   const q3 = quarterRange(year, 3);
   const q4 = quarterRange(year, 4);
 
+  const stableDeptIds = departmentIds ?? [];
+
   const q1Query = useQuery<PublicActivityListItem[]>({
-    queryKey: ["public", "calendar", q1.start, q1.end],
-    queryFn: () => publicService.getCalendarActivities(q1.start, q1.end),
+    queryKey: ["auth", "calendar", q1.start, q1.end, stableDeptIds],
+    queryFn: () =>
+      calendarService.getCalendarActivities(q1.start, q1.end, departmentIds),
     staleTime: 5 * 60 * 1000,
     retry: 1,
     enabled,
   });
 
   const q2Query = useQuery<PublicActivityListItem[]>({
-    queryKey: ["public", "calendar", q2.start, q2.end],
-    queryFn: () => publicService.getCalendarActivities(q2.start, q2.end),
+    queryKey: ["auth", "calendar", q2.start, q2.end, stableDeptIds],
+    queryFn: () =>
+      calendarService.getCalendarActivities(q2.start, q2.end, departmentIds),
     staleTime: 5 * 60 * 1000,
     retry: 1,
     enabled,
   });
 
   const q3Query = useQuery<PublicActivityListItem[]>({
-    queryKey: ["public", "calendar", q3.start, q3.end],
-    queryFn: () => publicService.getCalendarActivities(q3.start, q3.end),
+    queryKey: ["auth", "calendar", q3.start, q3.end, stableDeptIds],
+    queryFn: () =>
+      calendarService.getCalendarActivities(q3.start, q3.end, departmentIds),
     staleTime: 5 * 60 * 1000,
     retry: 1,
     enabled,
   });
 
   const q4Query = useQuery<PublicActivityListItem[]>({
-    queryKey: ["public", "calendar", q4.start, q4.end],
-    queryFn: () => publicService.getCalendarActivities(q4.start, q4.end),
+    queryKey: ["auth", "calendar", q4.start, q4.end, stableDeptIds],
+    queryFn: () =>
+      calendarService.getCalendarActivities(q4.start, q4.end, departmentIds),
     staleTime: 5 * 60 * 1000,
     retry: 1,
     enabled,
@@ -60,9 +70,15 @@ export function useYearActivities(year: number, enabled: boolean) {
   }, [q1Query.data, q2Query.data, q3Query.data, q4Query.data]);
 
   const isPending =
-    q1Query.isPending || q2Query.isPending || q3Query.isPending || q4Query.isPending;
+    q1Query.isPending ||
+    q2Query.isPending ||
+    q3Query.isPending ||
+    q4Query.isPending;
   const isError =
-    q1Query.isError && q2Query.isError && q3Query.isError && q4Query.isError;
+    q1Query.isError &&
+    q2Query.isError &&
+    q3Query.isError &&
+    q4Query.isError;
 
   const refetch = useCallback(() => {
     q1Query.refetch();

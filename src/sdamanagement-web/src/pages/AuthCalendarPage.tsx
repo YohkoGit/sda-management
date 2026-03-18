@@ -2,18 +2,20 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import CalendarView from "@/components/calendar/CalendarView";
+import DepartmentFilter from "@/components/calendar/DepartmentFilter";
 import { getInitialDateRange, type CalendarViewType } from "@/components/calendar/calendar-utils";
-import {
-  useCalendarActivities,
-  useDepartments,
-} from "@/hooks/usePublicDashboard";
-import { useYearActivities } from "@/hooks/useYearActivities";
+import { useDepartments } from "@/hooks/usePublicDashboard";
+import { useAuthCalendarActivities } from "@/hooks/useAuthCalendarActivities";
+import { useAuthYearActivities } from "@/hooks/useAuthYearActivities";
 
 export default function AuthCalendarPage() {
   const { t } = useTranslation();
   const [dateRange, setDateRange] = useState(getInitialDateRange);
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
   const [yearForFetch, setYearForFetch] = useState(() => new Date().getFullYear());
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<number[]>([]);
+
+  const filterIds = selectedDepartmentIds.length > 0 ? selectedDepartmentIds : undefined;
 
   const {
     data: departments,
@@ -26,14 +28,14 @@ export default function AuthCalendarPage() {
     data: activities,
     isError: calError,
     refetch: refetchCal,
-  } = useCalendarActivities(dateRange.start, dateRange.end);
+  } = useAuthCalendarActivities(dateRange.start, dateRange.end, filterIds);
 
   const {
     data: yearActivities,
     isPending: yearPending,
     isError: yearError,
     refetch: refetchYear,
-  } = useYearActivities(yearForFetch, activeView === "year");
+  } = useAuthYearActivities(yearForFetch, activeView === "year", filterIds);
 
   const handleRangeChange = useCallback((start: string, end: string) => {
     setDateRange({ start, end });
@@ -46,7 +48,6 @@ export default function AuthCalendarPage() {
     }
   }, []);
 
-  // TODO: Story 7.2 — diverge from PublicCalendarPage with auth-scoped endpoint and query keys
   const handleYearChange = useCallback((year: number) => {
     setYearForFetch(year);
   }, []);
@@ -96,6 +97,13 @@ export default function AuthCalendarPage() {
         yearIsPending={activeView === "year" && yearPending}
         yearIsError={activeView === "year" && yearError}
         onYearRetry={() => refetchYear()}
+        filterSlot={
+          <DepartmentFilter
+            departments={departments ?? []}
+            selectedIds={selectedDepartmentIds}
+            onChange={setSelectedDepartmentIds}
+          />
+        }
       />
     </div>
   );

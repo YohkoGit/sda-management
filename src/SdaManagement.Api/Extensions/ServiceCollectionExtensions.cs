@@ -174,6 +174,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAvatarService, AvatarService>();
         services.AddScoped<IActivityService, ActivityService>();
         services.AddScoped<IPublicService, PublicService>();
+        services.AddScoped<ICalendarService, CalendarService>();
         services.AddMemoryCache();
         services.AddHttpClient("YouTube", client =>
         {

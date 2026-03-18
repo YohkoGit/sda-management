@@ -96,17 +96,21 @@
     "calendar": {
       "title": "Calendrier",
       "loadError": "Impossible de charger le calendrier",
-      "retry": "Réessayer",
+      "retry": "R\u00e9essayer",
       "views": {
         "label": "Vue du calendrier",
         "day": "Jour",
         "week": "Semaine",
         "month": "Mois",
-        "year": "Année",
+        "year": "Ann\u00e9e",
         "dayAbbr": "J",
         "weekAbbr": "S",
         "monthAbbr": "M",
         "yearAbbr": "A"
+      },
+      "filter": {
+        "all": "Tous",
+        "label": "Filtrer par d\u00e9partement"
       }
     },
     "departments": {

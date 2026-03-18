@@ -107,6 +107,10 @@
         "weekAbbr": "W",
         "monthAbbr": "M",
         "yearAbbr": "Y"
+      },
+      "filter": {
+        "all": "All",
+        "label": "Filter by department"
       }
     },
     "departments": {

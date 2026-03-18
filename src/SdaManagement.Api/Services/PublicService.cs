@@ -182,8 +182,8 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
             r.RoleName.Equals("Prédicateur", StringComparison.OrdinalIgnoreCase));
         if (role is null) return (null, null);
         var assignment = role.Assignments.FirstOrDefault();
-        if (assignment is null) return (null, null);
-        return ($"{assignment.User.FirstName} {assignment.User.LastName}",
+        if (assignment?.User is not { } user) return (null, null);
+        return ($"{user.FirstName} {user.LastName}",
                 avatarService.GetAvatarUrl(assignment.UserId));
     }
 }
