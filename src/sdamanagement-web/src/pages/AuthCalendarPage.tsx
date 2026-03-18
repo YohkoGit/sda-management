@@ -3,18 +3,24 @@ import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import CalendarView from "@/components/calendar/CalendarView";
 import DepartmentFilter from "@/components/calendar/DepartmentFilter";
+import DayDetailDialog from "@/components/calendar/DayDetailDialog";
 import { getInitialDateRange, type CalendarViewType } from "@/components/calendar/calendar-utils";
 import { useDepartments } from "@/hooks/usePublicDashboard";
 import { useAuthCalendarActivities } from "@/hooks/useAuthCalendarActivities";
 import { useAuthYearActivities } from "@/hooks/useAuthYearActivities";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AuthCalendarPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [dateRange, setDateRange] = useState(getInitialDateRange);
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
   const [yearForFetch, setYearForFetch] = useState(() => new Date().getFullYear());
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<number[]>([]);
+  const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
+  const [navigateTo, setNavigateTo] = useState<{ view: CalendarViewType; date: string } | null>(null);
 
+  const dayDialogOpen = dayDialogDate !== null;
   const filterIds = selectedDepartmentIds.length > 0 ? selectedDepartmentIds : undefined;
 
   const {
@@ -50,6 +56,15 @@ export default function AuthCalendarPage() {
 
   const handleYearChange = useCallback((year: number) => {
     setYearForFetch(year);
+  }, []);
+
+  const handleDayAction = useCallback((date: string) => {
+    setDayDialogDate(date);
+  }, []);
+
+  const handleNavigateToDay = useCallback((date: string) => {
+    setDayDialogDate(null);
+    setNavigateTo({ view: "day", date });
   }, []);
 
   if (deptPending) {
@@ -97,6 +112,9 @@ export default function AuthCalendarPage() {
         yearIsPending={activeView === "year" && yearPending}
         yearIsError={activeView === "year" && yearError}
         onYearRetry={() => refetchYear()}
+        onDayAction={handleDayAction}
+        navigateTo={navigateTo}
+        onNavigateComplete={() => setNavigateTo(null)}
         filterSlot={
           <DepartmentFilter
             departments={departments ?? []}
@@ -104,6 +122,19 @@ export default function AuthCalendarPage() {
             onChange={setSelectedDepartmentIds}
           />
         }
+      />
+
+      <DayDetailDialog
+        open={dayDialogOpen}
+        onOpenChange={(open) => { if (!open) setDayDialogDate(null); }}
+        date={dayDialogDate ?? ""}
+        activities={activities ?? []}
+        user={user}
+        onCreated={() => {
+          refetchCal();
+          refetchYear();
+        }}
+        onNavigateToDay={handleNavigateToDay}
       />
     </div>
   );

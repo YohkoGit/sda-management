@@ -111,6 +111,15 @@
       "filter": {
         "all": "All",
         "label": "Filter by department"
+      },
+      "dayDetail": {
+        "title": "Day activities",
+        "empty": "No activities planned",
+        "create": "New activity",
+        "viewFullDay": "View full day",
+        "backToDay": "Back",
+        "pastDate": "Cannot create activity in the past",
+        "departmentError": "Unable to load departments"
       }
     },
     "departments": {

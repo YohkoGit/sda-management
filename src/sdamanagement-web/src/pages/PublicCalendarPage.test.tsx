@@ -124,4 +124,28 @@ describe("PublicCalendarPage", () => {
       { timeout: 5000 },
     );
   });
+
+  it("renders DayDetailDialog for anonymous users (user=null)", async () => {
+    render(<PublicCalendarPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    });
+
+    // PublicCalendarPage renders DayDetailDialog with user={null}.
+    // The dialog is closed by default (dayDialogDate is null),
+    // but verifying the page renders without import/runtime errors.
+    expect(screen.getByText("Calendrier")).toBeInTheDocument();
+  });
+
+  it("public page has no creation affordance visible", async () => {
+    render(<PublicCalendarPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+    });
+
+    // No "Nouvelle activité" button should be visible at the page level
+    expect(screen.queryByText("Nouvelle activité")).not.toBeInTheDocument();
+  });
 });

@@ -130,6 +130,15 @@ testI18n.use(initReactI18next).init({
               all: "Tous",
               label: "Filtrer par département",
             },
+            dayDetail: {
+              title: "Activités du jour",
+              empty: "Aucune activité planifiée",
+              create: "Nouvelle activité",
+              viewFullDay: "Voir la journée complète",
+              backToDay: "Retour",
+              pastDate: "Impossible de créer une activité dans le passé",
+              departmentError: "Impossible de charger les départements",
+            },
           },
           departments: { title: "Départements" },
           live: { title: "En Direct" },
@@ -696,6 +705,15 @@ testI18n.use(initReactI18next).init({
             filter: {
               all: "All",
               label: "Filter by department",
+            },
+            dayDetail: {
+              title: "Day activities",
+              empty: "No activities planned",
+              create: "New activity",
+              viewFullDay: "View full day",
+              backToDay: "Back",
+              pastDate: "Cannot create activity in the past",
+              departmentError: "Unable to load departments",
             },
           },
           activityDetail: {

@@ -96,4 +96,24 @@ describe("CalendarView", () => {
     const region = screen.getByRole("region", { name: "Calendrier" });
     expect(region).toBeInTheDocument();
   });
+
+  it("accepts onDayAction prop without error", () => {
+    const onDayAction = vi.fn();
+    render(
+      <CalendarView {...defaultProps} onDayAction={onDayAction} />,
+    );
+    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+  });
+
+  it("accepts navigateTo and onNavigateComplete props without error", () => {
+    const onNavigateComplete = vi.fn();
+    render(
+      <CalendarView
+        {...defaultProps}
+        navigateTo={{ view: "day", date: "2026-03-21" }}
+        onNavigateComplete={onNavigateComplete}
+      />,
+    );
+    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+  });
 });

@@ -12,7 +12,7 @@ import api from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { stopConnection } from "@/lib/signalr";
 
-interface AuthUser {
+export interface AuthUser {
   userId: number;
   email: string;
   firstName: string;

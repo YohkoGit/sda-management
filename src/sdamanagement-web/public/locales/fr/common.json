@@ -111,6 +111,15 @@
       "filter": {
         "all": "Tous",
         "label": "Filtrer par d\u00e9partement"
+      },
+      "dayDetail": {
+        "title": "Activit\u00e9s du jour",
+        "empty": "Aucune activit\u00e9 planifi\u00e9e",
+        "create": "Nouvelle activit\u00e9",
+        "viewFullDay": "Voir la journ\u00e9e compl\u00e8te",
+        "backToDay": "Retour",
+        "pastDate": "Impossible de cr\u00e9er une activit\u00e9 dans le pass\u00e9",
+        "departmentError": "Impossible de charger les d\u00e9partements"
       }
     },
     "departments": {

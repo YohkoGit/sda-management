@@ -36,6 +36,12 @@ interface CalendarViewProps {
   onYearRetry?: () => void;
   /** Optional slot rendered between the heading row and the calendar body. */
   filterSlot?: React.ReactNode;
+  /** Called when user clicks/taps a day. Passes ISO date string "YYYY-MM-DD". When provided, replaces day-view navigation on month-grid click. */
+  onDayAction?: (date: string) => void;
+  /** When set, CalendarView navigates to the specified view and date programmatically. */
+  navigateTo?: { view: CalendarViewType; date: string } | null;
+  /** Called after programmatic navigation completes so parent can clear navigateTo. */
+  onNavigateComplete?: () => void;
 }
 
 export default function CalendarView({
@@ -51,6 +57,9 @@ export default function CalendarView({
   yearIsError,
   onYearRetry,
   filterSlot,
+  onDayAction,
+  navigateTo,
+  onNavigateComplete,
 }: CalendarViewProps) {
   const { t, i18n } = useTranslation();
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
@@ -85,13 +94,22 @@ export default function CalendarView({
         );
       },
       onClickDate(date: Temporal.PlainDate) {
-        setActiveView("day");
-        calendarControls.setView("day");
-        calendarControls.setDate(date);
-        setSelectedDate(
-          new Date(date.year, date.month - 1, date.day),
-        );
-        onViewChange("day");
+        const isoDate = `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}`;
+        if (onDayAction) {
+          onDayAction(isoDate);
+        } else {
+          setActiveView("day");
+          calendarControls.setView("day");
+          calendarControls.setDate(date);
+          setSelectedDate(new Date(date.year, date.month - 1, date.day));
+          onViewChange("day");
+        }
+      },
+      onClickDateTime(dateTime: Temporal.ZonedDateTime) {
+        if (onDayAction) {
+          const isoDate = dateTime.toPlainDate().toString();
+          onDayAction(isoDate);
+        }
       },
     },
   });
@@ -101,6 +119,20 @@ export default function CalendarView({
       eventsService.set(mapToCalendarEvents(activities));
     }
   }, [activities, eventsService, activeView]);
+
+  useEffect(() => {
+    if (navigateTo) {
+      const { view, date } = navigateTo;
+      setActiveView(view);
+      if (view !== "year") {
+        calendarControls.setView(view);
+        calendarControls.setDate(Temporal.PlainDate.from(date));
+      }
+      setSelectedDate(new Date(date + "T00:00:00"));
+      onViewChange(view);
+      onNavigateComplete?.();
+    }
+  }, [navigateTo, calendarControls, onViewChange, onNavigateComplete]);
 
   const handleViewChange = useCallback(
     (view: CalendarViewType) => {
@@ -116,16 +148,19 @@ export default function CalendarView({
 
   const handleYearDayClick = useCallback(
     (date: Date) => {
-      setSelectedDate(date);
-      setActiveView("day");
-      const plainDate = Temporal.PlainDate.from(
-        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
-      );
-      calendarControls.setView("day");
-      calendarControls.setDate(plainDate);
-      onViewChange("day");
+      const isoDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      if (onDayAction) {
+        onDayAction(isoDate);
+      } else {
+        setSelectedDate(date);
+        setActiveView("day");
+        const plainDate = Temporal.PlainDate.from(isoDate);
+        calendarControls.setView("day");
+        calendarControls.setDate(plainDate);
+        onViewChange("day");
+      }
     },
-    [calendarControls, onViewChange],
+    [calendarControls, onViewChange, onDayAction],
   );
 
   const handleYearMonthClick = useCallback(

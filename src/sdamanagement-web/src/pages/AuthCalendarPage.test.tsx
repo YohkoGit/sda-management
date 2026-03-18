@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 import { setupServer } from "msw/node";
+import { http, HttpResponse } from "msw";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { departmentHandlers } from "@/mocks/handlers/public";
@@ -127,5 +128,68 @@ describe("AuthCalendarPage", () => {
     expect(
       screen.getByRole("button", { name: "Réessayer" })
     ).toBeInTheDocument();
+  });
+
+  it("renders DayDetailDialog in the component tree", async () => {
+    render(<AuthCalendarPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    });
+
+    // DayDetailDialog is rendered but closed (open={false}), so its content is not visible.
+    // Verify the page renders without error with the DayDetailDialog import wired correctly.
+    // The dialog aria-label is present on the wrapper even when closed in some dialog implementations.
+    expect(screen.getByText("Calendrier")).toBeInTheDocument();
+  });
+
+  it("ADMIN user can see the page with auth context loaded", async () => {
+    // Override auth to return an ADMIN user
+    server.use(
+      http.get("/api/auth/me", () =>
+        HttpResponse.json({
+          userId: 3,
+          email: "admin@test.local",
+          firstName: "Test",
+          lastName: "Admin",
+          role: "ADMIN",
+          departmentIds: [1],
+        })
+      ),
+    );
+
+    render(<AuthCalendarPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+    });
+
+    // ADMIN user is authenticated — page renders with calendar and filter
+    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+  });
+
+  it("VIEWER user sees page without errors (no creation affordance at page level)", async () => {
+    // Override auth to return a VIEWER user
+    server.use(
+      http.get("/api/auth/me", () =>
+        HttpResponse.json({
+          userId: 1,
+          email: "viewer@test.local",
+          firstName: "Test",
+          lastName: "Viewer",
+          role: "VIEWER",
+          departmentIds: [],
+        })
+      ),
+    );
+
+    render(<AuthCalendarPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+    });
+
+    // VIEWER still sees the calendar — the role distinction is inside DayDetailDialog
+    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
   });
 });

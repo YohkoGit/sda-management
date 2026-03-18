@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 import CalendarView from "@/components/calendar/CalendarView";
+import DayDetailDialog from "@/components/calendar/DayDetailDialog";
 import { getInitialDateRange, type CalendarViewType } from "@/components/calendar/calendar-utils";
 import {
   useCalendarActivities,
@@ -14,6 +15,10 @@ export default function PublicCalendarPage() {
   const [dateRange, setDateRange] = useState(getInitialDateRange);
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
   const [yearForFetch, setYearForFetch] = useState(() => new Date().getFullYear());
+  const [dayDialogDate, setDayDialogDate] = useState<string | null>(null);
+  const [navigateTo, setNavigateTo] = useState<{ view: CalendarViewType; date: string } | null>(null);
+
+  const dayDialogOpen = dayDialogDate !== null;
 
   const {
     data: departments,
@@ -48,6 +53,15 @@ export default function PublicCalendarPage() {
 
   const handleYearChange = useCallback((year: number) => {
     setYearForFetch(year);
+  }, []);
+
+  const handleDayAction = useCallback((date: string) => {
+    setDayDialogDate(date);
+  }, []);
+
+  const handleNavigateToDay = useCallback((date: string) => {
+    setDayDialogDate(null);
+    setNavigateTo({ view: "day", date });
   }, []);
 
   if (deptPending) {
@@ -95,6 +109,19 @@ export default function PublicCalendarPage() {
         yearIsPending={activeView === "year" && yearPending}
         yearIsError={activeView === "year" && yearError}
         onYearRetry={() => refetchYear()}
+        onDayAction={handleDayAction}
+        navigateTo={navigateTo}
+        onNavigateComplete={() => setNavigateTo(null)}
+      />
+
+      <DayDetailDialog
+        open={dayDialogOpen}
+        onOpenChange={(open) => { if (!open) setDayDialogDate(null); }}
+        date={dayDialogDate ?? ""}
+        activities={activities ?? []}
+        user={null}
+        onCreated={() => {}}
+        onNavigateToDay={handleNavigateToDay}
       />
     </div>
   );

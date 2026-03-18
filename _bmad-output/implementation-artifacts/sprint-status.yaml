@@ -102,10 +102,10 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: Calendar
-  epic-7: in-progress
+  epic-7: done
   7-1-calendar-core-sunday-first-with-multiple-views: done
   7-2-calendar-visibility-and-department-filtering: done
-  7-3-admin-quick-create-from-calendar: ready-for-dev
+  7-3-admin-quick-create-from-calendar: done
   epic-7-retrospective: optional
 
   # Epic 8: Department Management
