@@ -35,6 +35,15 @@ export interface ActivityResponse {
   visibility: string;
   /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
   specialType?: string | null;
+  isMeeting: boolean;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  meetingType?: string | null;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  zoomLink?: string | null;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  locationName?: string | null;
+  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
+  locationAddress?: string | null;
   roles: ActivityRoleResponse[];
   staffingStatus: string;
   concurrencyToken: number;
@@ -53,6 +62,9 @@ export interface ActivityListItem {
   departmentColor: string;
   visibility: string;
   specialType?: string | null;
+  isMeeting: boolean;
+  meetingType?: string | null;
+  locationName?: string | null;
   roleCount: number;
   totalHeadcount: number;
   assignedCount: number;
@@ -72,6 +84,9 @@ export interface DashboardActivityItem {
   departmentColor: string;
   visibility: string;
   specialType: string | null;
+  isMeeting: boolean;
+  meetingType?: string | null;
+  locationName?: string | null;
   predicateurName: string | null;
   predicateurAvatarUrl: string | null;
   roleCount: number;

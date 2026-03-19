@@ -20,5 +20,7 @@ public class CreateActivityRequestValidator : AbstractValidator<CreateActivityRe
                 .WithMessage("Role names must be unique within an activity.");
             RuleForEach(x => x.Roles).SetValidator(new ActivityRoleInputValidator());
         });
+
+        MeetingValidationRules.Apply(this);
     }
 }

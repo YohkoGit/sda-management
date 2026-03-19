@@ -38,6 +38,9 @@ public class ActivityService(
                 DepartmentColor = a.Department != null ? a.Department.Color : string.Empty,
                 Visibility = a.Visibility.ToString().ToLowerInvariant(),
                 SpecialType = a.SpecialType,
+                IsMeeting = a.IsMeeting,
+                MeetingType = a.MeetingType,
+                LocationName = a.LocationName,
                 RoleCount = a.Roles.Count,
                 TotalHeadcount = a.Roles.Sum(r => r.Headcount),
                 AssignedCount = a.Roles.Sum(r => r.Assignments.Count),
@@ -60,6 +63,9 @@ public class ActivityService(
             DepartmentColor = a.DepartmentColor,
             Visibility = a.Visibility,
             SpecialType = a.SpecialType,
+            IsMeeting = a.IsMeeting,
+            MeetingType = a.MeetingType,
+            LocationName = a.LocationName,
             RoleCount = a.RoleCount,
             TotalHeadcount = a.TotalHeadcount,
             AssignedCount = a.AssignedCount,
@@ -90,6 +96,8 @@ public class ActivityService(
     {
         var now = DateTime.UtcNow;
 
+        var isMeeting = request.IsMeeting == true;
+
         var activity = new Activity
         {
             Title = sanitizer.Sanitize(request.Title),
@@ -100,11 +108,17 @@ public class ActivityService(
             DepartmentId = request.DepartmentId,
             Visibility = Enum.Parse<ActivityVisibility>(request.Visibility, ignoreCase: true),
             SpecialType = string.IsNullOrWhiteSpace(request.SpecialType) ? null : request.SpecialType,
+            IsMeeting = isMeeting,
+            MeetingType = isMeeting ? request.MeetingType : null,
+            ZoomLink = isMeeting && request.MeetingType == "zoom" ? request.ZoomLink : null,
+            LocationName = isMeeting && request.MeetingType == "physical" ? request.LocationName : null,
+            LocationAddress = isMeeting && request.MeetingType == "physical" ? request.LocationAddress : null,
             CreatedAt = now,
             UpdatedAt = now,
         };
 
-        if (request.Roles is { Count: > 0 })
+        // Meetings don't have roles — skip role/template processing
+        if (!isMeeting && request.Roles is { Count: > 0 })
         {
             // Validate assignment userIds if any assignments are provided
             var allAssignmentUserIds = request.Roles
@@ -144,7 +158,7 @@ public class ActivityService(
                 activity.Roles.Add(activityRole);
             }
         }
-        else if (request.TemplateId.HasValue)
+        else if (!isMeeting && request.TemplateId.HasValue)
         {
             var template = await dbContext.ActivityTemplates
                 .Include(t => t.Roles.OrderBy(r => r.SortOrder))
@@ -187,6 +201,8 @@ public class ActivityService(
 
         var now = DateTime.UtcNow;
 
+        var isMeeting = request.IsMeeting == true;
+
         activity.Title = sanitizer.Sanitize(request.Title);
         activity.Description = sanitizer.SanitizeNullable(request.Description);
         activity.Date = request.Date;
@@ -195,9 +211,22 @@ public class ActivityService(
         activity.DepartmentId = request.DepartmentId;
         activity.Visibility = Enum.Parse<ActivityVisibility>(request.Visibility, ignoreCase: true);
         activity.SpecialType = string.IsNullOrWhiteSpace(request.SpecialType) ? null : request.SpecialType;
+        activity.IsMeeting = isMeeting;
+        activity.MeetingType = isMeeting ? request.MeetingType : null;
+        activity.ZoomLink = isMeeting && request.MeetingType == "zoom" ? request.ZoomLink : null;
+        activity.LocationName = isMeeting && request.MeetingType == "physical" ? request.LocationName : null;
+        activity.LocationAddress = isMeeting && request.MeetingType == "physical" ? request.LocationAddress : null;
         activity.UpdatedAt = now;
 
-        if (request.Roles is not null)
+        // Meetings: clear all existing roles
+        if (isMeeting)
+        {
+            var existingRoles = await dbContext.ActivityRoles
+                .Where(r => r.ActivityId == activity.Id)
+                .ToListAsync();
+            dbContext.ActivityRoles.RemoveRange(existingRoles);
+        }
+        else if (request.Roles is not null)
         {
             // Include Assignments for reconciliation
             var existingRoles = await dbContext.ActivityRoles
@@ -403,6 +432,9 @@ public class ActivityService(
                 DepartmentColor = activity.Department?.Color ?? string.Empty,
                 Visibility = activity.Visibility.ToString().ToLowerInvariant(),
                 SpecialType = activity.SpecialType,
+                IsMeeting = activity.IsMeeting,
+                MeetingType = activity.MeetingType,
+                LocationName = activity.LocationName,
                 PredicateurName = predicateur is not null
                     ? $"{predicateur.FirstName} {predicateur.LastName}"
                     : null,
@@ -499,6 +531,11 @@ public class ActivityService(
             DepartmentColor = activity.Department?.Color ?? string.Empty,
             Visibility = activity.Visibility.ToString().ToLowerInvariant(),
             SpecialType = activity.SpecialType,
+            IsMeeting = activity.IsMeeting,
+            MeetingType = activity.MeetingType,
+            ZoomLink = activity.ZoomLink,
+            LocationName = activity.LocationName,
+            LocationAddress = activity.LocationAddress,
             Roles = activity.Roles
                 .OrderBy(r => r.SortOrder)
                 .Select(r => new ActivityRoleResponse

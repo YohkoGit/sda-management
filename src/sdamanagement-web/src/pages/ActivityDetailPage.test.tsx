@@ -5,6 +5,7 @@ import { Routes, Route } from "react-router-dom";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import {
+  mockActivityDetail,
   activityDetailHandlers,
   activityDetailNotFoundHandler,
   activityDetailErrorHandler,
@@ -239,5 +240,92 @@ describe("ActivityDetailPage", () => {
     });
 
     expect(screen.getByRole("heading", { level: 2, name: /Composition de l'activité/i })).toBeInTheDocument();
+  });
+
+  // --- Story 8.3: Meeting-specific tests ---
+
+  it("renders clickable Zoom link for zoom meetings", async () => {
+    server.use(
+      http.get("/api/activities/:id", () =>
+        HttpResponse.json({
+          ...mockActivityDetail,
+          isMeeting: true,
+          meetingType: "zoom",
+          zoomLink: "https://zoom.us/j/123",
+          roles: [],
+          staffingStatus: "NoRoles",
+        }),
+      ),
+    );
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: /Culte Divin/i })).toBeInTheDocument();
+    });
+
+    const zoomLink = screen.getByRole("link", { name: /zoom\.us/i });
+    expect(zoomLink).toBeInTheDocument();
+    expect(zoomLink).toHaveAttribute("href", "https://zoom.us/j/123");
+    expect(zoomLink).toHaveAttribute("target", "_blank");
+  });
+
+  it("renders location info for physical meetings", async () => {
+    server.use(
+      http.get("/api/activities/:id", () =>
+        HttpResponse.json({
+          ...mockActivityDetail,
+          isMeeting: true,
+          meetingType: "physical",
+          locationName: "Salle communautaire",
+          locationAddress: "123 rue Principale",
+          roles: [],
+          staffingStatus: "NoRoles",
+        }),
+      ),
+    );
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: /Culte Divin/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Salle communautaire")).toBeInTheDocument();
+    expect(screen.getByText("123 rue Principale")).toBeInTheDocument();
+  });
+
+  it("hides roster section for meetings", async () => {
+    server.use(
+      http.get("/api/activities/:id", () =>
+        HttpResponse.json({
+          ...mockActivityDetail,
+          isMeeting: true,
+          meetingType: "zoom",
+          zoomLink: "https://zoom.us/j/456",
+          roles: [],
+          staffingStatus: "NoRoles",
+        }),
+      ),
+    );
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: /Culte Divin/i })).toBeInTheDocument();
+    });
+
+    // Roster heading should NOT appear — meeting shows "Meeting Information" instead
+    expect(screen.queryByRole("heading", { name: /Composition de l'activité/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Meeting Information/i })).toBeInTheDocument();
+  });
+
+  it("shows roster section for regular (non-meeting) activities", async () => {
+    // Default mockActivityDetail has isMeeting: false
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: /Culte Divin/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("heading", { name: /Composition de l'activité/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Meeting Information/i })).not.toBeInTheDocument();
   });
 });

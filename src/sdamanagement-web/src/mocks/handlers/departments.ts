@@ -13,8 +13,8 @@ const mockDepartments: DepartmentResponse[] = [
     color: "#4F46E5",
     description: "Activites pour la jeunesse",
     subMinistries: [
-      { id: 1, name: "Eclaireurs" },
-      { id: 2, name: "Ambassadeurs" },
+      { id: 1, name: "Eclaireurs", leadUserId: 10, leadFirstName: "Marie", leadLastName: "Dupont", leadAvatarUrl: null },
+      { id: 2, name: "Ambassadeurs", leadUserId: null, leadFirstName: null, leadLastName: null, leadAvatarUrl: null },
     ],
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
@@ -35,7 +35,7 @@ const mockDepartments: DepartmentResponse[] = [
     abbreviation: "DIA",
     color: "#10B981",
     description: null,
-    subMinistries: [{ id: 3, name: "Diacres" }],
+    subMinistries: [{ id: 3, name: "Diacres", leadUserId: null, leadFirstName: null, leadLastName: null, leadAvatarUrl: null }],
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
   },
@@ -91,7 +91,7 @@ export const departmentHandlers = [
       color: body.color as string,
       description: (body.description as string) || null,
       subMinistries: ((body.subMinistryNames as string[]) || []).map(
-        (name, i) => ({ id: 100 + i, name })
+        (name, i) => ({ id: 100 + i, name, leadUserId: null, leadFirstName: null, leadLastName: null, leadAvatarUrl: null })
       ),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -127,14 +127,28 @@ export const departmentHandlers = [
     if (!dept) return HttpResponse.json(null, { status: 404 });
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { id: 200, name: body.name as string },
+      {
+        id: 200,
+        name: body.name as string,
+        leadUserId: (body.leadUserId as number) ?? null,
+        leadFirstName: body.leadUserId ? "Test" : null,
+        leadLastName: body.leadUserId ? "Lead" : null,
+        leadAvatarUrl: null,
+      },
       { status: 201 }
     );
   }),
 
   http.put("/api/departments/:departmentId/sub-ministries/:id", async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json({ id: 1, name: body.name as string });
+    return HttpResponse.json({
+      id: 1,
+      name: body.name as string,
+      leadUserId: (body.leadUserId as number) ?? null,
+      leadFirstName: body.leadUserId ? "Test" : null,
+      leadLastName: body.leadUserId ? "Lead" : null,
+      leadAvatarUrl: null,
+    });
   }),
 
   http.delete("/api/departments/:departmentId/sub-ministries/:id", () => {

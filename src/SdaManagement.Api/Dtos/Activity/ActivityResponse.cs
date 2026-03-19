@@ -14,6 +14,11 @@ public class ActivityResponse
     public string DepartmentColor { get; init; } = string.Empty;
     public string Visibility { get; init; } = string.Empty;
     public string? SpecialType { get; init; }
+    public bool IsMeeting { get; init; }
+    public string? MeetingType { get; init; }
+    public string? ZoomLink { get; init; }
+    public string? LocationName { get; init; }
+    public string? LocationAddress { get; init; }
     public List<ActivityRoleResponse> Roles { get; init; } = [];
     public string StaffingStatus { get; init; } = string.Empty;
     public uint ConcurrencyToken { get; init; }

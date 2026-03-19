@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, Video, MapPin } from "lucide-react";
 import { useActivity } from "@/hooks/useActivity";
 import { useAuth } from "@/contexts/AuthContext";
 import { RoleSlotDisplay } from "@/components/activity-detail/RoleSlotDisplay";
@@ -89,7 +89,7 @@ export default function ActivityDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           {t("pages.activityDetail.back")}
         </Link>
-        {canEdit && (
+        {canEdit && !activity.isMeeting && (
           <Link
             to="/admin/activities"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
@@ -133,15 +133,25 @@ export default function ActivityDetailPage() {
           )}
         </div>
 
-        {/* Time range + staffing */}
+        {/* Time range + staffing (or meeting type) */}
         <div className="flex items-center justify-between gap-2 mt-1.5">
           <span className="text-sm text-muted-foreground tabular-nums">{timeRange}</span>
-          <StaffingIndicator
-            staffingStatus={activity.staffingStatus}
-            assigned={assignedCount}
-            total={totalHeadcount}
-            size="sm"
-          />
+          {activity.isMeeting ? (
+            <Badge variant="outline" className="text-xs">
+              {activity.meetingType === "zoom" ? (
+                <><Video className="mr-1 h-3 w-3 inline" />Zoom</>
+              ) : (
+                <><MapPin className="mr-1 h-3 w-3 inline" />{t("pages.activityDetail.physical")}</>
+              )}
+            </Badge>
+          ) : (
+            <StaffingIndicator
+              staffingStatus={activity.staffingStatus}
+              assigned={assignedCount}
+              total={totalHeadcount}
+              size="sm"
+            />
+          )}
         </div>
 
         {/* Description */}
@@ -154,26 +164,68 @@ export default function ActivityDetailPage() {
 
       <Separator className="mb-6" />
 
-      {/* Roster section */}
-      <h2 className="text-lg font-bold text-foreground mb-4">
-        {t("pages.activityDetail.roster.title")}
-      </h2>
-
-      {activity.roles.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          {t("pages.activityDetail.roster.noRoles")}
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {activity.roles.map((role) => (
-            <RoleSlotDisplay
-              key={role.id}
-              roleName={role.roleName}
-              headcount={role.headcount}
-              assignments={role.assignments}
-            />
-          ))}
+      {activity.isMeeting ? (
+        /* Meeting info section */
+        <div>
+          <h2 className="text-lg font-bold text-foreground mb-4">
+            {t("pages.activityDetail.meetingInfo")}
+          </h2>
+          <div className="space-y-3">
+            {activity.meetingType === "zoom" && activity.zoomLink && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t("pages.activityDetail.zoomLink")}</p>
+                <a
+                  href={activity.zoomLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline break-all"
+                >
+                  {activity.zoomLink}
+                </a>
+              </div>
+            )}
+            {activity.meetingType === "physical" && (
+              <>
+                {activity.locationName && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t("pages.activityDetail.location")}</p>
+                    <p className="text-sm text-foreground">{activity.locationName}</p>
+                  </div>
+                )}
+                {activity.locationAddress && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t("pages.activityDetail.address")}</p>
+                    <p className="text-sm text-foreground">{activity.locationAddress}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
+      ) : (
+        /* Roster section */
+        <>
+          <h2 className="text-lg font-bold text-foreground mb-4">
+            {t("pages.activityDetail.roster.title")}
+          </h2>
+
+          {activity.roles.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              {t("pages.activityDetail.roster.noRoles")}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {activity.roles.map((role) => (
+                <RoleSlotDisplay
+                  key={role.id}
+                  roleName={role.roleName}
+                  headcount={role.headcount}
+                  assignments={role.assignments}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

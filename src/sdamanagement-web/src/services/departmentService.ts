@@ -7,6 +7,10 @@ import type {
 export interface SubMinistryResponse {
   id: number;
   name: string;
+  leadUserId?: number | null;
+  leadFirstName?: string | null;
+  leadLastName?: string | null;
+  leadAvatarUrl?: string | null;
 }
 
 export interface DepartmentResponse {
@@ -45,7 +49,10 @@ export const departmentService = {
   update: (id: number, data: Omit<DepartmentFormData, "subMinistryNames">) =>
     api.put<DepartmentResponse>(`/api/departments/${id}`, data),
   delete: (id: number) => api.delete(`/api/departments/${id}`),
-  addSubMinistry: (departmentId: number, data: SubMinistryFormData) =>
+  addSubMinistry: (
+    departmentId: number,
+    data: SubMinistryFormData & { leadUserId?: number | null }
+  ) =>
     api.post<SubMinistryResponse>(
       `/api/departments/${departmentId}/sub-ministries`,
       data
@@ -53,7 +60,7 @@ export const departmentService = {
   updateSubMinistry: (
     departmentId: number,
     id: number,
-    data: SubMinistryFormData
+    data: SubMinistryFormData & { leadUserId?: number | null }
   ) =>
     api.put<SubMinistryResponse>(
       `/api/departments/${departmentId}/sub-ministries/${id}`,

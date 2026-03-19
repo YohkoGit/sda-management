@@ -12,6 +12,11 @@ public class Activity
     public Department? Department { get; set; }
     public ActivityVisibility Visibility { get; set; }
     public string? SpecialType { get; set; }
+    public bool IsMeeting { get; set; }
+    public string? MeetingType { get; set; }
+    public string? ZoomLink { get; set; }
+    public string? LocationName { get; set; }
+    public string? LocationAddress { get; set; }
     public uint Version { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

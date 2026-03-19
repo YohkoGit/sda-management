@@ -137,7 +137,26 @@
       "subMinistryCount": "{{count}} sub-ministry(ies)",
       "loadError": "Loading error",
       "retry": "Retry",
-      "noDepartments": "No departments configured"
+      "noDepartments": "No departments configured",
+      "newActivity": "New Activity",
+      "newMeeting": "New Meeting",
+      "editActivity": "Edit Activity",
+      "editMeeting": "Edit Meeting",
+      "deleteConfirmTitle": "Confirm Deletion",
+      "deleteConfirmMessage": "Delete \"{{title}}\"? This action cannot be undone.",
+      "toast": {
+        "created": "Activity created",
+        "meetingCreated": "Meeting created",
+        "updated": "Changes saved",
+        "deleted": "Deleted successfully",
+        "loadError": "Failed to load activity"
+      },
+      "noActivitiesAdminCta": "Ready to plan? Create your first activity or meeting.",
+      "subMinistry": {
+        "noLead": "No lead",
+        "selectLead": "Select a lead",
+        "leadValidationError": "Selected user is not a member of this department"
+      }
     },
     "live": {
       "title": "Live"
@@ -520,6 +539,11 @@
       "loadError": "Failed to load activity",
       "retry": "Retry",
       "description": "Description",
+      "meetingInfo": "Meeting Information",
+      "physical": "Physical",
+      "zoomLink": "Zoom Link",
+      "location": "Location",
+      "address": "Address",
       "roster": {
         "title": "Activity Roster",
         "noRoles": "No roles defined for this activity",
@@ -612,8 +636,27 @@
     },
     "complete": "Setup complete \u2014 your system is ready!"
   },
+  "meetingForm": {
+    "title": "Title",
+    "description": "Description (optional)",
+    "date": "Date",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "meetingType": "Meeting Type",
+    "zoom": "Zoom",
+    "physical": "Physical",
+    "zoomLink": "Zoom Link",
+    "locationName": "Location Name",
+    "locationAddress": "Address",
+    "submit": "Save",
+    "submitting": "Saving...",
+    "zoomLinkPlaceholder": "https://zoom.us/j/...",
+    "locationNamePlaceholder": "Room name",
+    "locationAddressPlaceholder": "Street address"
+  },
   "common": {
     "cancel": "Cancel",
+    "delete": "Delete",
     "back": "Back"
   },
   "days": {

@@ -123,7 +123,7 @@ public class DepartmentsController(
         [FromBody] CreateSubMinistryRequest request,
         [FromServices] IValidator<CreateSubMinistryRequest> validator)
     {
-        if (!auth.IsOwner())
+        if (!auth.CanManage(departmentId))
             return Forbid();
 
         var validation = await validator.ValidateAsync(request);
@@ -156,7 +156,7 @@ public class DepartmentsController(
         [FromBody] UpdateSubMinistryRequest request,
         [FromServices] IValidator<UpdateSubMinistryRequest> validator)
     {
-        if (!auth.IsOwner())
+        if (!auth.CanManage(departmentId))
             return Forbid();
 
         var validation = await validator.ValidateAsync(request);
@@ -183,7 +183,7 @@ public class DepartmentsController(
     [HttpDelete("{departmentId:int}/sub-ministries/{id:int}")]
     public async Task<IActionResult> DeleteSubMinistry(int departmentId, int id)
     {
-        if (!auth.IsOwner())
+        if (!auth.CanManage(departmentId))
             return Forbid();
 
         var deleted = await departmentService.DeleteSubMinistryAsync(departmentId, id);

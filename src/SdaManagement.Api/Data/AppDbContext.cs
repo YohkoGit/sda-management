@@ -84,6 +84,11 @@ public class AppDbContext : DbContext
              .WithMany(d => d.SubMinistries)
              .HasForeignKey(s => s.DepartmentId)
              .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(s => s.Lead)
+             .WithMany()
+             .HasForeignKey(s => s.LeadUserId)
+             .IsRequired(false)
+             .OnDelete(DeleteBehavior.SetNull);
             e.HasIndex(s => new { s.DepartmentId, s.Name }).IsUnique();
         });
 
@@ -149,6 +154,11 @@ public class AppDbContext : DbContext
             e.Property(a => a.Title).HasMaxLength(150);
             e.Property(a => a.Description).HasMaxLength(1000);
             e.Property(a => a.Visibility).HasConversion<int>();
+            e.Property(a => a.IsMeeting).HasDefaultValue(false);
+            e.Property(a => a.MeetingType).HasMaxLength(20);
+            e.Property(a => a.ZoomLink).HasMaxLength(500);
+            e.Property(a => a.LocationName).HasMaxLength(150);
+            e.Property(a => a.LocationAddress).HasMaxLength(300);
             e.Property(a => a.CreatedAt).HasDefaultValueSql("now()");
             e.Property(a => a.UpdatedAt).HasDefaultValueSql("now()");
             e.HasOne(a => a.Department)

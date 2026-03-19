@@ -42,6 +42,11 @@ export const createActivitySchema = z
     specialType: z.enum(SPECIAL_TYPES).nullable().optional(),
     templateId: z.number().int().positive().optional(),
     roles: z.array(activityRoleInputSchema).max(20).optional(),
+    isMeeting: z.boolean().optional(),
+    meetingType: z.enum(["zoom", "physical"]).optional(),
+    zoomLink: z.string().url().max(500).optional().or(z.literal("")),
+    locationName: z.string().max(150).optional().or(z.literal("")),
+    locationAddress: z.string().max(300).optional().or(z.literal("")),
   })
   .refine((data) => data.endTime > data.startTime, {
     message: "L'heure de fin doit etre apres l'heure de debut",
@@ -54,7 +59,35 @@ export const createActivitySchema = z
       return new Set(names).size === names.length;
     },
     { message: "Les noms de rôle doivent être uniques.", path: ["roles"] }
-  );
+  )
+  .superRefine((data, ctx) => {
+    if (!data.isMeeting) return;
+
+    if (!data.meetingType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["meetingType"],
+        message: "Le type de réunion est requis",
+      });
+      return;
+    }
+
+    if (data.meetingType === "zoom" && !data.zoomLink) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["zoomLink"],
+        message: "Le lien Zoom est requis",
+      });
+    }
+
+    if (data.meetingType === "physical" && !data.locationName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["locationName"],
+        message: "Le nom du lieu est requis",
+      });
+    }
+  });
 
 export const updateActivitySchema = createActivitySchema.and(
   z.object({

@@ -29,6 +29,7 @@ export interface ActivityFormProps {
   defaultValues?: Partial<CreateActivityFormData>;
   existingAssignments?: Map<number, number>;
   initialGuestOfficers?: AssignableOfficer[];
+  lockDepartment?: boolean;
 }
 
 export function ActivityForm({
@@ -38,6 +39,7 @@ export function ActivityForm({
   defaultValues,
   existingAssignments,
   initialGuestOfficers,
+  lockDepartment,
 }: ActivityFormProps) {
   const { t } = useTranslation();
 
@@ -140,8 +142,9 @@ export function ActivityForm({
         <Select
           value={departmentId ? String(departmentId) : ""}
           onValueChange={(val) => setValue("departmentId", Number(val), { shouldValidate: true })}
+          disabled={lockDepartment}
         >
-          <SelectTrigger className={`min-h-[44px] ${errors.departmentId ? "border-red-500" : ""}`}>
+          <SelectTrigger className={`min-h-[44px] ${errors.departmentId ? "border-red-500" : ""} ${lockDepartment ? "opacity-70" : ""}`}>
             <SelectValue placeholder={t("pages.adminActivities.form.department")} />
           </SelectTrigger>
           <SelectContent>

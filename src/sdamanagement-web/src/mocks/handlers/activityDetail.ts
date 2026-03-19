@@ -14,6 +14,7 @@ export const mockActivityDetail: ActivityResponse = {
   departmentColor: "#14B8A6",
   visibility: "public",
   specialType: "Journée de la Femme",
+  isMeeting: false,
   roles: [
     {
       id: 1,

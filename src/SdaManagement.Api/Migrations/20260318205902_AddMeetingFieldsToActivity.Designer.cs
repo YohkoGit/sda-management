@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SdaManagement.Api.Data;
@@ -11,9 +12,11 @@ using SdaManagement.Api.Data;
 namespace SdaManagement.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318205902_AddMeetingFieldsToActivity")]
+    partial class AddMeetingFieldsToActivity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -533,10 +536,6 @@ namespace SdaManagement.Api.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("department_id");
 
-                    b.Property<int?>("LeadUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("lead_user_id");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -551,9 +550,6 @@ namespace SdaManagement.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_sub_ministries");
-
-                    b.HasIndex("LeadUserId")
-                        .HasDatabaseName("ix_sub_ministries_lead_user_id");
 
                     b.HasIndex("DepartmentId", "Name")
                         .IsUnique()
@@ -784,15 +780,7 @@ namespace SdaManagement.Api.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_sub_ministries_departments_department_id");
 
-                    b.HasOne("SdaManagement.Api.Data.Entities.User", "Lead")
-                        .WithMany()
-                        .HasForeignKey("LeadUserId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_sub_ministries_users_lead_user_id");
-
                     b.Navigation("Department");
-
-                    b.Navigation("Lead");
                 });
 
             modelBuilder.Entity("SdaManagement.Api.Data.Entities.TemplateRole", b =>

@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Caching.Memory;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
+using SdaManagement.Api.Exceptions;
 using SdaManagement.Api.Services;
 using SdaManagement.Api.Validators;
 
@@ -84,8 +85,9 @@ public static class ServiceCollectionExtensions
                         System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
                 });
 
-        // ProblemDetails
+        // ProblemDetails + global exception handler
         services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
 
         // OpenAPI
         services.AddOpenApi();

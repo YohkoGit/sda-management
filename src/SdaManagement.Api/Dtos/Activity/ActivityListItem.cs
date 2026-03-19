@@ -12,6 +12,9 @@ public class ActivityListItem
     public string DepartmentColor { get; init; } = string.Empty;
     public string Visibility { get; init; } = string.Empty;
     public string? SpecialType { get; init; }
+    public bool IsMeeting { get; init; }
+    public string? MeetingType { get; init; }
+    public string? LocationName { get; init; }
     public int RoleCount { get; init; }
     public int TotalHeadcount { get; init; }
     public int AssignedCount { get; init; }

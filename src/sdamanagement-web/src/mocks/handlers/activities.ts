@@ -21,6 +21,7 @@ const mockActivities: ActivityResponse[] = [
     departmentColor: "#4F46E5",
     visibility: "public",
     specialType: "sainte-cene",
+    isMeeting: false,
     roles: [
       {
         id: 1,
@@ -57,6 +58,7 @@ const mockActivities: ActivityResponse[] = [
     departmentColor: "#10B981",
     visibility: "authenticated",
     specialType: null,
+    isMeeting: false,
     roles: [],
     staffingStatus: "NoRoles",
     concurrencyToken: 43,
@@ -76,6 +78,7 @@ const mockActivities: ActivityResponse[] = [
     departmentColor: "#4F46E5",
     visibility: "public",
     specialType: null,
+    isMeeting: false,
     roles: [
       {
         id: 5,
@@ -114,6 +117,7 @@ const mockActivities: ActivityResponse[] = [
     departmentColor: "#4F46E5",
     visibility: "authenticated",
     specialType: null,
+    isMeeting: false,
     roles: [
       {
         id: 7,
@@ -138,6 +142,51 @@ const mockActivities: ActivityResponse[] = [
     concurrencyToken: 45,
     createdAt: "2026-03-04T00:00:00Z",
     updatedAt: "2026-03-04T00:00:00Z",
+  },
+  {
+    id: 5,
+    title: "Réunion du comité",
+    description: null,
+    date: "2026-03-25",
+    startTime: "19:00:00",
+    endTime: "20:30:00",
+    departmentId: 1,
+    departmentName: "MIFEM",
+    departmentAbbreviation: "MIFEM",
+    departmentColor: "#4F46E5",
+    visibility: "authenticated",
+    specialType: null,
+    isMeeting: true,
+    meetingType: "zoom",
+    zoomLink: "https://zoom.us/j/123456789",
+    roles: [],
+    staffingStatus: "NoRoles",
+    concurrencyToken: 50,
+    createdAt: "2026-03-10T00:00:00Z",
+    updatedAt: "2026-03-10T00:00:00Z",
+  },
+  {
+    id: 6,
+    title: "Réunion de planification",
+    description: null,
+    date: "2026-03-27",
+    startTime: "18:30:00",
+    endTime: "20:00:00",
+    departmentId: 1,
+    departmentName: "MIFEM",
+    departmentAbbreviation: "MIFEM",
+    departmentColor: "#4F46E5",
+    visibility: "authenticated",
+    specialType: null,
+    isMeeting: true,
+    meetingType: "physical",
+    locationName: "Salle communautaire",
+    locationAddress: "123 rue Principale",
+    roles: [],
+    staffingStatus: "NoRoles",
+    concurrencyToken: 51,
+    createdAt: "2026-03-10T00:00:00Z",
+    updatedAt: "2026-03-10T00:00:00Z",
   },
 ];
 
@@ -168,6 +217,9 @@ const toListItem = (a: ActivityResponse): ActivityListItem => ({
   departmentColor: a.departmentId === 1 ? "#4F46E5" : "#10B981",
   visibility: a.visibility,
   specialType: a.specialType,
+  isMeeting: a.isMeeting,
+  meetingType: a.meetingType,
+  locationName: a.locationName,
   roleCount: a.roles.length,
   totalHeadcount: a.roles.reduce((sum, r) => sum + r.headcount, 0),
   assignedCount: a.roles.reduce((sum, r) => sum + r.assignments.length, 0),
@@ -260,6 +312,8 @@ export const activityHandlers = [
       roles = [];
     }
 
+    const isMeeting = (body.isMeeting as boolean) ?? false;
+
     const created: ActivityResponse = {
       id: 99,
       title: body.title as string,
@@ -273,6 +327,13 @@ export const activityHandlers = [
       departmentColor: "#4F46E5",
       visibility: body.visibility as string,
       specialType: (body.specialType as string | null) ?? null,
+      isMeeting,
+      ...(isMeeting ? {
+        meetingType: body.meetingType as string,
+        zoomLink: (body.zoomLink as string) || undefined,
+        locationName: (body.locationName as string) || undefined,
+        locationAddress: (body.locationAddress as string) || undefined,
+      } : {}),
       roles,
       staffingStatus: computeStaffingStatus(roles),
       concurrencyToken: 100,
@@ -315,6 +376,8 @@ export const activityHandlers = [
       roles = existing?.roles ?? [];
     }
 
+    const isMeetingUpdate = (body.isMeeting as boolean) ?? false;
+
     const updated: ActivityResponse = {
       id,
       title: body.title as string,
@@ -328,6 +391,13 @@ export const activityHandlers = [
       departmentColor: "#4F46E5",
       visibility: body.visibility as string,
       specialType: (body.specialType as string | null) ?? null,
+      isMeeting: isMeetingUpdate,
+      ...(isMeetingUpdate ? {
+        meetingType: body.meetingType as string,
+        zoomLink: (body.zoomLink as string) || undefined,
+        locationName: (body.locationName as string) || undefined,
+        locationAddress: (body.locationAddress as string) || undefined,
+      } : {}),
       roles,
       staffingStatus: computeStaffingStatus(roles),
       concurrencyToken: 101,

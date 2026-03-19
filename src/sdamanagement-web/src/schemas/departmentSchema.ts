@@ -26,6 +26,7 @@ export const subMinistrySchema = z.object({
     .string()
     .min(1, { message: "Le nom du sous-ministere est requis" })
     .max(100),
+  leadUserId: z.number().int().positive().nullable().optional(),
 });
 
 export type DepartmentFormData = z.infer<typeof departmentSchema>;

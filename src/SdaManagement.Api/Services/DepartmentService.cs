@@ -3,10 +3,11 @@ using Npgsql;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Dtos.Department;
+using SdaManagement.Api.Exceptions;
 
 namespace SdaManagement.Api.Services;
 
-public class DepartmentService(AppDbContext dbContext, ISanitizationService sanitizer) : IDepartmentService
+public class DepartmentService(AppDbContext dbContext, ISanitizationService sanitizer, IAvatarService avatarService) : IDepartmentService
 {
     public async Task<List<DepartmentListItem>> GetAllAsync()
     {
@@ -110,7 +111,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
 
     public async Task<DepartmentResponse?> GetByIdAsync(int id)
     {
-        return await dbContext.Departments
+        var result = await dbContext.Departments
             .Where(d => d.Id == id)
             .Select(d => new DepartmentResponse
             {
@@ -125,12 +126,23 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
                     {
                         Id = s.Id,
                         Name = s.Name,
+                        LeadUserId = s.LeadUserId,
+                        LeadFirstName = s.Lead != null ? s.Lead.FirstName : null,
+                        LeadLastName = s.Lead != null ? s.Lead.LastName : null,
                     })
                     .ToList(),
                 CreatedAt = d.CreatedAt,
                 UpdatedAt = d.UpdatedAt,
             })
             .FirstOrDefaultAsync();
+
+        if (result != null)
+        {
+            foreach (var sm in result.SubMinistries.Where(sm => sm.LeadUserId.HasValue))
+                sm.LeadAvatarUrl = avatarService.GetAvatarUrl(sm.LeadUserId!.Value);
+        }
+
+        return result;
     }
 
     private static string DeriveAbbreviation(string name)
@@ -196,6 +208,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
     {
         var department = await dbContext.Departments
             .Include(d => d.SubMinistries)
+                .ThenInclude(s => s.Lead)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         if (department is null)
@@ -220,7 +233,15 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
             Description = department.Description,
             SubMinistries = department.SubMinistries
                 .OrderBy(s => s.Name)
-                .Select(s => new SubMinistryResponse { Id = s.Id, Name = s.Name })
+                .Select(s => new SubMinistryResponse
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    LeadUserId = s.LeadUserId,
+                    LeadFirstName = s.Lead?.FirstName,
+                    LeadLastName = s.Lead?.LastName,
+                    LeadAvatarUrl = s.LeadUserId.HasValue ? avatarService.GetAvatarUrl(s.LeadUserId.Value) : null,
+                })
                 .ToList(),
             CreatedAt = department.CreatedAt,
             UpdatedAt = department.UpdatedAt,
@@ -244,11 +265,16 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
         if (!departmentExists)
             return null;
 
+        User? lead = null;
+        if (request.LeadUserId.HasValue)
+            lead = await ValidateAndLoadLead(request.LeadUserId.Value, departmentId);
+
         var now = DateTime.UtcNow;
         var subMinistry = new SubMinistry
         {
             Name = sanitizer.Sanitize(request.Name),
             DepartmentId = departmentId,
+            LeadUserId = request.LeadUserId,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -256,7 +282,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
         dbContext.SubMinistries.Add(subMinistry);
         await dbContext.SaveChangesAsync();
 
-        return new SubMinistryResponse { Id = subMinistry.Id, Name = subMinistry.Name };
+        return BuildSubMinistryResponse(subMinistry, lead);
     }
 
     public async Task<SubMinistryResponse?> UpdateSubMinistryAsync(int departmentId, int subMinistryId, UpdateSubMinistryRequest request)
@@ -267,12 +293,17 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
         if (subMinistry is null)
             return null;
 
+        User? lead = null;
+        if (request.LeadUserId.HasValue)
+            lead = await ValidateAndLoadLead(request.LeadUserId.Value, departmentId);
+
         subMinistry.Name = sanitizer.Sanitize(request.Name);
+        subMinistry.LeadUserId = request.LeadUserId;
         subMinistry.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
 
-        return new SubMinistryResponse { Id = subMinistry.Id, Name = subMinistry.Name };
+        return BuildSubMinistryResponse(subMinistry, lead);
     }
 
     public async Task<bool> DeleteSubMinistryAsync(int departmentId, int subMinistryId)
@@ -286,5 +317,32 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
         dbContext.SubMinistries.Remove(subMinistry);
         await dbContext.SaveChangesAsync();
         return true;
+    }
+
+    private async Task<User> ValidateAndLoadLead(int leadUserId, int departmentId)
+    {
+        var user = await dbContext.Users.FindAsync(leadUserId)
+            ?? throw new BadRequestException("Lead user does not exist");
+
+        var isMember = await dbContext.Set<UserDepartment>()
+            .AnyAsync(ud => ud.UserId == leadUserId && ud.DepartmentId == departmentId);
+
+        if (!isMember)
+            throw new BadRequestException("Lead user is not a member of this department");
+
+        return user;
+    }
+
+    private SubMinistryResponse BuildSubMinistryResponse(SubMinistry subMinistry, User? lead = null)
+    {
+        return new SubMinistryResponse
+        {
+            Id = subMinistry.Id,
+            Name = subMinistry.Name,
+            LeadUserId = subMinistry.LeadUserId,
+            LeadFirstName = lead?.FirstName,
+            LeadLastName = lead?.LastName,
+            LeadAvatarUrl = lead != null ? avatarService.GetAvatarUrl(lead.Id) : null,
+        };
     }
 }
