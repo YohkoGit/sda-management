@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSignalR } from "@/hooks/useSignalR";
+import { useActivityEvents } from "@/hooks/useActivityEvents";
 import PublicLayout from "@/layouts/PublicLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -36,6 +37,7 @@ const ActivityDetailPage = lazy(() => import("@/pages/ActivityDetailPage"));
 
 function App() {
   useSignalR(); // Start SignalR connection on app mount
+  useActivityEvents(); // Register SignalR event handlers for query invalidation
   return (
     <BrowserRouter>
       <AuthProvider>

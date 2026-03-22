@@ -26,8 +26,9 @@ public class ActivityServiceConcurrencyTests : IDisposable
         sanitizer.SanitizeNullable(Arg.Any<string?>()).Returns(ci => ci.Arg<string?>());
 
         var avatarService = Substitute.For<IAvatarService>();
+        var notificationService = Substitute.For<IActivityNotificationService>();
 
-        _service = new ActivityService(_dbContext, sanitizer, avatarService);
+        _service = new ActivityService(_dbContext, sanitizer, avatarService, notificationService);
     }
 
     public void Dispose()

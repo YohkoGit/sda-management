@@ -8,7 +8,8 @@ namespace SdaManagement.Api.Services;
 public class ActivityService(
     AppDbContext dbContext,
     ISanitizationService sanitizer,
-    IAvatarService avatarService) : IActivityService
+    IAvatarService avatarService,
+    IActivityNotificationService notificationService) : IActivityService
 {
     public async Task<List<ActivityListItem>> GetAllAsync(int? departmentId, string? visibility = null)
     {
@@ -184,7 +185,11 @@ public class ActivityService(
         await dbContext.SaveChangesAsync();
 
         // Re-fetch with Department included for response
-        return (await GetByIdAsync(activity.Id))!;
+        var response = (await GetByIdAsync(activity.Id))!;
+
+        await notificationService.NotifyActivityCreatedAsync(response);
+
+        return response;
     }
 
     public async Task<ActivityResponse?> UpdateAsync(int id, UpdateActivityRequest request, bool force = false)
@@ -200,6 +205,15 @@ public class ActivityService(
             dbContext.Entry(activity).Property(a => a.Version).OriginalValue = request.ConcurrencyToken;
 
         var now = DateTime.UtcNow;
+
+        // Snapshot fields before changes for updatedFields computation
+        var prevTitle = activity.Title;
+        var prevDate = activity.Date;
+        var prevStartTime = activity.StartTime;
+        var prevEndTime = activity.EndTime;
+        var prevDepartmentId = activity.DepartmentId;
+        var prevVisibility = activity.Visibility;
+        var prevDescription = activity.Description;
 
         var isMeeting = request.IsMeeting == true;
 
@@ -321,7 +335,21 @@ public class ActivityService(
 
         await dbContext.SaveChangesAsync();
 
-        return (await GetByIdAsync(activity.Id))!;
+        var response = (await GetByIdAsync(activity.Id))!;
+
+        // Compute updatedFields — comma-separated changed field categories, null if nothing changed
+        var changedFields = new List<string>();
+        if (prevTitle != activity.Title) changedFields.Add("title");
+        if (prevDate != activity.Date || prevStartTime != activity.StartTime || prevEndTime != activity.EndTime) changedFields.Add("date");
+        if (prevDepartmentId != activity.DepartmentId) changedFields.Add("department");
+        if (prevVisibility != activity.Visibility) changedFields.Add("visibility");
+        if (prevDescription != activity.Description) changedFields.Add("description");
+        if (request.Roles is not null) changedFields.Add("roles");
+        var updatedFields = changedFields.Count > 0 ? string.Join(",", changedFields) : null;
+
+        await notificationService.NotifyActivityUpdatedAsync(response, updatedFields);
+
+        return response;
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -330,8 +358,14 @@ public class ActivityService(
         if (activity is null)
             return false;
 
+        var departmentId = activity.DepartmentId;
+        var visibility = activity.Visibility.ToString();
+
         dbContext.Activities.Remove(activity);
         await dbContext.SaveChangesAsync();
+
+        await notificationService.NotifyActivityDeletedAsync(id, departmentId, visibility);
+
         return true;
     }
 

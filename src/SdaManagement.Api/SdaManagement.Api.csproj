@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SdaManagement.Api.UnitTests" />
+    <InternalsVisibleTo Include="SdaManagement.Api.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>
