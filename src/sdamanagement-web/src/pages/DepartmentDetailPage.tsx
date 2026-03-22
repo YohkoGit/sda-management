@@ -410,6 +410,7 @@ export default function DepartmentDetailPage() {
                         className="h-7 w-7"
                         disabled={isEditLoading}
                         onClick={() => handleEdit(activity)}
+                        aria-label="Edit"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -418,6 +419,7 @@ export default function DepartmentDetailPage() {
                         size="icon"
                         className="h-7 w-7 text-red-500 hover:text-red-700"
                         onClick={() => setDeleteTarget(activity)}
+                        aria-label="Delete"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

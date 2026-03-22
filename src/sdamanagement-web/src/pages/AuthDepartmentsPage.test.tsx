@@ -81,6 +81,29 @@ describe("AuthDepartmentsPage", () => {
     });
   });
 
+  it("renders all departments for OWNER with zero assignments (8.4)", async () => {
+    const ownerUser = {
+      userId: 10,
+      email: "owner@test.local",
+      firstName: "Test",
+      lastName: "Owner",
+      role: "OWNER",
+      departmentIds: [] as number[],
+    };
+
+    server.use(
+      http.get("/api/auth/me", () => HttpResponse.json(ownerUser))
+    );
+
+    render(<AuthDepartmentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Ministere de la Femme")).toBeInTheDocument();
+    expect(screen.getByText("Diaconat")).toBeInTheDocument();
+  });
+
   it("department cards have links to detail page", async () => {
     server.use(
       http.get("/api/auth/me", () => HttpResponse.json(viewerUser))

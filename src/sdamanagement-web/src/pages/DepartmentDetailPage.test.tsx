@@ -281,10 +281,9 @@ describe("DepartmentDetailPage", () => {
       expect(screen.getByText("Scoped Activity")).toBeInTheDocument();
     });
 
-    // Pencil and Trash2 icons render inside icon buttons
-    const iconButtons = screen.getAllByRole("button", { name: "" });
-    // There should be at least 2 icon buttons (edit + delete) for the activity row
-    expect(iconButtons.length).toBeGreaterThanOrEqual(2);
+    // Edit and delete icon buttons (activity row + sub-ministry rows when canManage)
+    expect(screen.getAllByRole("button", { name: "Edit" }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: "Delete" }).length).toBeGreaterThanOrEqual(1);
   });
 
   /* ───── 8.3 — Sub-ministry management ───── */
@@ -328,6 +327,73 @@ describe("DepartmentDetailPage", () => {
     });
     // No add button
     expect(screen.queryByText("Ajouter un sous-ministère")).not.toBeInTheDocument();
+  });
+
+  /* ───── 8.4 — OWNER full department access ───── */
+
+  it("renders management controls for OWNER viewing unassigned department (8.4)", async () => {
+    // ownerUser has departmentIds: [] — dept 2 (MIFEM) is NOT in their assignments
+    renderWithRoute(10, 2, ownerUser);
+
+    await waitFor(() => {
+      expect(screen.getByText("Ministere de la Femme")).toBeInTheDocument();
+    });
+
+    // OWNER should see management buttons even with zero department assignments
+    expect(screen.getAllByText("New Activity").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("New Meeting").length).toBeGreaterThan(0);
+  });
+
+  it("OWNER sees edit/delete icons on activities in unassigned department (8.4)", async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 7);
+    const dateStr = futureDate.toISOString().split("T")[0];
+
+    server.use(
+      http.get("/api/activities", () =>
+        HttpResponse.json([
+          {
+            id: 70,
+            title: "Owner Access Activity",
+            date: dateStr,
+            startTime: "10:00:00",
+            endTime: "12:00:00",
+            departmentId: 2,
+            departmentName: "MIFEM",
+            departmentColor: "#EC4899",
+            visibility: "public",
+            specialType: null,
+            isMeeting: false,
+            roleCount: 1,
+            totalHeadcount: 2,
+            assignedCount: 1,
+            staffingStatus: "PartiallyStaffed",
+            createdAt: "2026-01-01T00:00:00Z",
+          },
+        ])
+      )
+    );
+
+    renderWithRoute(10, 2, ownerUser);
+
+    await waitFor(() => {
+      expect(screen.getByText("Owner Access Activity")).toBeInTheDocument();
+    });
+
+    // OWNER should see edit/delete icon buttons (activity row + sub-ministry rows)
+    expect(screen.getAllByRole("button", { name: "Edit" }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: "Delete" }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("OWNER sees SubMinistryManager on unassigned department (8.4)", async () => {
+    // Dept 3 (Diaconat) has sub-ministry "Diacres" and OWNER has no assignments
+    renderWithRoute(10, 3, ownerUser);
+
+    await waitFor(() => {
+      expect(screen.getByText("Diaconat")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Diacres")).toBeInTheDocument();
+    expect(screen.getByText("Ajouter un sous-ministère")).toBeInTheDocument();
   });
 
   it("renders meeting with Video icon instead of StaffingIndicator (8.2)", async () => {
