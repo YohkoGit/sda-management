@@ -109,16 +109,16 @@ development_status:
   epic-7-retrospective: optional
 
   # Epic 8: Department Management
-  epic-8: in-progress
+  epic-8: done
   8-1-department-list-and-detail-view: done
   8-2-department-activity-and-meeting-management: done
   8-3-sub-ministry-management: done
-  8-4-owner-full-department-access: backlog
+  8-4-owner-full-department-access: done
   epic-8-retrospective: optional
 
   # Epic 9: Real-Time Updates & Live Experience
-  epic-9: backlog
-  9-1-signalr-hub-and-connection-lifecycle: backlog
+  epic-9: in-progress
+  9-1-signalr-hub-and-connection-lifecycle: done
   9-2-real-time-activity-update-broadcasting: backlog
   9-3-modifie-badge-for-recent-changes: backlog
   epic-9-retrospective: optional

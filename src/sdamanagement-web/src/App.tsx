@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useSignalR } from "@/hooks/useSignalR";
 import PublicLayout from "@/layouts/PublicLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -34,6 +35,7 @@ const AdminActivitiesPage = lazy(() => import("@/pages/AdminActivitiesPage"));
 const ActivityDetailPage = lazy(() => import("@/pages/ActivityDetailPage"));
 
 function App() {
+  useSignalR(); // Start SignalR connection on app mount
   return (
     <BrowserRouter>
       <AuthProvider>
