@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import {
   Table,
   TableBody,
@@ -357,12 +358,15 @@ export default function AdminActivitiesPage() {
                   onClick={() => setViewActivityId(activity.id)}
                 >
                   <TableCell className="font-medium">
-                    {activity.title}
-                    {activity.specialType && (
-                      <Badge variant="secondary" className="ml-2 max-w-[10rem] truncate text-xs" data-testid="special-type-badge">
-                        {t(`pages.adminActivities.specialType.${activity.specialType}`)}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <span className="truncate">{activity.title}</span>
+                      <ModifiedBadge activityId={activity.id} />
+                      {activity.specialType && (
+                        <Badge variant="secondary" className="shrink-0 max-w-[10rem] truncate text-xs" data-testid="special-type-badge">
+                          {t(`pages.adminActivities.specialType.${activity.specialType}`)}
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>{activity.date}</TableCell>
                   <TableCell className="hidden sm:table-cell">

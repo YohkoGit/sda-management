@@ -667,6 +667,7 @@ testI18n.use(initReactI18next).init({
           cancel: "Annuler",
           delete: "Delete",
           back: "Retour",
+          modifiedBadge: "Modifié",
         },
         days: {
           "0": "Dimanche",
@@ -841,6 +842,7 @@ testI18n.use(initReactI18next).init({
         common: {
           cancel: "Cancel",
           delete: "Delete",
+          modifiedBadge: "Modified",
         },
       },
     },

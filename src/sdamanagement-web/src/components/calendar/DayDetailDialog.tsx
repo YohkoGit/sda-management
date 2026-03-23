@@ -15,6 +15,7 @@ import TemplateSelector from "@/components/activity/TemplateSelector";
 import { ActivityForm } from "@/components/activity/ActivityForm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import {
   Dialog,
   DialogContent,
@@ -155,7 +156,7 @@ export default function DayDetailDialog({
 
   // --- Step content ---
   const renderDetail = () => (
-    <div className="space-y-3" aria-live="polite">
+    <div className="space-y-3">
       {canCreate && (
         <Button
           onClick={() => setStep("template")}
@@ -188,7 +189,10 @@ export default function DayDetailDialog({
                 />
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{activity.title}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate text-sm font-medium">{activity.title}</p>
+                  <ModifiedBadge activityId={activity.id} />
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {formatTime(activity.startTime)}–{formatTime(activity.endTime)}
                   {activity.departmentAbbreviation && (

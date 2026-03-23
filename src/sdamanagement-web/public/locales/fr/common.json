@@ -666,7 +666,8 @@
   "common": {
     "cancel": "Annuler",
     "delete": "Supprimer",
-    "back": "Retour"
+    "back": "Retour",
+    "modifiedBadge": "Modifié"
   },
   "days": {
     "0": "Dimanche",

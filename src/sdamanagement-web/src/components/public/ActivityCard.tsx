@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import { formatActivityDate, formatTime } from "@/lib/dateFormatting";
 import type { PublicActivityListItem } from "@/types/public";
 
@@ -54,6 +55,7 @@ export default function ActivityCard({
       </h3>
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
+        <ModifiedBadge activityId={activity.id} />
         {activity.departmentAbbreviation && (
           <Badge
             variant="secondary"

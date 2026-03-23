@@ -17,6 +17,17 @@ vi.mock("@/lib/queryClient", () => ({
   },
 }));
 
+const mockMarkModified = vi.fn();
+const mockCleanupExpired = vi.fn();
+vi.mock("@/stores/modifiedBadgeStore", () => ({
+  useModifiedBadgeStore: {
+    getState: () => ({
+      markModified: mockMarkModified,
+      cleanupExpired: mockCleanupExpired,
+    }),
+  },
+}));
+
 import { getConnection } from "@/lib/signalr";
 import { queryClient } from "@/lib/queryClient";
 
@@ -99,6 +110,11 @@ describe("useActivityEvents", () => {
 
     expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["activities"] });
     expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["activity"] });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["auth", "calendar"] });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["public", "calendar"] });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["public", "next-activity"] });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["public", "upcoming-activities"] });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ["departments", "with-staffing"] });
   });
 
   it("ActivityDeleted handler invalidates correct queries", () => {
@@ -143,5 +159,50 @@ describe("useActivityEvents", () => {
     renderHook(() => useActivityEvents());
 
     expect(mockOnreconnected).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it("ActivityUpdated handler calls markModified with activityId", () => {
+    renderHook(() => useActivityEvents());
+
+    const handler = mockOn.mock.calls.find(
+      (call) => call[0] === "ActivityUpdated",
+    )?.[1];
+    expect(handler).toBeDefined();
+
+    handler!({ activityId: 42, updatedFields: "title", timestamp: new Date().toISOString() });
+
+    expect(mockMarkModified).toHaveBeenCalledWith(42);
+  });
+
+  it("ActivityCreated handler does NOT call markModified", () => {
+    renderHook(() => useActivityEvents());
+
+    const handler = mockOn.mock.calls.find(
+      (call) => call[0] === "ActivityCreated",
+    )?.[1];
+    expect(handler).toBeDefined();
+
+    handler!({ activityId: 1, title: "Test", timestamp: new Date().toISOString() });
+
+    expect(mockMarkModified).not.toHaveBeenCalled();
+  });
+
+  it("ActivityDeleted handler does NOT call markModified", () => {
+    renderHook(() => useActivityEvents());
+
+    const handler = mockOn.mock.calls.find(
+      (call) => call[0] === "ActivityDeleted",
+    )?.[1];
+    expect(handler).toBeDefined();
+
+    handler!({ activityId: 1, timestamp: new Date().toISOString() });
+
+    expect(mockMarkModified).not.toHaveBeenCalled();
+  });
+
+  it("cleanupExpired called on mount", () => {
+    renderHook(() => useActivityEvents());
+
+    expect(mockCleanupExpired).toHaveBeenCalled();
   });
 });

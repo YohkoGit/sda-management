@@ -1,11 +1,14 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Pencil, Video, MapPin } from "lucide-react";
 import { useActivity } from "@/hooks/useActivity";
 import { useAuth } from "@/contexts/AuthContext";
+import { useModifiedBadgeStore } from "@/stores/modifiedBadgeStore";
 import { RoleSlotDisplay } from "@/components/activity-detail/RoleSlotDisplay";
 import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
 import { Badge } from "@/components/ui/badge";
+import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -20,6 +23,11 @@ export default function ActivityDetailPage() {
 
   const activityId = id ? Number(id) : undefined;
   const { data: activity, isLoading, error, refetch } = useActivity(activityId);
+
+  const dismiss = useModifiedBadgeStore((s) => s.dismiss);
+  useEffect(() => {
+    if (activityId) dismiss(activityId);
+  }, [activityId, dismiss]);
 
   // Loading state
   if (isLoading) {
@@ -123,14 +131,17 @@ export default function ActivityDetailPage() {
           <span className="text-xs text-muted-foreground">{relativeDate}</span>
         </div>
 
-        {/* Title + special type */}
+        {/* Title + badges */}
         <div className="flex items-start justify-between gap-2 mt-2">
           <h1 className="text-2xl font-black text-foreground">{activity.title}</h1>
-          {activity.specialType && (
-            <Badge variant="outline" className="shrink-0 text-[11px]">
-              {activity.specialType}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            <ModifiedBadge activityId={activity.id} />
+            {activity.specialType && (
+              <Badge variant="outline" className="shrink-0 text-[11px]">
+                {activity.specialType}
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Time range + staffing (or meeting type) */}

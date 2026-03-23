@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
+import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
 import { formatActivityDate, formatRelativeDate, formatTime } from "@/lib/dateFormatting";
@@ -61,7 +62,7 @@ export function DashboardActivityCard({
           <span className="text-xs text-muted-foreground">{relativeDate}</span>
         </div>
 
-        {/* Row 2: Activity title + special type badge */}
+        {/* Row 2: Activity title + badges */}
         <div className="mt-1.5 flex items-start justify-between gap-2">
           <h3
             className="truncate text-base font-bold text-foreground"
@@ -69,11 +70,14 @@ export function DashboardActivityCard({
           >
             {activity.title}
           </h3>
-          {activity.specialType && (
-            <Badge variant="outline" className="shrink-0 text-[11px]">
-              {activity.specialType}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            <ModifiedBadge activityId={activity.id} />
+            {activity.specialType && (
+              <Badge variant="outline" className="shrink-0 text-[11px]">
+                {activity.specialType}
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Row 3: Predicateur + time range */}

@@ -28,6 +28,7 @@ import { ConflictAlertDialog } from "@/components/activity/ConflictAlertDialog";
 import { SubMinistryManager } from "@/components/department/SubMinistryManager";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { Badge } from "@/components/ui/badge";
+import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -363,6 +364,7 @@ export default function DepartmentDetailPage() {
                   <span className="flex-1 text-sm font-medium text-slate-800 truncate">
                     {activity.title}
                   </span>
+                  <ModifiedBadge activityId={activity.id} />
 
                   {/* Branch on isMeeting for indicator vs meeting info */}
                   {activity.isMeeting ? (

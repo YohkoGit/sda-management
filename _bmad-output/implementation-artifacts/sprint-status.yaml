@@ -117,8 +117,8 @@ development_status:
   epic-8-retrospective: optional
 
   # Epic 9: Real-Time Updates & Live Experience
-  epic-9: in-progress
+  epic-9: done
   9-1-signalr-hub-and-connection-lifecycle: done
   9-2-real-time-activity-update-broadcasting: done
-  9-3-modifie-badge-for-recent-changes: backlog
+  9-3-modifie-badge-for-recent-changes: done
   epic-9-retrospective: optional

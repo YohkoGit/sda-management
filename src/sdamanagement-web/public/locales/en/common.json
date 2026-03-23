@@ -657,7 +657,8 @@
   "common": {
     "cancel": "Cancel",
     "delete": "Delete",
-    "back": "Back"
+    "back": "Back",
+    "modifiedBadge": "Modified"
   },
   "days": {
     "0": "Sunday",
