@@ -62,7 +62,7 @@ development_status:
   2-4-recurring-program-schedule-configuration: done
   2-5-system-health-dashboard: done
   2-6-guided-first-time-setup-experience: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   # Epic 3: User & Role Administration
   epic-3: done
@@ -122,3 +122,6 @@ development_status:
   9-2-real-time-activity-update-broadcasting: done
   9-3-modifie-badge-for-recent-changes: done
   epic-9-retrospective: optional
+
+  # Cross-Epic Action Items
+  manual-qa-checklist: backlog  # Comprehensive manual QA for all 9 epics — production blocker (Epic 1 retro action item, reaffirmed Epic 2 retro)

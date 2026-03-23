@@ -27,6 +27,14 @@ so that {{benefit}}.
 - Source tree components to touch
 - Testing standards summary
 
+### Mandatory Assertions
+
+<!-- SM: Copy relevant checkbox blocks from _bmad-output/planning-artifacts/assertion-checklist.md. If no section applies, write "N/A — [rationale]" -->
+
+### Review Learnings from Previous Story
+
+<!-- SM: Extract patterns/rules from previous story's code review. Write rules, not incidents. If first story in epic or no review findings, write "N/A — first story in epic" -->
+
 ### Project Structure Notes
 
 - Alignment with unified project structure (paths, modules, naming)
@@ -42,8 +50,14 @@ so that {{benefit}}.
 
 {{agent_model_name_version}}
 
+### Review Model Used
+
+{{review_model_name_version}}
+
 ### Debug Log References
 
 ### Completion Notes List
 
 ### File List
+
+<!-- Update this list after EACH task, not retroactively at story end -->

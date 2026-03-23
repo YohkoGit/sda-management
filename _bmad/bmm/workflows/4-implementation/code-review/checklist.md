@@ -11,9 +11,12 @@
 - [ ] Acceptance Criteria cross-checked against implementation
 - [ ] File List reviewed and validated for completeness
 - [ ] Tests identified and mapped to ACs; gaps noted
+- [ ] Mandatory Assertions from Dev Notes verified: all checkbox items in ### Mandatory Assertions section are implemented (if section shows "N/A", verify the rationale is sound)
 - [ ] Code quality review performed on changed files
 - [ ] Security review performed on changed files and dependencies
 - [ ] Outcome decided (Approve/Changes Requested/Blocked)
+- [ ] Cross-model review verified: model performing this review differs from model listed under "Agent Model Used" in Dev Agent Record. If cross-model review is not possible (only one model available), document the reason and flag for user awareness.
+- [ ] Review Model Used documented in Dev Agent Record under ### Review Model Used
 - [ ] Review notes appended under "Senior Developer Review (AI)"
 - [ ] Change Log updated with review entry
 - [ ] Status updated according to settings (if enabled)

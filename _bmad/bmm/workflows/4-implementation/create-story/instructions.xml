@@ -197,7 +197,13 @@
     Dev notes and learnings from previous story - Review feedback and corrections needed - Files that were created/modified and their
     patterns - Testing approaches that worked/didn't work - Problems encountered and solutions found - Code patterns established <action>Extract
     all learnings that could impact current story implementation</action>
+      <!-- Review learnings extraction (added by tech-spec-epic2-retro-process-improvements) -->
+      <action>Extract code review findings from previous story's Change Log and any "Code Review Fixes Applied" sections. Rewrite each finding as a reusable PATTERN or RULE (e.g., "All OWNER-only endpoints require viewer 403 tests"), not an incident description (e.g., "Story 2.3 missed a viewer test"). If the previous story has no Change Log or no review findings, set review_learnings to "N/A — no review findings in previous story".</action>
     </check>
+
+    <!-- Assertion checklist loading (added by tech-spec-epic2-retro-process-improvements) -->
+    <action>Load assertion checklist from {planning_artifacts}/assertion-checklist.md if it exists. If the file does not exist, note "No assertion checklist found" and continue — do not error.</action>
+    <action>From the assertion checklist, identify which sections apply to this story based on its endpoint types (OWNER-only, ADMIN-scoped, authenticated, public) and frontend component patterns (form dialog, detail view). Use the SM Selection Guidance section in the checklist. If no section applies, prepare "N/A — [rationale]" for the Mandatory Assertions section.</action>
 
     <!-- Git intelligence for previous work patterns -->
     <check
@@ -279,10 +285,18 @@
     file_structure_requirements</template-output>
     <template-output file="{default_output_file}">testing_requirements</template-output>
 
+    <!-- Mandatory assertions from project checklist (added by tech-spec-epic2-retro-process-improvements) -->
+    <template-output file="{default_output_file}">mandatory_assertions</template-output>
+
     <!-- Previous story intelligence -->
     <check
       if="previous story learnings available">
       <template-output file="{default_output_file}">previous_story_intelligence</template-output>
+    </check>
+
+    <!-- Review learnings from previous story (added by tech-spec-epic2-retro-process-improvements) -->
+    <check if="story_num > 1">
+      <template-output file="{default_output_file}">review_learnings_from_previous_story</template-output>
     </check>
 
     <!-- Git intelligence -->
