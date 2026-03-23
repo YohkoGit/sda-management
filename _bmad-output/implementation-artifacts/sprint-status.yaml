@@ -52,7 +52,7 @@ development_status:
   1-5-email-password-sign-in-and-first-login-password-set: done
   1-6-application-shell-dual-navigation-and-i18n: done
   1-7-sign-out-and-session-cleanup: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Church Configuration & First-Time Setup
   epic-2: done

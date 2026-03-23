@@ -102,7 +102,16 @@
       "Bash(cd \"D:\\\\Dev\\\\Git Repos\\\\Personal\\\\sda-management\\\\src\\\\sdamanagement-web\" && npm ls @schedule-x/react @schedule-x/calendar @schedule-x/events-service @schedule-x/theme-default temporal-polyfill)",
       "Bash(find \"D:\\\\Dev\\\\Git Repos\\\\Personal\\\\sda-management\\\\src\\\\sdamanagement-web\" -name \"*.test.*\" -o -name \"*.spec.*\" 2>/dev/null | head -20)",
       "Bash(npm view:*)",
-      "Bash(taskkill /F /IM chrome.exe 2>/dev/null; sleep 1; rm -rf \"C:/Users/elish/AppData/Local/ms-playwright/mcp-chrome-470b846/SingletonLock\" 2>/dev/null; rm -rf \"C:/Users/elish/AppData/Local/ms-playwright/mcp-chrome-470b846/SingletonCookie\" 2>/dev/null; rm -rf \"C:/Users/elish/AppData/Local/ms-playwright/mcp-chrome-470b846/SingletonSocket\" 2>/dev/null; echo \"Cleaned up\")"
+      "Bash(taskkill /F /IM chrome.exe 2>/dev/null; sleep 1; rm -rf \"C:/Users/elish/AppData/Local/ms-playwright/mcp-chrome-470b846/SingletonLock\" 2>/dev/null; rm -rf \"C:/Users/elish/AppData/Local/ms-playwright/mcp-chrome-470b846/SingletonCookie\" 2>/dev/null; rm -rf \"C:/Users/elish/AppData/Local/ms-playwright/mcp-chrome-470b846/SingletonSocket\" 2>/dev/null; echo \"Cleaned up\")",
+      "Bash(find:*)",
+      "Bash(cd:*)",
+      "Bash(npm ls:*)",
+      "Bash(MSYS_NO_PATHCONV=1 taskkill //PID 1532 //F)",
+      "Bash(cmd.exe /c \"taskkill /PID 1532 /F\" 2>&1)",
+      "Bash(cmd.exe /c \"tasklist | findstr SdaManagement\" 2>&1)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :5000\" 2>&1)",
+      "mcp__playwright__browser_type",
+      "Bash(npm test:*)"
     ]
   }
 }
