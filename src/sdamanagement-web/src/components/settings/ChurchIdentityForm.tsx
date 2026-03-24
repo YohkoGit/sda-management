@@ -1,6 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -45,7 +46,7 @@ export function ChurchIdentityForm({ existingConfig }: ChurchIdentityFormProps) 
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<ChurchConfigFormData>({
     resolver: zodResolver(churchConfigSchema),
     defaultValues: existingConfig
@@ -67,6 +68,8 @@ export function ChurchIdentityForm({ existingConfig }: ChurchIdentityFormProps) 
         },
     mode: "onBlur",
   });
+
+  useUnsavedChangesGuard(isDirty);
 
   const mutation = useMutation({
     mutationFn: (data: ChurchConfigFormData) => configService.update(data),

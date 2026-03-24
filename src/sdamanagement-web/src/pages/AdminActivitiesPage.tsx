@@ -513,6 +513,7 @@ export default function AdminActivitiesPage() {
               <div className={isMobile ? "overflow-y-auto flex-1 px-1" : ""}>
                 <ActivityForm
                   key={`${editActivity.id}-${editActivity.concurrencyToken}`}
+                  isEditing
                   onSubmit={handleEditSubmit}
                   isPending={updateMutation.isPending}
                   departments={availableDepartments}

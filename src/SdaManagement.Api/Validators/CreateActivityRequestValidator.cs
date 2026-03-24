@@ -10,6 +10,15 @@ public class CreateActivityRequestValidator : AbstractValidator<CreateActivityRe
         ActivityValidationRules.Apply(this);
         RuleFor(x => x.TemplateId).GreaterThan(0).When(x => x.TemplateId.HasValue);
 
+        RuleFor(x => x.Date)
+            .Must(date =>
+            {
+                var quebecZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+                var todayInQuebec = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, quebecZone));
+                return date >= todayInQuebec;
+            })
+            .WithMessage("Date must be today or in the future.");
+
         When(x => x.Roles != null, () =>
         {
             RuleFor(x => x.Roles)

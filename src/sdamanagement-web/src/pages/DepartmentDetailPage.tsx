@@ -596,6 +596,7 @@ export default function DepartmentDetailPage() {
             {editActivity && departmentId !== undefined && (
               editActivity.isMeeting ? (
                 <MeetingForm
+                  isEditing
                   departmentId={departmentId}
                   onSubmit={handleEditSubmit}
                   isPending={updateMutation.isPending}
@@ -616,6 +617,7 @@ export default function DepartmentDetailPage() {
                 />
               ) : (
                 <ActivityForm
+                  isEditing
                   onSubmit={handleEditSubmit}
                   isPending={updateMutation.isPending}
                   departments={departments ?? []}

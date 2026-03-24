@@ -24,7 +24,8 @@ export const activityRoleInputSchema = z.object({
 
 export type ActivityRoleInputData = z.infer<typeof activityRoleInputSchema>;
 
-export const createActivitySchema = z
+/** Base activity fields and refinements shared by create and update schemas. */
+const baseActivitySchema = z
   .object({
     title: z
       .string()
@@ -89,7 +90,20 @@ export const createActivitySchema = z
     }
   });
 
-export const updateActivitySchema = createActivitySchema.and(
+export { baseActivitySchema };
+
+export const createActivitySchema = baseActivitySchema.refine(
+  (data) => {
+    const today = new Date().toISOString().slice(0, 10);
+    return data.date >= today;
+  },
+  {
+    message: "La date doit être aujourd'hui ou dans le futur",
+    path: ["date"],
+  }
+);
+
+export const updateActivitySchema = baseActivitySchema.and(
   z.object({
     concurrencyToken: z.number(),
   })

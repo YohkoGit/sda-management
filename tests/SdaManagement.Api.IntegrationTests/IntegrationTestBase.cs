@@ -29,6 +29,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         _factory = factory;
 
         AnonymousClient = _factory.CreateClient();
+        AnonymousClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
 
         ViewerClient = CreateClientWithRole("Viewer");
         AdminClient = CreateClientWithRole("Admin");
@@ -164,7 +165,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         {
             Title = title ?? "Test Activity",
             DepartmentId = departmentId,
-            Date = date ?? new DateOnly(2026, 3, 15),
+            Date = date ?? FutureDateOnly(),
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(12, 0),
             Visibility = visibility,
@@ -180,12 +181,19 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             for (var i = 0; i < roles.Count; i++)
             {
                 var (roleName, headcount, userIds) = roles[i];
+                var lowerName = roleName.ToLowerInvariant();
+                var isPredicateur = lowerName.Contains("predicateur") || lowerName.Contains("prédicateur");
+                var isCritical = isPredicateur
+                    || lowerName == "ancien"
+                    || lowerName.StartsWith("ancien ");
                 var activityRole = new ActivityRole
                 {
                     ActivityId = activity.Id,
                     RoleName = roleName,
                     Headcount = headcount,
                     SortOrder = i,
+                    IsCritical = isCritical,
+                    IsPredicateur = isPredicateur,
                     CreatedAt = now,
                     UpdatedAt = now,
                 };
@@ -235,11 +243,18 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         for (var i = 0; i < roles.Count; i++)
         {
             var (roleName, defaultHeadcount) = roles[i];
+            var lowerName = roleName.ToLowerInvariant();
+            var isPredicateur = lowerName.Contains("predicateur") || lowerName.Contains("prédicateur");
+            var isCritical = isPredicateur
+                || lowerName == "ancien"
+                || lowerName.StartsWith("ancien ");
             template.Roles.Add(new TemplateRole
             {
                 RoleName = roleName,
                 DefaultHeadcount = defaultHeadcount,
                 SortOrder = i,
+                IsCritical = isCritical,
+                IsPredicateur = isPredicateur,
                 CreatedAt = now,
                 UpdatedAt = now,
             });
@@ -261,10 +276,25 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         return (await response.Content.ReadFromJsonAsync<Dtos.User.GuestCreatedResponse>())!;
     }
 
+    /// <summary>
+    /// Returns a future date string (yyyy-MM-dd) relative to today.
+    /// Use in JSON payloads sent to the API.
+    /// </summary>
+    protected static string FutureDate(int offsetDays = 30) =>
+        DateOnly.FromDateTime(DateTime.UtcNow.AddDays(offsetDays)).ToString("yyyy-MM-dd");
+
+    /// <summary>
+    /// Returns a future DateOnly relative to today.
+    /// Use when creating entities directly via DbContext.
+    /// </summary>
+    protected static DateOnly FutureDateOnly(int offsetDays = 30) =>
+        DateOnly.FromDateTime(DateTime.UtcNow.AddDays(offsetDays));
+
     private HttpClient CreateClientWithRole(string role)
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, role);
+        client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         return client;
     }
 }

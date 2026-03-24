@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -66,6 +67,8 @@ export function UserFormDialog({ open, onOpenChange, editUser }: UserFormDialogP
     mode: "onBlur",
   });
 
+  useUnsavedChangesGuard(isDirty);
+
   const watchedRole = watch("role");
   const showRoleDowngradeWarning =
     isEditMode &&
@@ -131,6 +134,15 @@ export function UserFormDialog({ open, onOpenChange, editUser }: UserFormDialogP
     onOpenChange(false);
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && isDirty) {
+      if (!window.confirm("Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?")) {
+        return;
+      }
+    }
+    handleClose();
+  };
+
   useEffect(() => {
     if (open && editUser) {
       reset({
@@ -165,7 +177,7 @@ export function UserFormDialog({ open, onOpenChange, editUser }: UserFormDialogP
   });
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>

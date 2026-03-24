@@ -20,6 +20,13 @@ public class LogoutEndpointTests : IntegrationTestBase
 
     public LogoutEndpointTests(SdaManagementWebApplicationFactory factory) : base(factory) { }
 
+    private HttpClient CreateHttpsClientWithCsrfHeader()
+    {
+        var client = Factory.CreateClient(HttpsClientOptions);
+        client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        return client;
+    }
+
     [Fact]
     public async Task Logout_WithValidRefreshToken_RevokesTokenAndClearsCookies()
     {
@@ -27,7 +34,7 @@ public class LogoutEndpointTests : IntegrationTestBase
         var user = await CreateTestUser("logout-valid@test.local", UserRole.Viewer);
         await SetUserPassword(user.Id, "LogoutTest1");
 
-        using var client = Factory.CreateClient(HttpsClientOptions);
+        using var client = CreateHttpsClientWithCsrfHeader();
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new { email = "logout-valid@test.local", password = "LogoutTest1" });
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -64,7 +71,7 @@ public class LogoutEndpointTests : IntegrationTestBase
     public async Task Logout_WithoutRefreshToken_Returns200()
     {
         // Act: logout without any cookies (fresh anonymous client)
-        using var client = Factory.CreateClient(HttpsClientOptions);
+        using var client = CreateHttpsClientWithCsrfHeader();
         var response = await client.PostAsync("/api/auth/logout", null);
 
         // Assert: idempotent — 200 even without cookies
@@ -78,7 +85,7 @@ public class LogoutEndpointTests : IntegrationTestBase
         var user = await CreateTestUser("logout-revoked@test.local", UserRole.Viewer);
         await SetUserPassword(user.Id, "LogoutTest1");
 
-        using var client = Factory.CreateClient(HttpsClientOptions);
+        using var client = CreateHttpsClientWithCsrfHeader();
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new { email = "logout-revoked@test.local", password = "LogoutTest1" });
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -109,7 +116,7 @@ public class LogoutEndpointTests : IntegrationTestBase
         var user = await CreateTestUser("logout-refresh@test.local", UserRole.Viewer);
         await SetUserPassword(user.Id, "LogoutTest1");
 
-        using var client = Factory.CreateClient(HttpsClientOptions);
+        using var client = CreateHttpsClientWithCsrfHeader();
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new { email = "logout-refresh@test.local", password = "LogoutTest1" });
         loginResponse.StatusCode.ShouldBe(HttpStatusCode.OK);

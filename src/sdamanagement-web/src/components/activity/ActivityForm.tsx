@@ -1,7 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  baseActivitySchema,
   createActivitySchema,
   SPECIAL_TYPES,
   type CreateActivityFormData,
@@ -30,6 +32,7 @@ export interface ActivityFormProps {
   existingAssignments?: Map<number, number>;
   initialGuestOfficers?: AssignableOfficer[];
   lockDepartment?: boolean;
+  isEditing?: boolean;
 }
 
 export function ActivityForm({
@@ -40,6 +43,7 @@ export function ActivityForm({
   existingAssignments,
   initialGuestOfficers,
   lockDepartment,
+  isEditing,
 }: ActivityFormProps) {
   const { t } = useTranslation();
 
@@ -49,9 +53,9 @@ export function ActivityForm({
     setValue,
     watch,
     control,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<CreateActivityFormData>({
-    resolver: zodResolver(createActivitySchema),
+    resolver: zodResolver(isEditing ? baseActivitySchema : createActivitySchema),
     defaultValues: {
       title: "",
       description: "",
@@ -65,6 +69,8 @@ export function ActivityForm({
     },
     mode: "onBlur",
   });
+
+  useUnsavedChangesGuard(isDirty);
 
   const visibility = watch("visibility");
   const departmentId = watch("departmentId");

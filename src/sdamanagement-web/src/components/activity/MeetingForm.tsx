@@ -1,7 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  baseActivitySchema,
   createActivitySchema,
   type CreateActivityFormData,
 } from "@/schemas/activitySchema";
@@ -15,6 +17,7 @@ export interface MeetingFormProps {
   onSubmit: (data: CreateActivityFormData) => void;
   isPending: boolean;
   defaultValues?: Partial<CreateActivityFormData>;
+  isEditing?: boolean;
 }
 
 export function MeetingForm({
@@ -22,6 +25,7 @@ export function MeetingForm({
   onSubmit,
   isPending,
   defaultValues,
+  isEditing,
 }: MeetingFormProps) {
   const { t } = useTranslation();
 
@@ -30,9 +34,9 @@ export function MeetingForm({
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<CreateActivityFormData>({
-    resolver: zodResolver(createActivitySchema),
+    resolver: zodResolver(isEditing ? baseActivitySchema : createActivitySchema),
     defaultValues: {
       title: "",
       description: "",
@@ -51,6 +55,8 @@ export function MeetingForm({
     },
     mode: "onBlur",
   });
+
+  useUnsavedChangesGuard(isDirty);
 
   const meetingType = watch("meetingType");
 

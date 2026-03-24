@@ -2,6 +2,7 @@ using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Extensions;
 using SdaManagement.Api.Hubs;
+using SdaManagement.Api.Middleware;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +55,9 @@ app.UseExceptionHandler();
 
 // 3. CORS
 app.UseCors();
+
+// 3b. CSRF header guard — reject mutating requests without X-Requested-With
+app.UseMiddleware<CsrfHeaderMiddleware>();
 
 // 4. Rate Limiter
 app.UseRateLimiter();

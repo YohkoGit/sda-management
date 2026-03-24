@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using SdaManagement.Api.Data;
@@ -60,10 +61,11 @@ public class ActivityEndpointTests : IntegrationTestBase
     private object ValidActivityPayload(
         string title = "Culte du Sabbat",
         int? departmentId = null,
-        string visibility = "public") => new
+        string visibility = "public",
+        string? date = null) => new
     {
         title,
-        date = "2026-03-07",
+        date = date ?? FutureDate(),
         startTime = "10:00:00",
         endTime = "12:00:00",
         departmentId = departmentId ?? _deptMifemId,
@@ -92,7 +94,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title,
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = departmentId ?? _deptMifemId,
@@ -116,7 +118,8 @@ public class ActivityEndpointTests : IntegrationTestBase
     [Fact]
     public async Task CreateActivity_AsAdmin_Returns201()
     {
-        var response = await AdminClient.PostAsJsonAsync("/api/activities", ValidActivityPayload());
+        var date = FutureDate();
+        var response = await AdminClient.PostAsJsonAsync("/api/activities", ValidActivityPayload(date: date));
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
 
         response.Headers.Location.ShouldNotBeNull();
@@ -126,7 +129,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var root = doc.RootElement;
 
         root.GetProperty("title").GetString().ShouldBe("Culte du Sabbat");
-        root.GetProperty("date").GetString().ShouldBe("2026-03-07");
+        root.GetProperty("date").GetString().ShouldBe(date);
         root.GetProperty("visibility").GetString().ShouldBe("public");
         root.GetProperty("departmentName").GetString().ShouldBe("MIFEM");
         root.GetProperty("concurrencyToken").GetUInt32().ShouldBeGreaterThan(0u);
@@ -165,7 +168,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "12:00:00",
             endTime = "10:00:00",
             departmentId = _deptMifemId,
@@ -197,7 +200,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Sabbat Service",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -232,7 +235,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Independent Activity",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -271,7 +274,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Bad Template",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -305,7 +308,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Viewer Attempt",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -325,7 +328,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Wrong Dept",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptJaId,
@@ -402,7 +405,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Updated Title",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -427,7 +430,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Updated",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptJaId,
@@ -449,7 +452,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var hijackPayload = new
         {
             title = "Hijacked",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -470,7 +473,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var firstUpdate = new
         {
             title = "First Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -484,7 +487,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var staleUpdate = new
         {
             title = "Second Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -575,7 +578,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Override Activity",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -602,7 +605,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Duplicate Roles",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -624,7 +627,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Invalid Headcount",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -642,7 +645,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Long Name",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -664,7 +667,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Max Roles",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -690,7 +693,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Too Many Roles",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -715,7 +718,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -752,7 +755,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -789,7 +792,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -833,7 +836,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Role Cascade Test",
-            date = "2026-03-15",
+            date = FutureDate(14),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -868,7 +871,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Updated Title",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -898,7 +901,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -925,7 +928,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var firstUpdate = new
         {
             title = "First Update",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -940,7 +943,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var staleUpdate = new
         {
             title = "Second Update",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -961,7 +964,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -996,7 +999,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1034,7 +1037,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1058,7 +1061,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptJaId,
@@ -1081,7 +1084,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Activity With Assignments",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1121,7 +1124,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1168,7 +1171,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Remove Assignment",
-            date = "2026-03-15",
+            date = FutureDate(14),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1213,7 +1216,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Null Assignment",
-            date = "2026-03-15",
+            date = FutureDate(14),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1253,7 +1256,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Headcount Check",
-            date = "2026-03-15",
+            date = FutureDate(14),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1277,7 +1280,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Duplicate Test",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1319,7 +1322,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Guest Assignment",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1353,7 +1356,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Bad User",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1386,7 +1389,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var firstUpdate = new
         {
             title = "First",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1410,7 +1413,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var staleUpdate = new
         {
             title = "Stale",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1456,7 +1459,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Sainte-Cene",
-            date = "2026-04-01",
+            date = FutureDate(60),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1498,7 +1501,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var setPayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1519,7 +1522,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var clearPayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1545,7 +1548,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Invalid Tag",
-            date = "2026-04-01",
+            date = FutureDate(60),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -1633,7 +1636,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var firstUpdate = new
         {
             title = "Admin B Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1647,7 +1650,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var forceUpdate = new
         {
             title = "Admin A Force Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1671,7 +1674,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var adminBUpdate = new
         {
             title = "Admin B Title",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1684,7 +1687,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var forceUpdate = new
         {
             title = "Admin A Overwrites",
-            date = "2026-03-20",
+            date = FutureDate(21),
             startTime = "08:00:00",
             endTime = "10:00:00",
             departmentId = _deptMifemId,
@@ -1710,7 +1713,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var adminBUpdate = new
         {
             title = "Admin B",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1723,7 +1726,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var forceUpdate = new
         {
             title = "Admin A Force",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1748,7 +1751,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Normal Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1773,7 +1776,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var firstUpdate = new
         {
             title = "Admin B",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1786,7 +1789,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var staleUpdate = new
         {
             title = "Admin A Stale",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1807,7 +1810,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var ownerUpdate = new
         {
             title = "Owner Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1821,7 +1824,7 @@ public class ActivityEndpointTests : IntegrationTestBase
         var adminForceUpdate = new
         {
             title = "Admin Force Update",
-            date = "2026-03-14",
+            date = FutureDate(7),
             startTime = "09:00:00",
             endTime = "11:00:00",
             departmentId = _deptMifemId,
@@ -1834,5 +1837,139 @@ public class ActivityEndpointTests : IntegrationTestBase
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.GetProperty("title").GetString().ShouldBe("Admin Force Update");
+    }
+
+    // --- Date validation ---
+
+    [Fact]
+    public async Task CreateActivity_WithPastDate_Returns400()
+    {
+        var pastDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)).ToString("yyyy-MM-dd");
+        var payload = new
+        {
+            title = "Past Activity",
+            date = pastDate,
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+
+        var body = await response.Content.ReadAsStringAsync();
+        body.ShouldContain("Date must be today or in the future.");
+    }
+
+    [Fact]
+    public async Task CreateActivity_WithTodayDate_DoesNotFailDateValidation()
+    {
+        // Use Quebec timezone to compute "today" the same way the validator does
+        var quebecZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+        var todayInQuebec = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, quebecZone))
+            .ToString("yyyy-MM-dd");
+
+        var payload = new
+        {
+            title = "Today Activity",
+            date = todayInQuebec,
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+        };
+
+        var response = await OwnerClient.PostAsJsonAsync("/api/activities", payload);
+        // Should succeed (201) — at minimum it must not fail on date validation
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task UpdateActivity_WithPastDate_Succeeds()
+    {
+        // First create a valid activity with a future date
+        var (activityId, token) = await CreateActivityAndGetIdAndToken();
+
+        // Now update it with a past date — should be allowed
+        var pastDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)).ToString("yyyy-MM-dd");
+        var updatePayload = new
+        {
+            title = "Updated to Past Date",
+            date = pastDate,
+            startTime = "10:00:00",
+            endTime = "12:00:00",
+            departmentId = _deptMifemId,
+            visibility = "public",
+            concurrencyToken = token,
+        };
+
+        var response = await OwnerClient.PutAsJsonAsync($"/api/activities/{activityId}", updatePayload);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("date").GetString().ShouldBe(pastDate);
+    }
+
+    // --- Cascade safety: deleting an activity must NOT delete assigned users ---
+
+    [Fact]
+    public async Task DeleteActivity_DoesNotDeleteAssignedUsers()
+    {
+        // Create a regular user and assign them to a role on an activity
+        var viewer = await CreateTestUser("cascade-user-survives@test.local", UserRole.Viewer);
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Cascade User Safety",
+            roles:
+            [
+                ("Predicateur", 1, new List<int> { viewer.Id }),
+            ]);
+
+        // Delete the activity
+        var response = await OwnerClient.DeleteAsync($"/api/activities/{activity.Id}");
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // Verify the user still exists in the database
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userStillExists = await dbContext.Users.AnyAsync(u => u.Id == viewer.Id);
+        userStillExists.ShouldBeTrue("Assigned user must survive activity deletion (Restrict FK)");
+
+        // Also verify via API — user should be retrievable
+        var getUser = await OwnerClient.GetAsync($"/api/users/{viewer.Id}");
+        getUser.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task DeleteActivity_DoesNotDeleteGuestUsers()
+    {
+        // Create a guest user via the guest creation endpoint
+        var guest = await CreateTestGuest("Jean-Pierre Invité", phone: "514-555-0199");
+
+        // Create an activity with a role and assign the guest
+        var activity = await CreateTestActivity(
+            _deptMifemId,
+            "Cascade Guest Safety",
+            roles:
+            [
+                ("Predicateur", 1, new List<int> { guest.UserId }),
+            ]);
+
+        // Delete the activity
+        var response = await OwnerClient.DeleteAsync($"/api/activities/{activity.Id}");
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // Verify cascade: roles and assignments should be gone
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var rolesExist = await dbContext.ActivityRoles.AnyAsync(r => r.ActivityId == activity.Id);
+        rolesExist.ShouldBeFalse("Activity roles should be cascade-deleted");
+
+        // Verify the guest user still exists in the database (Restrict FK protects users)
+        var guestStillExists = await dbContext.Users.IgnoreQueryFilters()
+            .AnyAsync(u => u.Id == guest.UserId);
+        guestStillExists.ShouldBeTrue("Guest user must survive activity deletion (Restrict FK)");
     }
 }

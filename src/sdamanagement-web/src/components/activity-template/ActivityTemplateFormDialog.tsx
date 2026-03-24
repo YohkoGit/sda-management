@@ -1,5 +1,6 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { isAxiosError } from "axios";
@@ -47,7 +48,7 @@ export function ActivityTemplateFormDialog({
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<ActivityTemplateFormData>({
     resolver: zodResolver(activityTemplateSchema),
     defaultValues: isEditMode
@@ -63,6 +64,8 @@ export function ActivityTemplateFormDialog({
         },
     mode: "onBlur",
   });
+
+  useUnsavedChangesGuard(isDirty);
 
   const { fields, append, remove } = useFieldArray({ control, name: "roles" });
 
@@ -98,8 +101,17 @@ export function ActivityTemplateFormDialog({
     onOpenChange(false);
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && isDirty) {
+      if (!window.confirm("Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?")) {
+        return;
+      }
+    }
+    handleClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>

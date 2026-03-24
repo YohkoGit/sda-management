@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -45,7 +46,7 @@ export function DepartmentFormDialog({
     reset,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<DepartmentFormData>({
     resolver: zodResolver(departmentSchema),
     defaultValues: department
@@ -65,6 +66,8 @@ export function DepartmentFormDialog({
         },
     mode: "onBlur",
   });
+
+  useUnsavedChangesGuard(isDirty);
 
   const [subMinistryInputs, setSubMinistryInputs] = useState<string[]>([]);
 
@@ -100,6 +103,15 @@ export function DepartmentFormDialog({
     onOpenChange(false);
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && isDirty) {
+      if (!window.confirm("Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?")) {
+        return;
+      }
+    }
+    handleClose();
+  };
+
   const onSubmit = (data: DepartmentFormData) => {
     // Include sub-ministry names from separate state for create mode
     if (!isEditMode) {
@@ -109,7 +121,7 @@ export function DepartmentFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>

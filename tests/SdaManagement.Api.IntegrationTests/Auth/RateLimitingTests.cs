@@ -24,6 +24,7 @@ public class RateLimitingTests : IAsyncLifetime
     public Task InitializeAsync()
     {
         _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         return Task.CompletedTask;
     }
 
@@ -36,8 +37,8 @@ public class RateLimitingTests : IAsyncLifetime
     [Fact]
     public async Task RateLimiting_WhenExceedingLimit_Returns429WithRetryAfter()
     {
-        // RateLimitTestFactory sets rate limit to 5 req/min.
-        // Send enough requests to exceed that limit.
+        // RateLimitTestFactory sets rate limit to 2 req/min.
+        // Send enough requests to reliably exceed that limit even across window boundaries.
         HttpResponseMessage? rateLimitedResponse = null;
         for (int i = 0; i < 10; i++)
         {
@@ -49,15 +50,16 @@ public class RateLimitingTests : IAsyncLifetime
             }
         }
 
-        rateLimitedResponse.ShouldNotBeNull("Expected at least one 429 response within 10 requests");
+        rateLimitedResponse.ShouldNotBeNull("Expected at least one 429 response within 10 requests (limit=2/min)");
         rateLimitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
         rateLimitedResponse.Headers.Contains("Retry-After").ShouldBeTrue();
     }
 }
 
 /// <summary>
-/// Factory for rate limit tests with a low permit limit (5 req/min)
-/// so the test only needs ~6 requests instead of ~200.
+/// Factory for rate limit tests with a very low permit limit (2 req/min)
+/// so the test reliably triggers 429 even across window boundaries.
+/// With limit=2 and 10 requests, worst case (boundary reset) still yields 4 allowed + 6 rejected.
 /// </summary>
 public class RateLimitTestFactory : SdaManagementWebApplicationFactory
 {
@@ -68,7 +70,7 @@ public class RateLimitTestFactory : SdaManagementWebApplicationFactory
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["RateLimiting:AuthPermitLimit"] = "5",
+                ["RateLimiting:AuthPermitLimit"] = "2",
             });
         });
     }

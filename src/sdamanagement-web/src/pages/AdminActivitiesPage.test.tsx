@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor } from "@/test-utils";
+import { render, screen, waitFor, futureDate } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { activityHandlers, activityHandlersEmpty, activityTemplateHandlers } from "@/mocks/handlers/activities";
 import { departmentHandlers } from "@/mocks/handlers/departments";
@@ -46,8 +46,8 @@ const mockTemplateData = [
     roleSummary: "Predicateur (1), Ancien (1)",
     roleCount: 2,
     roles: [
-      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
-      { id: 2, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1 },
+      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0, isCritical: true, isPredicateur: true },
+      { id: 2, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1, isCritical: true, isPredicateur: false },
     ],
   },
 ];
@@ -152,6 +152,7 @@ describe("AdminActivitiesPage", () => {
 
   it("create with template sends roles (not templateId) when roles are pre-populated", async () => {
     const user = userEvent.setup();
+    const date = futureDate();
     const getSpy = vi.spyOn(activityTemplateService, "getAll").mockResolvedValue({
       data: mockTemplateData,
       status: 200,
@@ -164,7 +165,7 @@ describe("AdminActivitiesPage", () => {
         id: 99,
         title: "Test Activite",
         description: null,
-        date: "2026-03-15",
+        date,
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -175,8 +176,8 @@ describe("AdminActivitiesPage", () => {
         specialType: null,
         isMeeting: false,
         roles: [
-          { id: 200, roleName: "Predicateur", headcount: 1, sortOrder: 0, assignments: [] },
-          { id: 201, roleName: "Ancien", headcount: 1, sortOrder: 1, assignments: [] },
+          { id: 200, roleName: "Predicateur", headcount: 1, sortOrder: 0, isCritical: true, assignments: [] },
+          { id: 201, roleName: "Ancien", headcount: 1, sortOrder: 1, isCritical: true, assignments: [] },
         ],
         staffingStatus: "NoRoles",
         concurrencyToken: 100,
@@ -213,7 +214,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByLabelText("Titre")).toBeInTheDocument();
     });
     await user.type(screen.getByLabelText("Titre"), "Test Activite");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-03-15" } });
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
@@ -241,12 +242,13 @@ describe("AdminActivitiesPage", () => {
 
   it("create without template (custom) does NOT send templateId", async () => {
     const user = userEvent.setup();
+    const date = futureDate();
     const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
       data: {
         id: 99,
         title: "Custom Activity",
         description: null,
-        date: "2026-03-15",
+        date,
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -286,7 +288,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByLabelText("Titre")).toBeInTheDocument();
     });
     await user.type(screen.getByLabelText("Titre"), "Custom Activity");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-03-15" } });
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
@@ -417,7 +419,7 @@ describe("AdminActivitiesPage", () => {
             {
               id: 1,
               title: "MIFEM Activity",
-              date: "2026-03-07",
+              date: futureDate(),
               startTime: "10:00:00",
               endTime: "12:00:00",
               departmentId: 1,
@@ -588,12 +590,13 @@ describe("AdminActivitiesPage", () => {
 
   it("adding a role in create flow includes it in submit request", async () => {
     const user = userEvent.setup();
+    const date = futureDate();
     const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
       data: {
         id: 99,
         title: "With Role",
         description: null,
-        date: "2026-03-15",
+        date,
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -603,7 +606,7 @@ describe("AdminActivitiesPage", () => {
         visibility: "public",
         specialType: null,
         isMeeting: false,
-        roles: [{ id: 200, roleName: "Musicien", headcount: 1, sortOrder: 0, assignments: [] }],
+        roles: [{ id: 200, roleName: "Musicien", headcount: 1, sortOrder: 0, isCritical: false, assignments: [] }],
         staffingStatus: "NoRoles",
         concurrencyToken: 100,
         createdAt: new Date().toISOString(),
@@ -634,7 +637,7 @@ describe("AdminActivitiesPage", () => {
 
     // Fill required fields
     await user.type(screen.getByLabelText("Titre"), "With Role");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-03-15" } });
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
@@ -670,7 +673,7 @@ describe("AdminActivitiesPage", () => {
         id: 1,
         title: "Culte du Sabbat",
         description: "Service principal du samedi matin",
-        date: "2026-03-07",
+        date: futureDate(),
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -681,8 +684,8 @@ describe("AdminActivitiesPage", () => {
         specialType: null,
         isMeeting: false,
         roles: [
-          { id: 1, roleName: "Predicateur", headcount: 3, sortOrder: 0, assignments: [] },
-          { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, assignments: [] },
+          { id: 1, roleName: "Predicateur", headcount: 3, sortOrder: 0, isCritical: true, assignments: [] },
+          { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, isCritical: true, assignments: [] },
         ],
         staffingStatus: "NoRoles",
         concurrencyToken: 101,
@@ -740,7 +743,7 @@ describe("AdminActivitiesPage", () => {
         id: 1,
         title: "Culte du Sabbat",
         description: "Service principal du samedi matin",
-        date: "2026-03-07",
+        date: futureDate(),
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -858,12 +861,13 @@ describe("AdminActivitiesPage", () => {
 
   it("selecting specialType includes it in the create payload", async () => {
     const user = userEvent.setup();
+    const date = futureDate(14);
     const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
       data: {
         id: 99,
         title: "Sainte-Cene",
         description: null,
-        date: "2026-04-01",
+        date,
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -904,7 +908,7 @@ describe("AdminActivitiesPage", () => {
 
     // Fill required fields
     await user.type(screen.getByLabelText("Titre"), "Sainte-Cene");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-04-01" } });
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
@@ -938,12 +942,13 @@ describe("AdminActivitiesPage", () => {
 
   it("selecting 'None' sends null specialType", async () => {
     const user = userEvent.setup();
+    const date = futureDate(14);
     const createSpy = vi.spyOn(activityService, "create").mockResolvedValueOnce({
       data: {
         id: 99,
         title: "No Special",
         description: null,
-        date: "2026-04-01",
+        date,
         startTime: "10:00:00",
         endTime: "12:00:00",
         departmentId: 1,
@@ -983,7 +988,7 @@ describe("AdminActivitiesPage", () => {
     });
 
     await user.type(screen.getByLabelText("Titre"), "No Special");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: "2026-04-01" } });
+    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
     fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
     fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
 
@@ -1236,7 +1241,7 @@ describe("AdminActivitiesPage", () => {
       id: 1,
       title: "Updated By Admin B",
       description: null,
-      date: "2026-03-07",
+      date: futureDate(),
       startTime: "10:00:00",
       endTime: "12:00:00",
       departmentId: 1,
@@ -1260,7 +1265,7 @@ describe("AdminActivitiesPage", () => {
           id: 1,
           title: "Culte du Sabbat",
           description: "Service principal du samedi matin",
-          date: "2026-03-07",
+          date: futureDate(),
           startTime: "10:00:00",
           endTime: "12:00:00",
           departmentId: 1,
@@ -1271,8 +1276,8 @@ describe("AdminActivitiesPage", () => {
           specialType: "sainte-cene",
           isMeeting: false,
           roles: [
-            { id: 1, roleName: "Predicateur", headcount: 1, sortOrder: 0, assignments: [] },
-            { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, assignments: [{ id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false }] },
+            { id: 1, roleName: "Predicateur", headcount: 1, sortOrder: 0, isCritical: true, assignments: [] },
+            { id: 2, roleName: "Ancien de Service", headcount: 1, sortOrder: 1, isCritical: true, assignments: [{ id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false }] },
           ],
         staffingStatus: "NoRoles",
           concurrencyToken: 42,
@@ -1346,7 +1351,7 @@ describe("AdminActivitiesPage", () => {
           id: 1,
           title: "Culte du Sabbat",
           description: "Service principal du samedi matin",
-          date: "2026-03-07",
+          date: futureDate(),
           startTime: "10:00:00",
           endTime: "12:00:00",
           departmentId: 1,

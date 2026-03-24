@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { isAxiosError } from "axios";
@@ -62,7 +63,7 @@ export function ProgramScheduleFormDialog({
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<ProgramScheduleFormData>({
     resolver: zodResolver(programScheduleSchema),
     defaultValues: isEditMode
@@ -84,6 +85,8 @@ export function ProgramScheduleFormDialog({
         },
     mode: "onBlur",
   });
+
+  useUnsavedChangesGuard(isDirty);
 
   const mutation = useMutation({
     mutationFn: async (data: ProgramScheduleFormData) => {
@@ -117,11 +120,20 @@ export function ProgramScheduleFormDialog({
     onOpenChange(false);
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && isDirty) {
+      if (!window.confirm("Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?")) {
+        return;
+      }
+    }
+    handleClose();
+  };
+
   const watchedDayOfWeek = watch("dayOfWeek");
   const watchedDepartmentId = watch("departmentId");
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
