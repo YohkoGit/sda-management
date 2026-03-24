@@ -16,6 +16,7 @@ export interface ActivityRoleResponse {
   roleName: string;
   headcount: number;
   sortOrder: number;
+  isCritical: boolean;
   assignments: RoleAssignmentResponse[];
 }
 

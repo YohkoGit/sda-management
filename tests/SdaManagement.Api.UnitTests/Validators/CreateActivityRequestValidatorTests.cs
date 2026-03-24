@@ -13,7 +13,7 @@ public class CreateActivityRequestValidatorTests
     {
         Title = "Culte du Sabbat",
         Description = "Service principal du samedi",
-        Date = new DateOnly(2026, 4, 1),
+        Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
         StartTime = new TimeOnly(9, 30),
         EndTime = new TimeOnly(12, 0),
         DepartmentId = 1,

@@ -10,11 +10,11 @@ const mockTemplates: ActivityTemplateResponse[] = [
     name: "Culte du Sabbat",
     description: "Service principal du samedi",
     roles: [
-      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
-      { id: 2, roleName: "Ancien de Service", defaultHeadcount: 1, sortOrder: 1 },
-      { id: 3, roleName: "Annonces", defaultHeadcount: 1, sortOrder: 2 },
-      { id: 4, roleName: "Diacres", defaultHeadcount: 2, sortOrder: 3 },
-      { id: 5, roleName: "Diaconesses", defaultHeadcount: 2, sortOrder: 4 },
+      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0, isCritical: true, isPredicateur: true },
+      { id: 2, roleName: "Ancien de Service", defaultHeadcount: 1, sortOrder: 1, isCritical: true, isPredicateur: false },
+      { id: 3, roleName: "Annonces", defaultHeadcount: 1, sortOrder: 2, isCritical: false, isPredicateur: false },
+      { id: 4, roleName: "Diacres", defaultHeadcount: 2, sortOrder: 3, isCritical: false, isPredicateur: false },
+      { id: 5, roleName: "Diaconesses", defaultHeadcount: 2, sortOrder: 4, isCritical: false, isPredicateur: false },
     ],
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
@@ -24,9 +24,9 @@ const mockTemplates: ActivityTemplateResponse[] = [
     name: "Sainte-Cene",
     description: "Service de communion",
     roles: [
-      { id: 6, roleName: "Ancien", defaultHeadcount: 2, sortOrder: 0 },
-      { id: 7, roleName: "Diacres", defaultHeadcount: 4, sortOrder: 1 },
-      { id: 8, roleName: "Diaconesses", defaultHeadcount: 4, sortOrder: 2 },
+      { id: 6, roleName: "Ancien", defaultHeadcount: 2, sortOrder: 0, isCritical: true, isPredicateur: false },
+      { id: 7, roleName: "Diacres", defaultHeadcount: 4, sortOrder: 1, isCritical: false, isPredicateur: false },
+      { id: 8, roleName: "Diaconesses", defaultHeadcount: 4, sortOrder: 2, isCritical: false, isPredicateur: false },
     ],
     createdAt: "2026-01-15T00:00:00Z",
     updatedAt: "2026-01-15T00:00:00Z",
@@ -60,7 +60,7 @@ export const activityTemplateHandlers = [
     const body = (await request.json()) as {
       name: string;
       description?: string;
-      roles: { roleName: string; defaultHeadcount: number }[];
+      roles: { roleName: string; defaultHeadcount: number; isCritical?: boolean; isPredicateur?: boolean }[];
     };
     const newTemplate: ActivityTemplateResponse = {
       id: 99,
@@ -71,6 +71,8 @@ export const activityTemplateHandlers = [
         roleName: r.roleName,
         defaultHeadcount: r.defaultHeadcount,
         sortOrder: i,
+        isCritical: r.isCritical ?? false,
+        isPredicateur: r.isPredicateur ?? false,
       })),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -83,7 +85,7 @@ export const activityTemplateHandlers = [
     const body = (await request.json()) as {
       name: string;
       description?: string;
-      roles: { roleName: string; defaultHeadcount: number }[];
+      roles: { roleName: string; defaultHeadcount: number; isCritical?: boolean; isPredicateur?: boolean }[];
     };
     const template = mockTemplates.find((t) => t.id === id);
     if (!template) return new HttpResponse(null, { status: 404 });
@@ -96,6 +98,8 @@ export const activityTemplateHandlers = [
         roleName: r.roleName,
         defaultHeadcount: r.defaultHeadcount,
         sortOrder: i,
+        isCritical: r.isCritical ?? false,
+        isPredicateur: r.isPredicateur ?? false,
       })),
       updatedAt: new Date().toISOString(),
     };

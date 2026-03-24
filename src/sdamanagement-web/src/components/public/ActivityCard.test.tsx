@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen } from "@/test-utils";
+import { render, screen, futureDate } from "@/test-utils";
 import ActivityCard from "./ActivityCard";
 import type { PublicActivityListItem } from "@/types/public";
 
 const baseActivity: PublicActivityListItem = {
   id: 1,
   title: "Culte du Sabbat",
-  date: "2026-03-14",
+  date: futureDate(4),
   startTime: "09:30:00",
   endTime: "12:00:00",
   departmentName: "Culte",
@@ -26,7 +26,7 @@ describe("ActivityCard", () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.setSystemTime(new Date(2026, 2, 10, 12, 0, 0));
 
-    render(<ActivityCard activity={baseActivity} />);
+    render(<ActivityCard activity={{ ...baseActivity, date: "2026-03-14" }} />);
 
     expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     expect(screen.getByText(/Ce Sabbat/)).toBeInTheDocument();

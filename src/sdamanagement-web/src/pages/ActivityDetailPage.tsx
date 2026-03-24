@@ -231,6 +231,7 @@ export default function ActivityDetailPage() {
                   key={role.id}
                   roleName={role.roleName}
                   headcount={role.headcount}
+                  isCritical={role.isCritical}
                   assignments={role.assignments}
                 />
               ))}

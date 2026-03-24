@@ -8,6 +8,8 @@ public class ActivityRole
     public string RoleName { get; set; } = string.Empty;
     public int Headcount { get; set; }
     public int SortOrder { get; set; }
+    public bool IsCritical { get; set; }
+    public bool IsPredicateur { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

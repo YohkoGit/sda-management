@@ -177,9 +177,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
 
     private (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
     {
-        var role = activity.Roles.FirstOrDefault(r =>
-            r.RoleName.Equals("Predicateur", StringComparison.OrdinalIgnoreCase) ||
-            r.RoleName.Equals("Prédicateur", StringComparison.OrdinalIgnoreCase));
+        var role = activity.Roles.FirstOrDefault(r => r.IsPredicateur);
         if (role is null) return (null, null);
         var assignment = role.Assignments.FirstOrDefault();
         if (assignment?.User is not { } user) return (null, null);

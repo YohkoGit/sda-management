@@ -52,7 +52,7 @@ public class ActivityBroadcastTests : IntegrationTestBase
 
         // Create a public activity for update/delete tests
         var activity = await CreateTestActivity(_dept1Id, "Existing Activity",
-            new DateOnly(2026, 4, 1), ActivityVisibility.Public);
+            FutureDateOnly(), ActivityVisibility.Public);
         _existingActivityId = activity.Id;
     }
 
@@ -67,7 +67,7 @@ public class ActivityBroadcastTests : IntegrationTestBase
         var response = await AdminClient.PostAsJsonAsync("/api/activities", new
         {
             title = "Sabbath Morning Worship",
-            date = "2026-04-05",
+            date = FutureDate(35),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _dept1Id,
@@ -103,7 +103,7 @@ public class ActivityBroadcastTests : IntegrationTestBase
         var response = await AdminClient.PostAsJsonAsync("/api/activities", new
         {
             title = "Department Committee Meeting",
-            date = "2026-04-05",
+            date = FutureDate(35),
             startTime = "14:00:00",
             endTime = "15:00:00",
             departmentId = _dept1Id,
@@ -146,7 +146,7 @@ public class ActivityBroadcastTests : IntegrationTestBase
         var response = await AdminClient.PutAsJsonAsync($"/api/activities/{_existingActivityId}?force=true", new
         {
             title = "Updated Department Activity",
-            date = "2026-04-01",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _dept1Id,
@@ -194,7 +194,7 @@ public class ActivityBroadcastTests : IntegrationTestBase
         var response = await AdminClient.PostAsJsonAsync("/api/activities", new
         {
             title = "No Listeners Activity",
-            date = "2026-04-10",
+            date = FutureDate(40),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _dept1Id,

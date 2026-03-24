@@ -122,6 +122,8 @@ public class AppDbContext : DbContext
         {
             e.HasKey(r => r.Id);
             e.Property(r => r.RoleName).HasMaxLength(100);
+            e.Property(r => r.IsCritical).HasDefaultValue(false);
+            e.Property(r => r.IsPredicateur).HasDefaultValue(false);
             e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
             e.Property(r => r.UpdatedAt).HasDefaultValueSql("now()");
             e.HasOne(r => r.ActivityTemplate)
@@ -172,6 +174,8 @@ public class AppDbContext : DbContext
         {
             e.HasKey(r => r.Id);
             e.Property(r => r.RoleName).HasMaxLength(100);
+            e.Property(r => r.IsCritical).HasDefaultValue(false);
+            e.Property(r => r.IsPredicateur).HasDefaultValue(false);
             e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
             e.Property(r => r.UpdatedAt).HasDefaultValueSql("now()");
             e.HasOne(r => r.Activity)

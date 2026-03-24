@@ -1,7 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor } from "@/test-utils";
+import { render, screen, waitFor, futureDate } from "@/test-utils";
 import { MeetingForm, type MeetingFormProps } from "./MeetingForm";
+
+const ZOOM_DATE = futureDate(30);
+const PHYSICAL_DATE = futureDate(45);
+const VALIDATION_DATE = futureDate(60);
 
 const defaultProps: MeetingFormProps = {
   departmentId: 1,
@@ -85,7 +89,7 @@ describe("MeetingForm", () => {
     await user.type(screen.getByLabelText("Title"), "Weekly Zoom Sync");
 
     // Fill date
-    await user.type(screen.getByLabelText("Date"), "2026-04-10");
+    await user.type(screen.getByLabelText("Date"), ZOOM_DATE);
 
     // Fill times
     await user.type(screen.getByLabelText("Start Time"), "14:00");
@@ -110,7 +114,7 @@ describe("MeetingForm", () => {
     const submittedData = onSubmit.mock.calls[0][0];
     expect(submittedData).toMatchObject({
       title: "Weekly Zoom Sync",
-      date: "2026-04-10",
+      date: ZOOM_DATE,
       startTime: "14:00",
       endTime: "15:00",
       meetingType: "zoom",
@@ -127,7 +131,7 @@ describe("MeetingForm", () => {
     renderMeetingForm({ onSubmit });
 
     await user.type(screen.getByLabelText("Title"), "Planning Session");
-    await user.type(screen.getByLabelText("Date"), "2026-04-12");
+    await user.type(screen.getByLabelText("Date"), PHYSICAL_DATE);
     await user.type(screen.getByLabelText("Start Time"), "18:30");
     await user.type(screen.getByLabelText("End Time"), "20:00");
 
@@ -144,7 +148,7 @@ describe("MeetingForm", () => {
     const submittedData = onSubmit.mock.calls[0][0];
     expect(submittedData).toMatchObject({
       title: "Planning Session",
-      date: "2026-04-12",
+      date: PHYSICAL_DATE,
       meetingType: "physical",
       locationName: "Salle communautaire",
       locationAddress: "123 rue Principale",
@@ -173,7 +177,7 @@ describe("MeetingForm", () => {
 
     // Fill required fields but skip meetingType
     await user.type(screen.getByLabelText("Title"), "Test Meeting");
-    await user.type(screen.getByLabelText("Date"), "2026-04-15");
+    await user.type(screen.getByLabelText("Date"), VALIDATION_DATE);
     await user.type(screen.getByLabelText("Start Time"), "10:00");
     await user.type(screen.getByLabelText("End Time"), "11:00");
 

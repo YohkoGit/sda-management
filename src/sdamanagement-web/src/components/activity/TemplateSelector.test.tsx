@@ -21,8 +21,8 @@ const mockTemplates: ActivityTemplateListItem[] = [
     roleSummary: "Predicateur (1), Ancien (1)",
     roleCount: 2,
     roles: [
-      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
-      { id: 2, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1 },
+      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0, isCritical: true, isPredicateur: true },
+      { id: 2, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1, isCritical: true, isPredicateur: false },
     ],
   },
   {
@@ -32,8 +32,8 @@ const mockTemplates: ActivityTemplateListItem[] = [
     roleSummary: "Predicateur (1), Lavement (4)",
     roleCount: 2,
     roles: [
-      { id: 3, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
-      { id: 4, roleName: "Lavement", defaultHeadcount: 4, sortOrder: 1 },
+      { id: 3, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0, isCritical: true, isPredicateur: true },
+      { id: 4, roleName: "Lavement", defaultHeadcount: 4, sortOrder: 1, isCritical: false, isPredicateur: false },
     ],
   },
 ];

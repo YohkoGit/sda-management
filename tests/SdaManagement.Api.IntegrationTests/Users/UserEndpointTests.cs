@@ -879,4 +879,33 @@ public class UserEndpointTests : IntegrationTestBase
             new { email = "login-delete@test.com", password = "TestPassword1" });
         loginAfter.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task DeleteUser_AsOwner_SelfDeletionGuardHoldsAfterDeletingOtherOwner()
+    {
+        // Create a second OWNER, delete them, then verify self-deletion still blocked
+        var secondOwnerId = await CreateUserViaApi(email: "second-owner-guard@test.com", role: "Owner");
+
+        // Delete the second owner (succeeds — two owners exist)
+        var deleteOther = await OwnerClient.DeleteAsync($"/api/users/{secondOwnerId}");
+        deleteOther.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // Now the seeded owner is the ONLY owner — self-deletion must still be blocked
+        var deleteSelf = await OwnerClient.DeleteAsync($"/api/users/{_ownerUserId}");
+        deleteSelf.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task DeleteUser_AsOwner_DeletingSelf_Returns403_NotConflict()
+    {
+        // Ensure self-deletion guard fires BEFORE the last-owner check.
+        // When only one owner exists, deleting self should return 403 (Forbidden),
+        // not 409 (Conflict). The self-deletion guard takes precedence.
+        var response = await OwnerClient.DeleteAsync($"/api/users/{_ownerUserId}");
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+
+        // Verify the owner still exists after the failed attempt
+        var getResponse = await OwnerClient.GetAsync($"/api/users/{_ownerUserId}");
+        getResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
 }

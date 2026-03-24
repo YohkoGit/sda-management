@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@/test-utils";
+import { render, screen, futureDate } from "@/test-utils";
 import CalendarView from "./CalendarView";
 import type { PublicDepartment } from "@/types/public";
 
@@ -110,7 +110,7 @@ describe("CalendarView", () => {
     render(
       <CalendarView
         {...defaultProps}
-        navigateTo={{ view: "day", date: "2026-03-21" }}
+        navigateTo={{ view: "day", date: futureDate(7) }}
         onNavigateComplete={onNavigateComplete}
       />,
     );

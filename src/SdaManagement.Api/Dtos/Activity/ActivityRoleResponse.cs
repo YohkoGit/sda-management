@@ -6,5 +6,6 @@ public class ActivityRoleResponse
     public string RoleName { get; init; } = string.Empty;
     public int Headcount { get; init; }
     public int SortOrder { get; init; }
+    public bool IsCritical { get; init; }
     public List<RoleAssignmentResponse> Assignments { get; init; } = [];
 }

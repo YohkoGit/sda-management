@@ -28,6 +28,8 @@ public class ActivityTemplateService(AppDbContext dbContext, ISanitizationServic
                         RoleName = r.RoleName,
                         DefaultHeadcount = r.DefaultHeadcount,
                         SortOrder = r.SortOrder,
+                        IsCritical = r.IsCritical,
+                        IsPredicateur = r.IsPredicateur,
                     })
                     .ToList(),
             })
@@ -51,6 +53,8 @@ public class ActivityTemplateService(AppDbContext dbContext, ISanitizationServic
                         RoleName = r.RoleName,
                         DefaultHeadcount = r.DefaultHeadcount,
                         SortOrder = r.SortOrder,
+                        IsCritical = r.IsCritical,
+                        IsPredicateur = r.IsPredicateur,
                     })
                     .ToList(),
                 CreatedAt = t.CreatedAt,
@@ -80,6 +84,8 @@ public class ActivityTemplateService(AppDbContext dbContext, ISanitizationServic
                 RoleName = sanitizer.Sanitize(request.Roles[i].RoleName),
                 DefaultHeadcount = request.Roles[i].DefaultHeadcount,
                 SortOrder = i,
+                IsCritical = request.Roles[i].IsCritical ?? false,
+                IsPredicateur = request.Roles[i].IsPredicateur ?? false,
                 ActivityTemplate = template,
                 CreatedAt = now,
                 UpdatedAt = now,
@@ -132,6 +138,8 @@ public class ActivityTemplateService(AppDbContext dbContext, ISanitizationServic
                 RoleName = sanitizer.Sanitize(request.Roles[i].RoleName),
                 DefaultHeadcount = request.Roles[i].DefaultHeadcount,
                 SortOrder = i,
+                IsCritical = request.Roles[i].IsCritical ?? false,
+                IsPredicateur = request.Roles[i].IsPredicateur ?? false,
                 ActivityTemplate = template,
                 CreatedAt = template.UpdatedAt,
                 UpdatedAt = template.UpdatedAt,

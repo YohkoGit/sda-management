@@ -1,8 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@/test-utils";
+import { render, screen, futureDate } from "@/test-utils";
 import userEvent from "@testing-library/user-event";
 import YearGrid from "./YearGrid";
 import type { PublicDepartment, PublicActivityListItem } from "@/types/public";
+
+const ACTIVITY_DATE = futureDate(30);
+const ACTIVITY_YEAR = Number(ACTIVITY_DATE.split("-")[0]);
 
 const mockDepartments: PublicDepartment[] = [
   {
@@ -31,7 +34,7 @@ const mockActivities: PublicActivityListItem[] = [
   {
     id: 1,
     title: "Culte du Sabbat",
-    date: "2026-03-14",
+    date: ACTIVITY_DATE,
     startTime: "09:30:00",
     endTime: "12:00:00",
     departmentName: "Culte",
@@ -44,7 +47,7 @@ const mockActivities: PublicActivityListItem[] = [
 ];
 
 const defaultProps = {
-  year: 2026,
+  year: ACTIVITY_YEAR,
   activities: mockActivities,
   departments: mockDepartments,
   onDayClick: vi.fn(),
@@ -68,7 +71,7 @@ describe("YearGrid", () => {
 
   it("displays the correct year in header", () => {
     render(<YearGrid {...defaultProps} />);
-    expect(screen.getByText("2026")).toBeInTheDocument();
+    expect(screen.getByText(String(ACTIVITY_YEAR))).toBeInTheDocument();
   });
 
   it("fires onDayClick when clicking a day", async () => {
@@ -100,11 +103,11 @@ describe("YearGrid", () => {
     render(<YearGrid {...defaultProps} onYearChange={handleYearChange} />);
 
     // Click next year button
-    await user.click(screen.getByLabelText("2027"));
-    expect(handleYearChange).toHaveBeenCalledWith(2027);
+    await user.click(screen.getByLabelText(String(ACTIVITY_YEAR + 1)));
+    expect(handleYearChange).toHaveBeenCalledWith(ACTIVITY_YEAR + 1);
 
     // Click previous year button
-    await user.click(screen.getByLabelText("2025"));
-    expect(handleYearChange).toHaveBeenCalledWith(2025);
+    await user.click(screen.getByLabelText(String(ACTIVITY_YEAR - 1)));
+    expect(handleYearChange).toHaveBeenCalledWith(ACTIVITY_YEAR - 1);
   });
 });

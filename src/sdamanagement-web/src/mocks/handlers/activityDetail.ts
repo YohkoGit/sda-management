@@ -21,6 +21,7 @@ export const mockActivityDetail: ActivityResponse = {
       roleName: "Prédicateur",
       headcount: 1,
       sortOrder: 0,
+      isCritical: true,
       assignments: [
         { id: 10, userId: 5, firstName: "Mario", lastName: "Vicuna", avatarUrl: null, isGuest: false },
       ],
@@ -30,6 +31,7 @@ export const mockActivityDetail: ActivityResponse = {
       roleName: "Ancien de Service",
       headcount: 1,
       sortOrder: 1,
+      isCritical: true,
       assignments: [
         { id: 11, userId: 6, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
       ],
@@ -39,6 +41,7 @@ export const mockActivityDetail: ActivityResponse = {
       roleName: "Diacres",
       headcount: 3,
       sortOrder: 2,
+      isCritical: false,
       assignments: [
         { id: 12, userId: 7, firstName: "Pierre", lastName: "Martin", avatarUrl: null, isGuest: false },
         { id: 13, userId: 8, firstName: "Paul", lastName: "Lefebvre", avatarUrl: null, isGuest: false },
@@ -49,6 +52,7 @@ export const mockActivityDetail: ActivityResponse = {
       roleName: "Diaconesses",
       headcount: 2,
       sortOrder: 3,
+      isCritical: false,
       assignments: [
         { id: 14, userId: 9, firstName: "Pasteur", lastName: "Invité", avatarUrl: null, isGuest: true },
       ],

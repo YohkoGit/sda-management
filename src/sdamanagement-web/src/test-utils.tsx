@@ -904,5 +904,15 @@ function customRender(ui: ReactElement, options?: CustomRenderOptions) {
   return render(ui, { wrapper: AllProviders, ...renderOptions });
 }
 
+/**
+ * Returns a future date string (YYYY-MM-DD) relative to today.
+ * Use in test mock data and payloads to avoid hardcoded dates going stale.
+ */
+export function futureDate(offsetDays = 30): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().split("T")[0];
+}
+
 export * from "@testing-library/react";
 export { customRender as render };

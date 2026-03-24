@@ -3,7 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
-import { render } from "@/test-utils";
+import { render, futureDate } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { activityTemplateHandlers } from "@/mocks/handlers/activityTemplates";
 import { departmentHandlers } from "@/mocks/handlers/departments";
@@ -11,11 +11,15 @@ import { activityHandlers } from "@/mocks/handlers/activities";
 import DayDetailDialog from "./DayDetailDialog";
 import type { PublicActivityListItem } from "@/types/public";
 
+const MAIN_DATE = futureDate(30);
+const OTHER_DATE = futureDate(31);
+const EMPTY_DATE = futureDate(60);
+
 const mockActivities: PublicActivityListItem[] = [
   {
     id: 1,
     title: "Culte du Sabbat",
-    date: "2027-03-20",
+    date: MAIN_DATE,
     startTime: "09:30:00",
     endTime: "12:00:00",
     departmentName: "Eglise",
@@ -28,7 +32,7 @@ const mockActivities: PublicActivityListItem[] = [
   {
     id: 2,
     title: "Réunion JA",
-    date: "2027-03-20",
+    date: MAIN_DATE,
     startTime: "14:00:00",
     endTime: "16:00:00",
     departmentName: "Jeunesse",
@@ -41,7 +45,7 @@ const mockActivities: PublicActivityListItem[] = [
   {
     id: 3,
     title: "Autre jour",
-    date: "2027-03-21",
+    date: OTHER_DATE,
     startTime: "10:00:00",
     endTime: "11:00:00",
     departmentName: "Eglise",
@@ -71,7 +75,7 @@ afterAll(() => server.close());
 const defaultProps = {
   open: true,
   onOpenChange: vi.fn(),
-  date: "2027-03-20",
+  date: MAIN_DATE,
   activities: mockActivities,
   onCreated: vi.fn(),
   onNavigateToDay: vi.fn(),
@@ -196,14 +200,14 @@ describe("DayDetailDialog", () => {
     });
 
     await user.click(screen.getByText("Voir la journée complète"));
-    expect(onNavigateToDay).toHaveBeenCalledWith("2027-03-20");
+    expect(onNavigateToDay).toHaveBeenCalledWith(MAIN_DATE);
   });
 
   it("shows empty state when no activities for selected date", async () => {
     render(
       <DayDetailDialog
         {...defaultProps}
-        date="2026-03-25"
+        date={EMPTY_DATE}
         user={viewerUser}
       />,
     );
@@ -218,13 +222,18 @@ describe("DayDetailDialog", () => {
       <DayDetailDialog {...defaultProps} user={viewerUser} />,
     );
 
-    // The heading should contain the formatted date — "samedi 20 mars 2027" in fr-CA
+    // Derive expected fragments from MAIN_DATE (YYYY-MM-DD)
+    const [y, m, d] = MAIN_DATE.split("-");
+    const expectedDay = String(Number(d)); // strip leading zero
+    const expectedYear = y;
+    const expectedMonth = new Date(Number(y), Number(m) - 1, Number(d))
+      .toLocaleDateString("fr-CA", { month: "long" });
+
     await waitFor(() => {
       const heading = screen.getByRole("heading");
-      expect(heading.textContent).toMatch(/samedi/i);
-      expect(heading.textContent).toMatch(/20/);
-      expect(heading.textContent).toMatch(/mars/i);
-      expect(heading.textContent).toMatch(/2027/);
+      expect(heading.textContent).toContain(expectedDay);
+      expect(heading.textContent).toContain(expectedYear);
+      expect(heading.textContent).toMatch(new RegExp(expectedMonth, "i"));
     });
   });
 
@@ -264,7 +273,7 @@ describe("DayDetailDialog", () => {
 
     // Date field should be pre-filled from the dialog's date prop
     const dateInput = screen.getByLabelText("Date") as HTMLInputElement;
-    expect(dateInput.value).toBe("2027-03-20");
+    expect(dateInput.value).toBe(MAIN_DATE);
 
     // Department should be auto-selected (ADMIN with departmentIds=[1], single dept available)
     // Submit button should be present

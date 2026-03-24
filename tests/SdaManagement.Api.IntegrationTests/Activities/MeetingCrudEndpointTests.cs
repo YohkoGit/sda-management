@@ -54,7 +54,7 @@ public class MeetingCrudEndpointTests : IntegrationTestBase
     private object ZoomMeetingPayload(int? departmentId = null) => new
     {
         title = "Réunion du comité",
-        date = "2026-03-25",
+        date = FutureDate(),
         startTime = "19:00:00",
         endTime = "20:30:00",
         departmentId = departmentId ?? _deptMifemId,
@@ -67,7 +67,7 @@ public class MeetingCrudEndpointTests : IntegrationTestBase
     private object PhysicalMeetingPayload(int? departmentId = null) => new
     {
         title = "Réunion de planification",
-        date = "2026-03-27",
+        date = FutureDate(7),
         startTime = "18:30:00",
         endTime = "20:00:00",
         departmentId = departmentId ?? _deptMifemId,
@@ -147,7 +147,7 @@ public class MeetingCrudEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Public Meeting (invalid)",
-            date = "2026-03-25",
+            date = FutureDate(),
             startTime = "19:00:00",
             endTime = "20:30:00",
             departmentId = _deptMifemId,
@@ -176,7 +176,7 @@ public class MeetingCrudEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Réunion physique",
-            date = "2026-03-25",
+            date = FutureDate(),
             startTime = "19:00:00",
             endTime = "20:30:00",
             departmentId = _deptMifemId,
@@ -223,7 +223,7 @@ public class MeetingCrudEndpointTests : IntegrationTestBase
         var payload = new
         {
             title = "Meeting with roles (should be ignored)",
-            date = "2026-03-25",
+            date = FutureDate(),
             startTime = "19:00:00",
             endTime = "20:30:00",
             departmentId = _deptMifemId,
@@ -248,7 +248,7 @@ public class MeetingCrudEndpointTests : IntegrationTestBase
         var activityPayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,

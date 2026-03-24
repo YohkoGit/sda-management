@@ -132,7 +132,7 @@ public class GuestEndpointTests : IntegrationTestBase
         var activityPayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -166,7 +166,7 @@ public class GuestEndpointTests : IntegrationTestBase
         var createPayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,
@@ -195,7 +195,7 @@ public class GuestEndpointTests : IntegrationTestBase
         var updatePayload = new
         {
             title = "Culte du Sabbat",
-            date = "2026-03-07",
+            date = FutureDate(),
             startTime = "10:00:00",
             endTime = "12:00:00",
             departmentId = _deptMifemId,

@@ -48,7 +48,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
                 AssignedCount = a.Roles.Sum(r => r.Assignments.Count),
                 RoleDetails = a.Roles.Select(r => new
                 {
-                    r.RoleName,
+                    r.IsCritical,
                     AssignmentCount = r.Assignments.Count,
                 }).ToList(),
             })
@@ -65,7 +65,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
                     AggregateStatus = ComputeAggregateStaffing(g.Select(a => new ActivityStaffingData(
                         a.TotalHeadcount,
                         a.AssignedCount,
-                        a.RoleDetails.Select(r => (r.RoleName, r.AssignmentCount))))),
+                        a.RoleDetails.Select(r => (r.IsCritical, r.AssignmentCount))))),
                 });
 
         return departments.Select(d =>
@@ -107,7 +107,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
     private sealed record ActivityStaffingData(
         int TotalHeadcount,
         int AssignedCount,
-        IEnumerable<(string RoleName, int AssignmentCount)> RoleDetails);
+        IEnumerable<(bool IsCritical, int AssignmentCount)> RoleDetails);
 
     public async Task<DepartmentResponse?> GetByIdAsync(int id)
     {

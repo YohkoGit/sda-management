@@ -9,6 +9,7 @@ const mockRoles: ActivityRoleResponse[] = [
     roleName: "Predicateur",
     headcount: 1,
     sortOrder: 0,
+    isCritical: true,
     assignments: [
       {
         id: 10,
@@ -25,6 +26,7 @@ const mockRoles: ActivityRoleResponse[] = [
     roleName: "Diacres",
     headcount: 3,
     sortOrder: 1,
+    isCritical: false,
     assignments: [
       {
         id: 11,
@@ -62,6 +64,7 @@ describe("ActivityRosterView", () => {
         roleName: "Predicateur",
         headcount: 1,
         sortOrder: 0,
+        isCritical: true,
         assignments: [
           {
             id: 10,
@@ -96,6 +99,7 @@ describe("ActivityRosterView", () => {
         roleName: "Predicateur",
         headcount: 1,
         sortOrder: 0,
+        isCritical: true,
         assignments: [
           {
             id: 10,

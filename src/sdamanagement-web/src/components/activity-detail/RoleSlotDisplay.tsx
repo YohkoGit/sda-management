@@ -5,12 +5,13 @@ import type { RoleAssignmentResponse } from "@/services/activityService";
 interface RoleSlotDisplayProps {
   roleName: string;
   headcount: number;
+  isCritical: boolean;
   assignments: RoleAssignmentResponse[];
 }
 
 const MAX_EMPTY_SLOTS = 3;
 
-export function RoleSlotDisplay({ roleName, headcount, assignments }: RoleSlotDisplayProps) {
+export function RoleSlotDisplay({ roleName, headcount, isCritical, assignments }: RoleSlotDisplayProps) {
   const { t } = useTranslation();
 
   const assignedCount = assignments.length;
@@ -18,17 +19,12 @@ export function RoleSlotDisplay({ roleName, headcount, assignments }: RoleSlotDi
   const visibleEmpty = Math.min(emptyCount, MAX_EMPTY_SLOTS);
   const overflowEmpty = emptyCount - visibleEmpty;
 
-  const isCriticalRole =
-    assignedCount === 0 &&
-    (roleName.toLowerCase() === "ancien" ||
-      roleName.toLowerCase().startsWith("ancien ") ||
-      roleName.toLowerCase().includes("predicateur") ||
-      roleName.toLowerCase().includes("prédicateur"));
+  const hasCriticalGap = isCritical && assignedCount === 0;
 
   const fractionColor =
     assignedCount >= headcount
       ? "text-emerald-600"
-      : isCriticalRole
+      : hasCriticalGap
         ? "text-red-600"
         : "text-amber-600";
 

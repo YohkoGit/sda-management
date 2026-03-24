@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, vi, beforeEach } from "vitest";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import userEvent from "@testing-library/user-event";
-import { render, screen } from "@/test-utils";
+import { render, screen, futureDate } from "@/test-utils";
 import { createActivitySchema, type CreateActivityFormData } from "@/schemas/activitySchema";
 import RoleRosterEditor from "./RoleRosterEditor";
 import type { AssignableOfficer } from "@/services/userService";
@@ -104,7 +104,7 @@ function TestWrapper({
     resolver: zodResolver(createActivitySchema),
     defaultValues: {
       title: "Test",
-      date: "2026-03-15",
+      date: futureDate(30),
       startTime: "10:00",
       endTime: "12:00",
       departmentId: 1,

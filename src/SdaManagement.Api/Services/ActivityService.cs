@@ -47,7 +47,7 @@ public class ActivityService(
                 AssignedCount = a.Roles.Sum(r => r.Assignments.Count),
                 // EF Core 10 + Npgsql translates this collection projection to a correlated subquery (not N+1).
                 // Verified: produces single SQL query with JSON aggregation for role-level data.
-                RoleDetails = a.Roles.Select(r => new { r.RoleName, AssignmentCount = r.Assignments.Count }).ToList(),
+                RoleDetails = a.Roles.Select(r => new { r.IsCritical, AssignmentCount = r.Assignments.Count }).ToList(),
                 CreatedAt = a.CreatedAt,
             })
             .ToListAsync();
@@ -73,7 +73,7 @@ public class ActivityService(
             StaffingStatus = ComputeStaffingStatus(
                 a.TotalHeadcount,
                 a.AssignedCount,
-                a.RoleDetails.Select(r => (r.RoleName, r.AssignmentCount))),
+                a.RoleDetails.Select(r => (r.IsCritical, r.AssignmentCount))),
             CreatedAt = a.CreatedAt,
         }).ToList();
     }
@@ -140,6 +140,8 @@ public class ActivityService(
                     RoleName = sanitizer.Sanitize(roleInput.RoleName),
                     Headcount = roleInput.Headcount,
                     SortOrder = i,
+                    IsCritical = roleInput.IsCritical ?? false,
+                    IsPredicateur = roleInput.IsPredicateur ?? false,
                     CreatedAt = now,
                     UpdatedAt = now,
                 };
@@ -175,6 +177,8 @@ public class ActivityService(
                     RoleName = templateRole.RoleName,
                     Headcount = templateRole.DefaultHeadcount,
                     SortOrder = templateRole.SortOrder,
+                    IsCritical = templateRole.IsCritical,
+                    IsPredicateur = templateRole.IsPredicateur,
                     CreatedAt = now,
                     UpdatedAt = now,
                 });
@@ -280,6 +284,8 @@ public class ActivityService(
                         existing.RoleName = sanitizer.Sanitize(roleInput.RoleName);
                         existing.Headcount = roleInput.Headcount;
                         existing.SortOrder = i;
+                        if (roleInput.IsCritical.HasValue) existing.IsCritical = roleInput.IsCritical.Value;
+                        if (roleInput.IsPredicateur.HasValue) existing.IsPredicateur = roleInput.IsPredicateur.Value;
                         existing.UpdatedAt = now;
 
                         // Reconcile assignments for existing role
@@ -294,6 +300,8 @@ public class ActivityService(
                         RoleName = sanitizer.Sanitize(roleInput.RoleName),
                         Headcount = roleInput.Headcount,
                         SortOrder = i,
+                        IsCritical = roleInput.IsCritical ?? false,
+                        IsPredicateur = roleInput.IsPredicateur ?? false,
                         CreatedAt = now,
                         UpdatedAt = now,
                     };
@@ -442,15 +450,13 @@ public class ActivityService(
         return activities.Select(activity =>
         {
             // Extract predicateur from roles
-            var predicateurRole = activity.Roles
-                .FirstOrDefault(r => r.RoleName.Contains("prédicateur", StringComparison.OrdinalIgnoreCase)
-                    || r.RoleName.Contains("predicateur", StringComparison.OrdinalIgnoreCase));
+            var predicateurRole = activity.Roles.FirstOrDefault(r => r.IsPredicateur);
             var predicateur = predicateurRole?.Assignments.FirstOrDefault()?.User;
 
             // Compute staffing
             var totalHeadcount = activity.Roles.Sum(r => r.Headcount);
             var assignedCount = activity.Roles.Sum(r => r.Assignments.Count);
-            var roleDetails = activity.Roles.Select(r => (r.RoleName, r.Assignments.Count));
+            var roleDetails = activity.Roles.Select(r => (r.IsCritical, r.Assignments.Count));
             var staffingStatus = ComputeStaffingStatus(totalHeadcount, assignedCount, roleDetails);
 
             return new DashboardActivityItem
@@ -527,18 +533,12 @@ public class ActivityService(
     internal static string ComputeStaffingStatus(
         int totalHeadcount,
         int assignedCount,
-        IEnumerable<(string RoleName, int AssignmentCount)> roleDetails)
+        IEnumerable<(bool IsCritical, int AssignmentCount)> roleDetails)
     {
         if (totalHeadcount == 0)
             return "NoRoles";
 
-        // "Ancien de Service", "Ancien du Sabbat" match — but NOT "Ancienne Musique"
-        // Uses "ancien " (with trailing space) + exact "ancien" to avoid feminine-form false positives
-        var hasCriticalGap = roleDetails.Any(r =>
-            r.AssignmentCount == 0 &&
-            (r.RoleName.Equals("ancien", StringComparison.OrdinalIgnoreCase) ||
-             r.RoleName.StartsWith("ancien ", StringComparison.OrdinalIgnoreCase) ||
-             r.RoleName.Contains("predicateur", StringComparison.OrdinalIgnoreCase)));
+        var hasCriticalGap = roleDetails.Any(r => r.IsCritical && r.AssignmentCount == 0);
 
         if (hasCriticalGap)
             return "CriticalGap";
@@ -578,6 +578,7 @@ public class ActivityService(
                     RoleName = r.RoleName,
                     Headcount = r.Headcount,
                     SortOrder = r.SortOrder,
+                    IsCritical = r.IsCritical,
                     Assignments = r.Assignments.Select(ra => new RoleAssignmentResponse
                     {
                         Id = ra.Id,
@@ -592,7 +593,7 @@ public class ActivityService(
             StaffingStatus = ComputeStaffingStatus(
                 activity.Roles.Sum(r => r.Headcount),
                 activity.Roles.Sum(r => r.Assignments.Count),
-                activity.Roles.Select(r => (r.RoleName, r.Assignments.Count))),
+                activity.Roles.Select(r => (r.IsCritical, r.Assignments.Count))),
             ConcurrencyToken = activity.Version,
             CreatedAt = activity.CreatedAt,
             UpdatedAt = activity.UpdatedAt,

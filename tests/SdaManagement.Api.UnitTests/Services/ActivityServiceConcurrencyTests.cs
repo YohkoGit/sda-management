@@ -53,7 +53,7 @@ public class ActivityServiceConcurrencyTests : IDisposable
         {
             Title = "Test Activity",
             DepartmentId = dept.Id,
-            Date = new DateOnly(2026, 3, 15),
+            Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(12, 0),
             Visibility = ActivityVisibility.Public,
@@ -72,7 +72,7 @@ public class ActivityServiceConcurrencyTests : IDisposable
     private UpdateActivityRequest MakeRequest(uint concurrencyToken) => new()
     {
         Title = "Updated Title",
-        Date = new DateOnly(2026, 3, 15),
+        Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
         StartTime = new TimeOnly(10, 0),
         EndTime = new TimeOnly(12, 0),
         DepartmentId = 1,
@@ -147,7 +147,7 @@ public class ActivityServiceConcurrencyTests : IDisposable
         var staleRequest = new UpdateActivityRequest
         {
             Title = "Force Updated",
-            Date = new DateOnly(2026, 3, 15),
+            Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(12, 0),
             DepartmentId = 1,

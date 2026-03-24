@@ -99,7 +99,7 @@ public class SystemHealthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetSystemHealthAsync_UptimeSeconds_IsPositive()
+    public async Task GetSystemHealthAsync_UptimeSeconds_IsNonNegative()
     {
         // Arrange
         SetupHealthReport(HealthStatus.Healthy, description: null, exception: null);
@@ -107,8 +107,8 @@ public class SystemHealthServiceTests : IDisposable
         // Act
         var result = await _sut.GetSystemHealthAsync(CancellationToken.None);
 
-        // Assert
-        result.UptimeSeconds.ShouldBeGreaterThan(0);
+        // Assert — uptime truncates to long, so 0 is valid in the first second after process start
+        result.UptimeSeconds.ShouldBeGreaterThanOrEqualTo(0);
     }
 
     [Fact]

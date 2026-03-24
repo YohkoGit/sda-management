@@ -6,6 +6,8 @@ export interface TemplateRoleResponse {
   roleName: string;
   defaultHeadcount: number;
   sortOrder: number;
+  isCritical: boolean;
+  isPredicateur: boolean;
 }
 
 export interface ActivityTemplateResponse {

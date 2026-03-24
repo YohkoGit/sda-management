@@ -28,6 +28,7 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Predicateur",
         headcount: 1,
         sortOrder: 0,
+        isCritical: true,
         assignments: [],
       },
       {
@@ -35,6 +36,7 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Ancien de Service",
         headcount: 1,
         sortOrder: 1,
+        isCritical: true,
         assignments: [
           { id: 10, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
         ],
@@ -85,6 +87,7 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Predicateur",
         headcount: 1,
         sortOrder: 0,
+        isCritical: true,
         assignments: [
           { id: 20, userId: 3, firstName: "Marie", lastName: "Blanc", avatarUrl: null, isGuest: false },
         ],
@@ -94,6 +97,7 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Ancien de Service",
         headcount: 1,
         sortOrder: 1,
+        isCritical: true,
         assignments: [
           { id: 21, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
         ],
@@ -124,6 +128,7 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Predicateur",
         headcount: 1,
         sortOrder: 0,
+        isCritical: true,
         assignments: [
           { id: 30, userId: 3, firstName: "Marie", lastName: "Blanc", avatarUrl: null, isGuest: false },
         ],
@@ -133,6 +138,7 @@ const mockActivities: ActivityResponse[] = [
         roleName: "Diacres",
         headcount: 3,
         sortOrder: 1,
+        isCritical: false,
         assignments: [
           { id: 31, userId: 5, firstName: "Jean", lastName: "Dupont", avatarUrl: null, isGuest: false },
         ],
@@ -194,11 +200,7 @@ const computeStaffingStatus = (roles: ActivityRoleResponse[]): string => {
   const totalHeadcount = roles.reduce((sum, r) => sum + r.headcount, 0);
   if (totalHeadcount === 0) return "NoRoles";
   const hasCriticalGap = roles.some(
-    (r) =>
-      r.assignments.length === 0 &&
-      (r.roleName.toLowerCase() === "ancien" ||
-        r.roleName.toLowerCase().startsWith("ancien ") ||
-        r.roleName.toLowerCase().includes("predicateur")),
+    (r) => r.isCritical && r.assignments.length === 0,
   );
   if (hasCriticalGap) return "CriticalGap";
   const assignedCount = roles.reduce((sum, r) => sum + r.assignments.length, 0);
@@ -235,9 +237,9 @@ const mockTemplates: ActivityTemplateListItem[] = [
     roleSummary: "Predicateur (1), Ancien de Service (1), Diacres (2)",
     roleCount: 3,
     roles: [
-      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
-      { id: 2, roleName: "Ancien de Service", defaultHeadcount: 1, sortOrder: 1 },
-      { id: 3, roleName: "Diacres", defaultHeadcount: 2, sortOrder: 2 },
+      { id: 1, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0, isCritical: true, isPredicateur: true },
+      { id: 2, roleName: "Ancien de Service", defaultHeadcount: 1, sortOrder: 1, isCritical: true, isPredicateur: false },
+      { id: 3, roleName: "Diacres", defaultHeadcount: 2, sortOrder: 2, isCritical: false, isPredicateur: false },
     ],
   },
   {
@@ -247,9 +249,9 @@ const mockTemplates: ActivityTemplateListItem[] = [
     roleSummary: "Predicateur (1), Ancien (1), Lavement (4)",
     roleCount: 3,
     roles: [
-      { id: 4, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0 },
-      { id: 5, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1 },
-      { id: 6, roleName: "Lavement", defaultHeadcount: 4, sortOrder: 2 },
+      { id: 4, roleName: "Predicateur", defaultHeadcount: 1, sortOrder: 0, isCritical: true, isPredicateur: true },
+      { id: 5, roleName: "Ancien", defaultHeadcount: 1, sortOrder: 1, isCritical: true, isPredicateur: false },
+      { id: 6, roleName: "Lavement", defaultHeadcount: 4, sortOrder: 2, isCritical: false, isPredicateur: false },
     ],
   },
 ];
@@ -264,6 +266,7 @@ const templateRolesToActivityRoles = (
     roleName: r.roleName,
     headcount: r.defaultHeadcount,
     sortOrder: r.sortOrder,
+    isCritical: r.isCritical,
     assignments: [],
   }));
 };
@@ -287,7 +290,7 @@ export const activityHandlers = [
 
   http.post("/api/activities", async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    const explicitRoles = body.roles as Array<{ roleName: string; headcount: number; assignments?: Array<{ userId: number }> }> | undefined;
+    const explicitRoles = body.roles as Array<{ roleName: string; headcount: number; isCritical?: boolean; assignments?: Array<{ userId: number }> }> | undefined;
     const templateId = body.templateId as number | undefined;
 
     let roles: ActivityRoleResponse[];
@@ -297,6 +300,7 @@ export const activityHandlers = [
         roleName: r.roleName,
         headcount: r.headcount,
         sortOrder: i,
+        isCritical: r.isCritical ?? false,
         assignments: (r.assignments ?? []).map((a, j) => ({
           id: 500 + i * 10 + j,
           userId: a.userId,
@@ -347,7 +351,7 @@ export const activityHandlers = [
     const body = (await request.json()) as Record<string, unknown>;
     const id = Number(params.id);
     const existing = mockActivities.find((a) => a.id === id);
-    const requestRoles = body.roles as Array<{ id?: number; roleName: string; headcount: number; assignments?: Array<{ userId: number }> | null }> | undefined;
+    const requestRoles = body.roles as Array<{ id?: number; roleName: string; headcount: number; isCritical?: boolean; assignments?: Array<{ userId: number }> | null }> | undefined;
 
     let roles: ActivityRoleResponse[];
     if (requestRoles !== undefined) {
@@ -369,6 +373,7 @@ export const activityHandlers = [
           roleName: r.roleName,
           headcount: r.headcount,
           sortOrder: i,
+          isCritical: r.isCritical ?? existingRole?.isCritical ?? false,
           assignments,
         };
       });

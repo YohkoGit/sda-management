@@ -422,9 +422,6 @@ public class OwnerFullDepartmentAccessTests : IntegrationTestBase
 
     // ─── Helpers ───
 
-    private static string FutureDate(int offsetDays = 30) =>
-        DateOnly.FromDateTime(DateTime.UtcNow.AddDays(offsetDays)).ToString("yyyy-MM-dd");
-
     private async Task<(int Id, uint ConcurrencyToken)> CreateActivityInUnassignedDept(string title)
     {
         var response = await OwnerClient.PostAsJsonAsync("/api/activities", new

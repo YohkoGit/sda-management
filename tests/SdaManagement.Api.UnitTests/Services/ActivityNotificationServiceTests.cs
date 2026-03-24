@@ -154,7 +154,7 @@ public class ActivityNotificationServiceTests
         {
             Id = 1,
             Title = "Test Activity",
-            Date = new DateOnly(2026, 3, 22),
+            Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
             DepartmentId = departmentId,
             Visibility = visibility,
             ConcurrencyToken = 1,
