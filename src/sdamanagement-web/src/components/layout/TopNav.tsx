@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useAuth } from "@/contexts/AuthContext";
 
 const publicLinks = [
   { to: "/", labelKey: "nav.public.home" },
@@ -26,6 +27,11 @@ export default function TopNav() {
   const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 640px)");
+  const { isAuthenticated } = useAuth();
+  const ctaLink = isAuthenticated ? "/dashboard" : "/login";
+  const ctaLabel = isAuthenticated
+    ? t("nav.public.openDashboard")
+    : t("nav.public.signIn");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,7 +60,10 @@ export default function TopNav() {
           <LanguageSwitcher />
 
           <Button asChild variant="default" size="sm" className="hidden lg:inline-flex">
-            <Link to="/login">{t("nav.public.signIn")}</Link>
+            <Link to={ctaLink}>
+              {isAuthenticated && <LayoutDashboard className="mr-2 h-4 w-4" />}
+              {ctaLabel}
+            </Link>
           </Button>
 
           {/* Mobile hamburger */}
@@ -83,8 +92,9 @@ export default function TopNav() {
                   </NavLink>
                 ))}
                 <Button asChild variant="default" size="sm" className="mt-2">
-                  <Link to="/login" onClick={() => setMobileOpen(false)}>
-                    {t("nav.public.signIn")}
+                  <Link to={ctaLink} onClick={() => setMobileOpen(false)}>
+                    {isAuthenticated && <LayoutDashboard className="mr-2 h-4 w-4" />}
+                    {ctaLabel}
                   </Link>
                 </Button>
               </div>

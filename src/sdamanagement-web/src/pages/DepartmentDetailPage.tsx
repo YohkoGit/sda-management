@@ -359,7 +359,7 @@ export default function DepartmentDetailPage() {
                   <span className="min-w-[120px] text-sm text-slate-500">
                     {formatActivityDate(activity.date, t, i18n.language)}
                     {" "}
-                    {formatTime(activity.startTime)}
+                    {formatTime(activity.startTime, i18n.language)}
                   </span>
                   <span className="flex-1 text-sm font-medium text-slate-800 truncate">
                     {activity.title}
@@ -391,7 +391,7 @@ export default function DepartmentDetailPage() {
                       />
                       {activity.specialType && (
                         <Badge variant="outline" className="text-xs">
-                          {activity.specialType}
+                          {t(`pages.home.specialType.${activity.specialType}`)}
                         </Badge>
                       )}
                     </>

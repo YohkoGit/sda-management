@@ -30,7 +30,7 @@ export default function ActivityCard({
 }) {
   const { t, i18n } = useTranslation();
   const dateLabel = formatActivityDate(activity.date, t, i18n.language);
-  const timeRange = `${formatTime(activity.startTime)}\u2013${formatTime(activity.endTime)}`;
+  const timeRange = `${formatTime(activity.startTime, i18n.language)}\u2013${formatTime(activity.endTime, i18n.language)}`;
 
   return (
     <article

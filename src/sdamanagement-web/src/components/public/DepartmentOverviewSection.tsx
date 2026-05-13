@@ -12,7 +12,7 @@ function formatDeptActivityDate(
 ): string {
   if (!date) return "";
   const dateStr = formatActivityDate(date, t, lang);
-  const timeStr = time ? formatTime(time) : "";
+  const timeStr = time ? formatTime(time, lang) : "";
   return timeStr ? `${dateStr} ${timeStr}` : dateStr;
 }
 

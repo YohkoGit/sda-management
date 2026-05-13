@@ -11,7 +11,8 @@
       "departments": "D\u00e9partements",
       "live": "En Direct",
       "signIn": "Connexion",
-      "menu": "Menu"
+      "menu": "Menu",
+      "openDashboard": "Tableau de bord"
     },
     "auth": {
       "navigation": "Navigation",

@@ -75,7 +75,7 @@ export default function ActivityDetailPage() {
 
   const dateLabel = formatActivityDate(activity.date, t, lang);
   const relativeDate = formatRelativeDate(activity.date, lang);
-  const timeRange = `${formatTime(activity.startTime)}\u2013${formatTime(activity.endTime)}`;
+  const timeRange = `${formatTime(activity.startTime, lang)}\u2013${formatTime(activity.endTime, lang)}`;
   const totalHeadcount = activity.roles.reduce((sum, r) => sum + r.headcount, 0);
   const assignedCount = activity.roles.reduce((sum, r) => sum + r.assignments.length, 0);
 
@@ -138,7 +138,7 @@ export default function ActivityDetailPage() {
             <ModifiedBadge activityId={activity.id} />
             {activity.specialType && (
               <Badge variant="outline" className="shrink-0 text-[11px]">
-                {activity.specialType}
+                {t(`pages.home.specialType.${activity.specialType}`)}
               </Badge>
             )}
           </div>

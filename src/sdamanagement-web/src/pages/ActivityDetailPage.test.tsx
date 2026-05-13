@@ -135,7 +135,7 @@ describe("ActivityDetailPage", () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText("Journée de la Femme")).toBeInTheDocument();
+      expect(screen.getByText("Journée de la femme")).toBeInTheDocument();
     });
   });
 

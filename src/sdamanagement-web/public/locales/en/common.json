@@ -11,7 +11,8 @@
       "departments": "Departments",
       "live": "Live",
       "signIn": "Sign In",
-      "menu": "Menu"
+      "menu": "Menu",
+      "openDashboard": "Dashboard"
     },
     "auth": {
       "navigation": "Navigation",

@@ -29,7 +29,7 @@ export function DashboardActivityCard({
 
   const dateLabel = formatActivityDate(activity.date, t, lang);
   const relativeDate = formatRelativeDate(activity.date, lang);
-  const timeRange = `${formatTime(activity.startTime)}–${formatTime(activity.endTime)}`;
+  const timeRange = `${formatTime(activity.startTime, lang)}–${formatTime(activity.endTime, lang)}`;
 
   const predicateur = activity.predicateurName?.trim()
     ? parsePredicateurName(activity.predicateurName)
@@ -74,7 +74,7 @@ export function DashboardActivityCard({
             <ModifiedBadge activityId={activity.id} />
             {activity.specialType && (
               <Badge variant="outline" className="shrink-0 text-[11px]">
-                {activity.specialType}
+                {t(`pages.home.specialType.${activity.specialType}`)}
               </Badge>
             )}
           </div>

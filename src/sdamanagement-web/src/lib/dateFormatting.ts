@@ -29,10 +29,15 @@ export function formatRelativeDate(dateStr: string, lang: string): string {
   return formatDistanceToNow(parsed, { addSuffix: true, locale: getDateLocale(lang) });
 }
 
-export function formatTime(timeStr: string): string {
+export function formatTime(timeStr: string, lang?: string): string {
   // timeStr comes as "HH:mm:ss" from backend
   if (!timeStr || !timeStr.includes(":")) return timeStr ?? "";
   const [h, m] = timeStr.split(":");
   const hour = parseInt(h, 10);
-  return `${isNaN(hour) ? h : hour}h${m}`;
+  const hourPart = isNaN(hour) ? h : String(hour);
+  if (lang?.startsWith("en")) {
+    const hh = isNaN(hour) ? h : String(hour).padStart(2, "0");
+    return `${hh}:${m}`;
+  }
+  return `${hourPart}h${m}`;
 }

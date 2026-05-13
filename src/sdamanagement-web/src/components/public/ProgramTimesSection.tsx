@@ -4,7 +4,7 @@ import { useProgramSchedules } from "@/hooks/usePublicDashboard";
 import { formatTime } from "@/lib/dateFormatting";
 
 export default function ProgramTimesSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isPending, isError } = useProgramSchedules();
 
   // Hidden when empty (AC#5) — but NOT when error (show section with error state)
@@ -56,7 +56,7 @@ export default function ProgramTimesSection() {
                     {t(`days.${program.dayOfWeek}`)}
                   </span>
                   <span className="ml-2 text-sm text-slate-500">
-                    {formatTime(program.startTime)}–{formatTime(program.endTime)}
+                    {formatTime(program.startTime, i18n.language)}–{formatTime(program.endTime, i18n.language)}
                   </span>
                 </div>
               </div>

@@ -51,6 +51,7 @@ export function ActivityForm({
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     control,
     formState: { errors, isDirty },
@@ -237,6 +238,7 @@ export function ActivityForm({
           control={control}
           register={register}
           setValue={setValue}
+          getValues={getValues}
           errors={errors}
           existingAssignments={existingAssignments}
           initialGuestOfficers={initialGuestOfficers}

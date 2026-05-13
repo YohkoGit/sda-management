@@ -1,6 +1,6 @@
 import { useState, memo } from "react";
 import { useFieldArray, useWatch } from "react-hook-form";
-import type { Control, UseFormRegister, UseFormSetValue, FieldErrors } from "react-hook-form";
+import type { Control, UseFormRegister, UseFormSetValue, UseFormGetValues, FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Plus, Minus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -275,6 +275,7 @@ export default function RoleRosterEditor({
   control,
   register,
   setValue,
+  getValues,
   errors,
   existingAssignments,
   initialGuestOfficers,
@@ -282,6 +283,7 @@ export default function RoleRosterEditor({
   control: Control<CreateActivityFormData>;
   register: UseFormRegister<CreateActivityFormData>;
   setValue: UseFormSetValue<CreateActivityFormData>;
+  getValues: UseFormGetValues<CreateActivityFormData>;
   errors: FieldErrors<CreateActivityFormData>;
   existingAssignments?: Map<number, number>;
   initialGuestOfficers?: AssignableOfficer[];
@@ -307,8 +309,12 @@ export default function RoleRosterEditor({
         isGuest: true,
       };
       setGuestOfficers((prev) => [...prev, guestOfficer]);
-      const currentAssignments = watchedRoles?.[roleIndex]?.assignments ?? [];
-      setValue(`roles.${roleIndex}.assignments`, [...currentAssignments, { userId: response.data.userId }]);
+      const current = getValues(`roles.${roleIndex}.assignments`) ?? [];
+      setValue(
+        `roles.${roleIndex}.assignments`,
+        [...current, { userId: response.data.userId }],
+        { shouldDirty: true, shouldTouch: true, shouldValidate: true }
+      );
     } catch (error) {
       toast.error(t("pages.adminActivities.contactPicker.guestError"));
       throw error;

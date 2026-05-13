@@ -202,7 +202,7 @@ export default function DayDetailDialog({
                   )}
                   {activity.specialType && (
                     <Badge variant="outline" className="ml-1 text-xs">
-                      {activity.specialType}
+                      {t(`pages.home.specialType.${activity.specialType}`)}
                     </Badge>
                   )}
                 </p>

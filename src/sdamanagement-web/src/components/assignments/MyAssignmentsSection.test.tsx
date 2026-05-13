@@ -33,7 +33,8 @@ describe("MyAssignmentsSection", () => {
 
     expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     expect(screen.getByText("Programme JA")).toBeInTheDocument();
-    expect(screen.getByText("Sainte-Cène")).toBeInTheDocument();
+    // Now multiple matches: title "Sainte-Cène" + translated badge for specialType="sainte-cene"
+    expect(screen.getAllByText("Sainte-Cène").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders empty state when no assignments", async () => {

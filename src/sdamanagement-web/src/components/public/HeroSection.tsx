@@ -43,8 +43,8 @@ function ActivityContent({
 }) {
   const { t, i18n } = useTranslation();
   const dateLabel = formatActivityDate(activity.date, t, i18n.language);
-  const startTime = formatTime(activity.startTime);
-  const endTime = formatTime(activity.endTime);
+  const startTime = formatTime(activity.startTime, i18n.language);
+  const endTime = formatTime(activity.endTime, i18n.language);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">

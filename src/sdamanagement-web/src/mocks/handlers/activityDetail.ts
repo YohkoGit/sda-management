@@ -13,7 +13,7 @@ export const mockActivityDetail: ActivityResponse = {
   departmentAbbreviation: "JA",
   departmentColor: "#14B8A6",
   visibility: "public",
-  specialType: "Journée de la Femme",
+  specialType: "womens-day",
   isMeeting: false,
   roles: [
     {

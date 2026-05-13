@@ -208,8 +208,8 @@ describe("DepartmentDetailPage", () => {
       expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("New Activity")).toBeInTheDocument();
-    expect(screen.getByText("New Meeting")).toBeInTheDocument();
+    expect(screen.getAllByText("New Activity").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("New Meeting").length).toBeGreaterThan(0);
   });
 
   it("shows management buttons for OWNER (8.2)", async () => {
@@ -219,8 +219,8 @@ describe("DepartmentDetailPage", () => {
       expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("New Activity")).toBeInTheDocument();
-    expect(screen.getByText("New Meeting")).toBeInTheDocument();
+    expect(screen.getAllByText("New Activity").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("New Meeting").length).toBeGreaterThan(0);
   });
 
   it("hides management buttons for VIEWER (8.2)", async () => {

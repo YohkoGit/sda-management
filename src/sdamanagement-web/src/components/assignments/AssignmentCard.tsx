@@ -16,7 +16,7 @@ export function AssignmentCard({ assignment, isFirst = false }: AssignmentCardPr
 
   const dateLabel = formatActivityDate(assignment.date, t, lang);
   const relativeDate = formatRelativeDate(assignment.date, lang);
-  const timeRange = `${formatTime(assignment.startTime)}\u2013${formatTime(assignment.endTime)}`;
+  const timeRange = `${formatTime(assignment.startTime, lang)}\u2013${formatTime(assignment.endTime, lang)}`;
 
   return (
     <Link
@@ -57,7 +57,7 @@ export function AssignmentCard({ assignment, isFirst = false }: AssignmentCardPr
           </h3>
           {assignment.specialType && (
             <Badge variant="outline" className="shrink-0 text-[11px]">
-              {assignment.specialType}
+              {t(`pages.home.specialType.${assignment.specialType}`)}
             </Badge>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { useRef, type FormEvent, type KeyboardEvent } from "react";
+import { useRef, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,7 @@ export default function GuestInlineForm({
   const nameRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleCreate = () => {
     const name = nameRef.current?.value.trim() ?? "";
     if (name.length < 2) return;
     const phone = phoneRef.current?.value.trim() || undefined;
@@ -32,16 +31,18 @@ export default function GuestInlineForm({
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleSubmit();
+      e.stopPropagation();
+      handleCreate();
     }
     if (e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation();
       onCancel();
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 flex flex-col gap-3">
+    <div className="p-3 flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -78,9 +79,10 @@ export default function GuestInlineForm({
         disabled={isSubmitting}
       />
       <Button
-        type="submit"
+        type="button"
         size="sm"
         disabled={isSubmitting}
+        onClick={handleCreate}
         className="w-full"
       >
         {isSubmitting ? (
@@ -92,6 +94,6 @@ export default function GuestInlineForm({
           t("pages.adminActivities.contactPicker.createGuest")
         )}
       </Button>
-    </form>
+    </div>
   );
 }

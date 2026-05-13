@@ -98,6 +98,7 @@ function TestWrapper({
     control,
     register,
     setValue,
+    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm<CreateActivityFormData>({
@@ -120,6 +121,7 @@ function TestWrapper({
         control={control}
         register={register}
         setValue={setValue}
+        getValues={getValues}
         errors={errors}
         existingAssignments={existingAssignments}
         initialGuestOfficers={initialGuestOfficers}

@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSignalR } from "@/hooks/useSignalR";
 import { useActivityEvents } from "@/hooks/useActivityEvents";
@@ -35,12 +35,18 @@ const AdminUsersPage = lazy(() => import("@/pages/AdminUsersPage"));
 const AdminActivitiesPage = lazy(() => import("@/pages/AdminActivitiesPage"));
 const ActivityDetailPage = lazy(() => import("@/pages/ActivityDetailPage"));
 
+function RealtimeBridge() {
+  const { isAuthenticated } = useAuth();
+  useSignalR(isAuthenticated);
+  useActivityEvents();
+  return null;
+}
+
 function App() {
-  useSignalR(); // Start SignalR connection on app mount
-  useActivityEvents(); // Register SignalR event handlers for query invalidation
   return (
     <BrowserRouter>
       <AuthProvider>
+        <RealtimeBridge />
         <TooltipProvider>
           <Routes>
             {/* Auth pages — outside layouts */}
