@@ -1,0 +1,568 @@
+# Capture Plan — Epic 4: Activity Scheduling & Role Assignment
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 4
+name: "Activity Scheduling & Role Assignment"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [admin, owner]
+  seed_data: "Owner seeded, multiple users, departments created, activity templates created, activities with various staffing levels, guest speakers created"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Color System, Typography System, Spacing & Layout"
+  - "§7 Design Direction — Mock Faithful Command (A+D Hybrid)"
+  - "§9 Component Strategy — ActivityCard, StaffingIndicator, RoleSlot, ContactPicker, DepartmentBadge"
+  - "§10 UX Consistency Patterns — Button Hierarchy, Form Patterns, Feedback Patterns, Modal & Overlay, Loading & Skeleton"
+  - "§11 Responsive Design & Accessibility — Touch Targets, Focus Management"
+
+stories:
+  4-1-activity-data-model-and-basic-crud:
+    description: "Activity list table and create/edit form"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-activity-list-empty-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Empty state when no activities exist"
+        actions:
+          - login: "as admin user"
+          - mock_override: "activitiesEmpty"
+        ux_checks:
+          - "Empty state guidance text in French"
+          - "'Aucune activité' message"
+          - "Create button visible"
+          - "Single-column layout"
+
+      - id: 02-activity-list-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Activity list/table on mobile"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "Activity rows with title, date"
+          - "Department badge with color"
+          - "Edit/Delete action buttons per row"
+          - "44px touch targets"
+          - "Rows are clickable (opens roster panel)"
+
+      - id: 03-activity-create-form-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Create activity form (Sheet on mobile)"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+          - note: "After template selection (Story 4.2)"
+        ux_checks:
+          - "Sheet slides up from bottom"
+          - "Title, Description, Date, Start/End Time, Department, Visibility fields"
+          - "Labels above fields"
+          - "Date input type='date'"
+          - "Time inputs type='time'"
+          - "Department select filtered by user's departments"
+          - "Visibility radio: 'Publique' / 'Authentifié seulement'"
+          - "Full-width inputs and buttons"
+          - "44px minimum touch targets"
+
+      # --- Desktop (1280px) ---
+      - id: 04-activity-list-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Activity table on desktop"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "Table with columns: Title, Date, Time, Department, Visibility, Actions"
+          - "Department badges with colors"
+          - "Sidebar with active nav item"
+          - "Create button top-right"
+          - "Rows clickable for detail"
+
+      - id: 05-activity-create-dialog-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Create activity dialog on desktop"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+          - note: "After template selection"
+        ux_checks:
+          - "Dialog with form fields"
+          - "Max-width constraint"
+          - "Labels above fields"
+          - "Submit button right-aligned"
+          - "rounded-2xl dialog"
+
+      - id: 06-activity-edit-dialog-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Edit activity dialog pre-populated"
+        actions:
+          - login: "as admin user"
+          - click: "edit button on an activity row"
+        ux_checks:
+          - "Dialog with pre-populated form"
+          - "All fields editable"
+          - "'Modifier' primary button"
+          - "Cancel button"
+
+  4-2-activity-creation-from-templates:
+    description: "Two-step create flow: template selection then form"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-template-selector-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Template selection step on mobile"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+        ux_checks:
+          - "Title: 'Choisir un modèle'"
+          - "Subtitle about pre-filling roles"
+          - "Template cards in single-column grid"
+          - "Each card: name, description (line-clamp-2), role summary"
+          - "Custom card with dashed border: 'Activité sans modèle'"
+          - "Plus icon on custom card"
+          - "Selected state: border-primary ring-2"
+          - "Cards are role='radiogroup' with role='radio'"
+
+      - id: 02-template-selected-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Template selected — shows form with role summary"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+          - click: "select a template card"
+        ux_checks:
+          - "Back button: 'Retour aux modèles' with ChevronLeft"
+          - "Role summary badges (secondary variant)"
+          - "Badge format: '{roleName} x{headcount}'"
+          - "Caption: 'Ces rôles seront créés automatiquement'"
+          - "Form fields below role summary"
+
+      - id: 03-template-empty-state-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Template selector with no templates available"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+          - mock_override: "templatesEmpty"
+        ux_checks:
+          - "Empty message for ADMIN: 'Contactez l'administrateur...'"
+          - "Custom 'sans modèle' card still available"
+
+      # --- Desktop (1280px) ---
+      - id: 04-template-selector-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Template selector in 3-column grid on desktop"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+        ux_checks:
+          - "3-column grid (lg:grid-cols-3)"
+          - "Template cards with hover effect (shadow-md, -translate-y-0.5)"
+          - "Custom dashed card alongside templates"
+          - "Keyboard accessible (Enter/Space to select)"
+
+      - id: 05-template-loading-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Template selector loading state"
+        actions:
+          - login: "as admin user"
+          - click: "create activity button"
+          - mock_override: "templatesDelayed"
+        ux_checks:
+          - "3 skeleton cards"
+          - "Skeleton pulse animation"
+
+  4-3-role-roster-customization:
+    description: "Role roster editor within activity form — add/remove roles, headcount stepper"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-role-roster-editor-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Role roster editor section in activity form on mobile"
+        actions:
+          - login: "as admin user"
+          - click: "edit button on activity with roles"
+        ux_checks:
+          - "Role list with each row showing: Role Name, Headcount stepper, Assignment badge"
+          - "Headcount stepper: - button, value, + button"
+          - "- disabled when count = 1"
+          - "+ disabled when count = 99"
+          - "Assignment badge shows filled/total (green if full, amber if partial)"
+          - "'Ajouter un rôle' button"
+          - "Trash icon per role row"
+          - "Roles stack vertically on mobile"
+          - "44px touch targets on stepper buttons"
+
+      - id: 02-role-delete-confirmation-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Delete role confirmation AlertDialog"
+        actions:
+          - login: "as admin user"
+          - click: "trash icon on a role row"
+        ux_checks:
+          - "AlertDialog: 'Supprimer le rôle ?'"
+          - "Description mentions assignment deletion"
+          - "'Supprimer' destructive button"
+          - "'Annuler' cancel"
+
+      # --- Desktop (1280px) ---
+      - id: 03-role-roster-editor-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Role roster editor on desktop within edit dialog"
+        actions:
+          - login: "as admin user"
+          - click: "edit button on activity with roles"
+        ux_checks:
+          - "Role rows in horizontal layout"
+          - "Headcount steppers inline"
+          - "Assignment badges inline"
+          - "'Ajouter un rôle' button"
+          - "Trash icons per row"
+
+  4-4-role-assignment-via-contact-picker:
+    description: "Contact picker for assigning people to roles"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-assignment-chips-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Assigned people shown as chips within role"
+        actions:
+          - login: "as admin user"
+          - click: "edit button on activity with assignments"
+        ux_checks:
+          - "Avatar chips: InitialsAvatar (28px) + name"
+          - "Guest chips show '(Invité)' label"
+          - "Remove X button per chip"
+          - "Chips flex-wrap on mobile"
+          - "Unassigned slots: dashed placeholder"
+          - "Placeholder text: 'Poste vide'"
+
+      - id: 02-contact-picker-open-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Contact picker opened as full-screen sheet on mobile"
+        actions:
+          - login: "as admin user"
+          - click: "assign button or empty slot"
+        ux_checks:
+          - "Full-screen bottom sheet on mobile"
+          - "Search input: 'Rechercher un officier ou invité...'"
+          - "Grouped results: Recent, Department members, Guest speakers"
+          - "Result items: avatar + name + department"
+          - "44px touch targets on results"
+
+      - id: 03-contact-picker-search-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Contact picker with search filtered results"
+        actions:
+          - login: "as admin user"
+          - click: "assign button"
+          - type: "search term in picker"
+        ux_checks:
+          - "Filtered results matching search"
+          - "Instant filtering as user types"
+          - "Group headers still visible"
+
+      # --- Desktop (1280px) ---
+      - id: 04-contact-picker-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Contact picker as popover on desktop"
+        actions:
+          - login: "as admin user"
+          - click: "assign button or empty slot"
+        ux_checks:
+          - "Popover (400px wide) on desktop"
+          - "Search input with results below"
+          - "Grouped results"
+          - "Keyboard navigation: arrow keys, Enter to select"
+
+      - id: 05-assignment-complete-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Role fully assigned — all slots filled"
+        actions:
+          - login: "as admin user"
+          - click: "edit button on fully-staffed activity"
+        ux_checks:
+          - "All chips showing assigned people"
+          - "No dashed placeholders"
+          - "Assignment badge green (complete)"
+          - "Still removable via X on chips"
+
+  4-5-special-activity-tagging-and-visibility-control:
+    description: "Special type select field and badge display in table"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-special-type-field-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Special type select field in activity form on mobile"
+        actions:
+          - login: "as admin user"
+          - click: "create or edit activity"
+        ux_checks:
+          - "'Type spécial' select field"
+          - "Options: Aucun, Sainte-Cène, Semaine de prière, etc."
+          - "Placed after visibility radio buttons"
+          - "Full-width on mobile"
+
+      - id: 02-special-type-badges-list-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Activity list showing special type badges"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "Special type badge (secondary variant) inline with title"
+          - "Badge visible on activities with specialType set"
+          - "No badge when specialType is null"
+          - "French labels on badges"
+
+      # --- Desktop (1280px) ---
+      - id: 03-special-type-in-table-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Activity table with special type badges on desktop"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "Special type badge inline with title in table"
+          - "Mix of activities with and without special types"
+          - "Badge variant secondary"
+
+  4-6-inline-guest-speaker-creation:
+    description: "Guest creation form within contact picker"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-guest-create-button-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Contact picker with 'Créer un nouvel invité' button"
+        actions:
+          - login: "as admin user"
+          - click: "assign button on role slot"
+        ux_checks:
+          - "'Créer un nouvel invité' button at bottom of picker"
+          - "Visible in contact picker sheet"
+
+      - id: 02-guest-inline-form-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Inline guest creation form expanded"
+        actions:
+          - login: "as admin user"
+          - click: "assign button"
+          - click: "'Créer un nouvel invité' button"
+        ux_checks:
+          - "Inline form within picker (not separate dialog)"
+          - "'Nom complet' field (required)"
+          - "'Créer et assigner' submit button"
+          - "Form within the contact picker sheet"
+
+      - id: 03-guest-assigned-chip-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Guest speaker shown as chip with (Invité) label"
+        actions:
+          - login: "as admin user"
+          - note: "After creating and assigning a guest"
+        ux_checks:
+          - "Guest chip with '(Invité)' label"
+          - "Slate-toned InitialsAvatar (vs color-varied for members)"
+          - "Removable via X button"
+
+      # --- Desktop (1280px) ---
+      - id: 04-guest-inline-form-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Guest creation form in contact picker popover on desktop"
+        actions:
+          - login: "as admin user"
+          - click: "assign button"
+          - click: "'Créer un nouvel invité' button"
+        ux_checks:
+          - "Inline form within popover"
+          - "Name field + submit button"
+          - "Popover still positioned correctly"
+
+  4-7-activity-roster-view-and-staffing-indicators:
+    description: "Staffing indicator column in table and read-only roster panel"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-staffing-indicators-list-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Activity list showing staffing indicators on mobile"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "StaffingIndicator per activity"
+          - "FullyStaffed: filled circle (green) + 'Complet'"
+          - "PartiallyStaffed: triangle (amber) + 'X/Y'"
+          - "CriticalGap: diamond (red) + 'X/Y' + 'Critique'"
+          - "NoRoles: dash (muted) + 'Aucun rôle'"
+          - "Shape + text (never color-only)"
+          - "aria-label announces status"
+
+      - id: 02-roster-panel-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Roster detail panel (Sheet bottom) on mobile"
+        actions:
+          - login: "as admin user"
+          - click: "activity row (not edit button)"
+        ux_checks:
+          - "Sheet from bottom, h-[85vh]"
+          - "Activity title, date, department badge"
+          - "Overall StaffingIndicator (size='md')"
+          - "Heading: 'Équipe'"
+          - "Per-role rows: role name, staffing dot, headcount badge"
+          - "Assigned people: avatar chips (28px) + names"
+          - "Guest labels: '(Invité)'"
+          - "Unassigned: dashed placeholders"
+          - "Avatar chips flex-wrap"
+          - "Read-only (no edit controls)"
+
+      - id: 03-roster-fully-staffed-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Roster panel for fully-staffed activity"
+        actions:
+          - login: "as admin user"
+          - click: "fully-staffed activity row"
+        ux_checks:
+          - "Green StaffingIndicator 'Complet'"
+          - "All role rows show green dots"
+          - "All slots filled with avatar chips"
+          - "No dashed placeholders"
+
+      - id: 04-roster-critical-gap-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Roster panel for activity with critical staffing gaps"
+        actions:
+          - login: "as admin user"
+          - click: "critically-understaffed activity row"
+        ux_checks:
+          - "Red StaffingIndicator with diamond shape"
+          - "'Critique' badge visible"
+          - "Some role rows show red/amber dots"
+          - "Dashed placeholders for empty slots"
+
+      # --- Desktop (1280px) ---
+      - id: 05-staffing-column-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Activity table with staffing indicator column on desktop"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "Staffing column between Department and Visibility"
+          - "Mix of staffing states visible in column"
+          - "Shape + fraction text per indicator"
+          - "Tooltip on hover: 'X/Y postes pourvus'"
+
+      - id: 06-roster-panel-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Roster detail panel on desktop"
+        actions:
+          - login: "as admin user"
+          - click: "activity row"
+        ux_checks:
+          - "Sheet/Dialog panel showing roster"
+          - "Activity header with title + date + department"
+          - "Overall StaffingIndicator"
+          - "Role roster with assigned people"
+          - "Read-only view"
+
+      - id: 07-roster-loading-skeleton-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Roster panel loading skeleton"
+        actions:
+          - login: "as admin user"
+          - click: "activity row"
+          - mock_override: "rosterDelayed"
+        ux_checks:
+          - "Skeleton while fetching detail"
+          - "Skeleton shape matches final layout"
+
+  4-8-concurrent-edit-detection:
+    description: "Conflict alert dialog when 409 received during activity edit"
+    role: admin
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-conflict-dialog-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "Conflict alert dialog on mobile"
+        actions:
+          - login: "as admin user"
+          - click: "edit activity"
+          - mock_override: "concurrencyConflict409"
+          - click: "submit edit"
+        ux_checks:
+          - "AlertDialog visible"
+          - "Title: 'Conflit de modification'"
+          - "Description explaining concurrent edit"
+          - "'Recharger les données' primary button (safe default)"
+          - "'Écraser avec mes modifications' destructive button (red)"
+          - "French text throughout"
+          - "Edit form visible behind dialog"
+
+      - id: 02-conflict-reload-success-mobile
+        url: /admin/activities
+        viewport: [375, 812]
+        desc: "After clicking 'Recharger les données'"
+        actions:
+          - login: "as admin user"
+          - note: "After conflict dialog → reload"
+        ux_checks:
+          - "Form fields reset with server's current values"
+          - "Success toast: 'Données rechargées'"
+          - "Edit form stays open"
+          - "AlertDialog dismissed"
+
+      # --- Desktop (1280px) ---
+      - id: 03-conflict-dialog-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Conflict alert dialog on desktop"
+        actions:
+          - login: "as admin user"
+          - click: "edit activity"
+          - mock_override: "concurrencyConflict409"
+          - click: "submit edit"
+        ux_checks:
+          - "AlertDialog centered on desktop"
+          - "Title: 'Conflit de modification'"
+          - "Two action buttons clearly styled"
+          - "Reload as primary/safe option"
+          - "Overwrite as destructive"
+          - "Edit dialog visible behind"
+          - "Backdrop semi-transparent"

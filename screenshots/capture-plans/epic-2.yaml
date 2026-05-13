@@ -1,0 +1,494 @@
+# Capture Plan — Epic 2: Church Configuration & First-Time Setup
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 2
+name: "Church Configuration & First-Time Setup"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [owner]
+  seed_data: "Owner seeded via OWNER_EMAIL, church identity configured, departments created, templates created, schedules created"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Color System, Typography System, Spacing & Layout"
+  - "§7 Design Direction — Mock Faithful Command (A+D Hybrid)"
+  - "§9 Component Strategy — Card grids, Form patterns, Empty states"
+  - "§10 UX Consistency Patterns — Button Hierarchy, Form Patterns, Feedback Patterns, Modal & Overlay"
+  - "§11 Responsive Design & Accessibility — Touch Targets, Focus Management"
+
+stories:
+  2-1-church-identity-settings:
+    description: "Church identity settings form — OWNER-only admin page"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-settings-form-mobile
+        url: /admin/settings
+        viewport: [375, 812]
+        desc: "Church identity settings form on mobile"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Page title text-2xl font-black"
+          - "Single-column form layout"
+          - "Labels above fields (not floating)"
+          - "Full-width inputs on mobile"
+          - "44px minimum touch targets on inputs"
+          - "Inter font throughout"
+          - "Primary save button full-width at bottom"
+          - "indigo-600 on primary button"
+
+      - id: 02-settings-form-populated-mobile
+        url: /admin/settings
+        viewport: [375, 812]
+        desc: "Settings form populated with existing church config"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Fields populated with existing data"
+          - "Church name, address, YouTube URL, phone, welcome message visible"
+          - "Default locale dropdown visible"
+          - "Optional fields marked (optionnel)"
+
+      - id: 03-settings-success-toast-mobile
+        url: /admin/settings
+        viewport: [375, 812]
+        desc: "Success toast after saving settings"
+        actions:
+          - login: "as owner user"
+          - click: "save button"
+        ux_checks:
+          - "Green success toast visible"
+          - "Toast text: 'Sauvegarde réussie' or similar"
+          - "Toast at bottom-center on mobile"
+          - "3s auto-dismiss"
+
+      # --- Desktop (1280px) ---
+      - id: 04-settings-form-desktop
+        url: /admin/settings
+        viewport: [1280, 800]
+        desc: "Church identity settings form on desktop"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Persistent left sidebar (288px)"
+          - "Form in max-width container (not full-width)"
+          - "Labels above fields"
+          - "Card container with rounded-2xl"
+          - "Submit button right-aligned"
+          - "indigo-600 accent on primary action"
+          - "Sidebar shows active 'Paramètres' with indigo-600"
+
+      - id: 05-settings-loading-skeleton-desktop
+        url: /admin/settings
+        viewport: [1280, 800]
+        desc: "Loading skeleton while fetching church config"
+        actions:
+          - login: "as owner user"
+          - mock_override: "settingsDelayed"
+        ux_checks:
+          - "Skeleton placeholders for form fields"
+          - "Skeleton pulse animation"
+          - "Layout matches final form structure"
+
+  2-2-department-crud-and-sub-ministries:
+    description: "Department CRUD with card grid, create/edit dialog, sub-ministries"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-departments-empty-mobile
+        url: /admin/departments
+        viewport: [375, 812]
+        desc: "Empty state when no departments exist"
+        actions:
+          - login: "as owner user"
+          - mock_override: "departmentsEmpty"
+        ux_checks:
+          - "Centered icon (FolderTree)"
+          - "Heading font-semibold"
+          - "Helper text muted-foreground, max-w-sm"
+          - "Create button below guidance text"
+          - "French guidance text"
+
+      - id: 02-departments-grid-mobile
+        url: /admin/departments
+        viewport: [375, 812]
+        desc: "Department cards in single-column layout on mobile"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Single-column card layout on mobile"
+          - "Each card: left border colored by department.color"
+          - "Department name + abbreviation badge"
+          - "Description text snippet"
+          - "Edit/Delete action buttons (Pencil, Trash)"
+          - "44px touch targets on action buttons"
+          - "rounded-2xl cards"
+
+      - id: 03-department-create-dialog-mobile
+        url: /admin/departments
+        viewport: [375, 812]
+        desc: "Create department dialog/sheet on mobile"
+        actions:
+          - login: "as owner user"
+          - click: "create department button"
+        ux_checks:
+          - "Sheet slides up from bottom on mobile"
+          - "Name, abbreviation, color picker, description fields"
+          - "Sub-ministry management section (add/remove rows)"
+          - "Labels above fields"
+          - "Full-width inputs"
+          - "Primary 'Créer' button full-width"
+          - "Cancel button as secondary/ghost"
+
+      - id: 04-department-color-picker-mobile
+        url: /admin/departments
+        viewport: [375, 812]
+        desc: "Color picker component open in create dialog"
+        actions:
+          - login: "as owner user"
+          - click: "create department button"
+          - click: "color picker"
+        ux_checks:
+          - "react-colorful picker visible"
+          - "44px touch targets"
+          - "Current color preview"
+
+      - id: 05-department-delete-confirm-mobile
+        url: /admin/departments
+        viewport: [375, 812]
+        desc: "Delete confirmation AlertDialog"
+        actions:
+          - login: "as owner user"
+          - click: "delete button on a department card"
+        ux_checks:
+          - "AlertDialog with warning text"
+          - "Destructive 'Supprimer' button in red-600"
+          - "'Annuler' cancel button as secondary"
+          - "French confirmation text"
+
+      # --- Desktop (1280px) ---
+      - id: 06-departments-grid-desktop
+        url: /admin/departments
+        viewport: [1280, 800]
+        desc: "Department cards in 3-column grid on desktop"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "3-column card grid (lg:grid-cols-3)"
+          - "Persistent left sidebar"
+          - "Page title text-2xl font-black"
+          - "Create button top-right (Plus icon)"
+          - "Cards with elevation-1 shadow-sm"
+          - "Cards lift on hover (elevation-2, translateY(-2px))"
+          - "Left border colored by department.color on each card"
+
+      - id: 07-department-edit-dialog-desktop
+        url: /admin/departments
+        viewport: [1280, 800]
+        desc: "Edit department dialog on desktop"
+        actions:
+          - login: "as owner user"
+          - click: "edit button on a department card"
+        ux_checks:
+          - "Dialog (not sheet) on desktop"
+          - "Form pre-populated with department data"
+          - "Color picker visible"
+          - "Sub-ministry rows with add/remove"
+          - "'Modifier' button as primary"
+          - "Dialog with rounded-2xl container"
+
+  2-3-activity-template-management:
+    description: "Activity template CRUD with card grid, role configuration"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-templates-empty-mobile
+        url: /admin/activity-templates
+        viewport: [375, 812]
+        desc: "Empty state when no templates exist"
+        actions:
+          - login: "as owner user"
+          - mock_override: "templatesEmpty"
+        ux_checks:
+          - "Centered icon (FileText)"
+          - "French guidance text"
+          - "Create button"
+          - "Single-column layout"
+
+      - id: 02-templates-grid-mobile
+        url: /admin/activity-templates
+        viewport: [375, 812]
+        desc: "Template cards in single-column on mobile"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Single-column card layout"
+          - "Template name text"
+          - "Description snippet"
+          - "Role summary as chips/badges"
+          - "Edit/Delete buttons"
+          - "44px touch targets"
+
+      - id: 03-template-create-dialog-mobile
+        url: /admin/activity-templates
+        viewport: [375, 812]
+        desc: "Create template dialog/sheet with dynamic role rows"
+        actions:
+          - login: "as owner user"
+          - click: "create template button"
+        ux_checks:
+          - "Sheet on mobile"
+          - "Name and description fields"
+          - "Dynamic role rows (name + headcount stepper)"
+          - "Headcount stepper: min=1, max=99"
+          - "'Ajouter un rôle' button"
+          - "Remove button per role row"
+          - "'Créer' primary button"
+
+      # --- Desktop (1280px) ---
+      - id: 04-templates-grid-desktop
+        url: /admin/activity-templates
+        viewport: [1280, 800]
+        desc: "Template cards in 3-column grid on desktop"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "3-column card grid"
+          - "Role summary badges per card"
+          - "Sidebar with active nav item"
+          - "Create button top-right"
+          - "Card hover lift effect"
+
+      - id: 05-template-edit-dialog-desktop
+        url: /admin/activity-templates
+        viewport: [1280, 800]
+        desc: "Edit template dialog with role rows on desktop"
+        actions:
+          - login: "as owner user"
+          - click: "edit button on a template card"
+        ux_checks:
+          - "Dialog on desktop"
+          - "Pre-populated form"
+          - "Dynamic role rows with headcount steppers"
+          - "'Modifier' primary button"
+          - "Inline validation errors visible (if triggered)"
+
+  2-4-recurring-program-schedule-configuration:
+    description: "Program schedule CRUD with card grid, time inputs, department association"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-schedules-empty-mobile
+        url: /admin/program-schedules
+        viewport: [375, 812]
+        desc: "Empty state when no schedules exist"
+        actions:
+          - login: "as owner user"
+          - mock_override: "schedulesEmpty"
+        ux_checks:
+          - "Centered icon (Clock)"
+          - "French guidance text"
+          - "Create button"
+
+      - id: 02-schedules-grid-mobile
+        url: /admin/program-schedules
+        viewport: [375, 812]
+        desc: "Schedule cards in single-column on mobile"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Single-column cards"
+          - "Title, day of week label (French: Samedi, Dimanche)"
+          - "Time range format (09:30 - 10:30)"
+          - "Host name (if set)"
+          - "Department badge with color (if associated)"
+          - "Edit/Delete buttons"
+
+      - id: 03-schedule-create-dialog-mobile
+        url: /admin/program-schedules
+        viewport: [375, 812]
+        desc: "Create schedule dialog/sheet on mobile"
+        actions:
+          - login: "as owner user"
+          - click: "create schedule button"
+        ux_checks:
+          - "Sheet on mobile"
+          - "Title, day-of-week select, start/end time inputs"
+          - "Host name input (optional)"
+          - "Department select dropdown (optional)"
+          - "Time inputs type='time'"
+          - "'Créer' primary button full-width"
+
+      # --- Desktop (1280px) ---
+      - id: 04-schedules-grid-desktop
+        url: /admin/program-schedules
+        viewport: [1280, 800]
+        desc: "Schedule cards in 3-column grid on desktop"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "3-column card grid"
+          - "French day-of-week labels"
+          - "Department badges with colors"
+          - "Sidebar active state"
+          - "Card hover effects"
+
+      - id: 05-schedule-form-validation-desktop
+        url: /admin/program-schedules
+        viewport: [1280, 800]
+        desc: "Form validation error (end time before start time)"
+        actions:
+          - login: "as owner user"
+          - click: "create schedule button"
+          - fill: "end time before start time"
+          - click: "submit"
+        ux_checks:
+          - "Red border on invalid field"
+          - "Inline error message below field"
+          - "Submit button state (disabled or error feedback)"
+
+  2-5-system-health-dashboard:
+    description: "System health dashboard with status cards, system info, setup status"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-health-dashboard-mobile
+        url: /admin/system-health
+        viewport: [375, 812]
+        desc: "System health dashboard on mobile"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Page title with refresh button (RefreshCw icon)"
+          - "Single-column card layout"
+          - "HealthStatusCard with status dot"
+          - "Green dot (bg-emerald-600) for healthy"
+          - "Status text in French: 'Sain'"
+          - "SystemInfoCard with version, uptime, environment"
+          - "SetupStatusCard with check/cross icons and counts"
+
+      - id: 02-health-status-healthy-mobile
+        url: /admin/system-health
+        viewport: [375, 812]
+        desc: "Healthy status indicators close-up"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Green status dot (emerald-600)"
+          - "French status text 'Sain'"
+          - "Check name in French"
+          - "Duration in HH:mm:ss format"
+
+      - id: 03-health-refresh-spinning-mobile
+        url: /admin/system-health
+        viewport: [375, 812]
+        desc: "Refresh button in spinning state"
+        actions:
+          - login: "as owner user"
+          - click: "refresh button"
+        ux_checks:
+          - "RefreshCw icon spinning"
+          - "Button shows loading state"
+          - "Cards not fully replaced (isFetching, not isLoading)"
+
+      # --- Desktop (1280px) ---
+      - id: 04-health-dashboard-desktop
+        url: /admin/system-health
+        viewport: [1280, 800]
+        desc: "System health dashboard in 3-column grid on desktop"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "3-column grid layout"
+          - "Health status cards, system info card, setup status card"
+          - "Sidebar with active nav item"
+          - "Refresh button top-right or in header"
+          - "Monospace font for version/IDs (operational register)"
+          - "Uptime formatted in French"
+
+      - id: 05-health-loading-skeleton-desktop
+        url: /admin/system-health
+        viewport: [1280, 800]
+        desc: "Loading skeleton state"
+        actions:
+          - login: "as owner user"
+          - mock_override: "healthDelayed"
+        ux_checks:
+          - "3 skeleton cards (h-40)"
+          - "Skeleton pulse animation"
+          - "Layout matches final content structure"
+
+  2-6-guided-first-time-setup-experience:
+    description: "Setup checklist on dashboard for OWNER — progressive step completion"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-setup-checklist-step1-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Setup checklist showing step 1 as current (Paramètres)"
+        actions:
+          - login: "as owner user"
+          - mock_override: "setupIncompleteStep1"
+        ux_checks:
+          - "Vertical checklist card at top of dashboard"
+          - "Step 1 'Paramètres' highlighted as current"
+          - "Indigo ring (ring-2 ring-indigo-600) on current step"
+          - "Subtle pulse animation on current step"
+          - "'Commencez ici' encouraging copy"
+          - "Steps 2-4 in pending state (grey circle, text-slate-400)"
+          - "Step 1 is clickable link to /admin/settings"
+
+      - id: 02-setup-checklist-step3-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Setup checklist with steps 1-2 complete, step 3 current"
+        actions:
+          - login: "as owner user"
+          - mock_override: "setupIncompleteStep3"
+        ux_checks:
+          - "Steps 1-2 show green checkmark (text-emerald-600)"
+          - "Step 3 'Modèles d'activités' as current with indigo ring"
+          - "Step 4 pending (grey)"
+          - "Completed steps are clickable links"
+
+      - id: 03-setup-complete-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Setup complete state"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "All 4 steps show green checkmarks"
+          - "Completion message: 'Configuration terminée — votre système est prêt!'"
+          - "No pulse animation"
+
+      # --- Desktop (1280px) ---
+      - id: 04-setup-checklist-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "Setup checklist on desktop dashboard"
+        actions:
+          - login: "as owner user"
+          - mock_override: "setupIncompleteStep2"
+        ux_checks:
+          - "Checklist card in dashboard content area"
+          - "Step 1 complete (green checkmark)"
+          - "Step 2 'Départements' as current with indigo ring"
+          - "Steps 3-4 pending"
+          - "Sidebar visible with dashboard active"
+          - "Card with rounded-2xl"
+
+      - id: 05-setup-loading-skeleton-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "Setup checklist loading skeleton"
+        actions:
+          - login: "as owner user"
+          - mock_override: "setupDelayed"
+        ux_checks:
+          - "Skeleton h-48 placeholder"
+          - "Matches checklist card dimensions"
+          - "Pulse animation"

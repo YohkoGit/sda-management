@@ -1,0 +1,300 @@
+# Capture Plan — Epic 1: Project Foundation & Authentication
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 1
+name: "Project Foundation & Authentication"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [anonymous, viewer, admin, owner]
+  seed_data: "Owner seed via OWNER_EMAIL, at least 1 viewer user, Google OAuth configured, church identity configured"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Color System, Typography System, Spacing & Layout"
+  - "§7 Design Direction — Mock Faithful Command (A+D Hybrid)"
+  - "§8 User Journey Flows — Journey 1 (Open and Know), Journey 2 (Check and Confirm)"
+  - "§10 UX Consistency Patterns — Button Hierarchy, Form Patterns, Feedback Patterns, Navigation Patterns"
+  - "§11 Responsive Design & Accessibility — Responsive Strategy, Touch Targets, Accessibility Strategy"
+
+stories:
+  1-4-google-oauth-sign-in-flow:
+    description: "Google OAuth sign-in: Connexion button, login page with Google button, error states"
+    role: anonymous
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-public-topnav-connexion-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Public page top nav showing Connexion/Sign In button on mobile"
+        actions: []
+        ux_checks:
+          - "Connexion/Sign In button visible in nav"
+          - "44px minimum touch target on sign-in button"
+          - "Inter font throughout"
+          - "French labels by default"
+
+      - id: 02-mobile-nav-drawer-signin
+        url: /
+        viewport: [375, 812]
+        desc: "Mobile nav drawer opened showing Sign In option"
+        actions:
+          - click: "hamburger menu / mobile menu trigger"
+        ux_checks:
+          - "Sheet slides up from bottom (or side)"
+          - "Sign In / Connexion button visible in drawer"
+          - "44px minimum touch targets"
+          - "Close/X button visible"
+
+      - id: 03-login-page-mobile
+        url: /login
+        viewport: [375, 812]
+        desc: "Login page with email input and Google button on mobile"
+        actions: []
+        ux_checks:
+          - "Google login button visible and prominent"
+          - "Email input field with visible label above (not floating)"
+          - "Single-column layout"
+          - "Primary button style: indigo-600 bg, white text"
+          - "Full-width buttons on mobile"
+          - "Minimum 14px text size (public register)"
+          - "Form follows single-column pattern"
+          - "Card container with rounded-2xl or similar"
+
+      - id: 04-login-page-error-user-not-found-mobile
+        url: "/?error=user_not_found"
+        viewport: [375, 812]
+        desc: "Error state when Google OAuth returns unmatched email"
+        actions: []
+        ux_checks:
+          - "Error message visible: 'Contactez votre administrateur' or similar"
+          - "Red/destructive color for error text"
+          - "Error does not block page interaction"
+          - "User can still see Connexion button to retry"
+
+      - id: 05-login-page-error-auth-failed-mobile
+        url: "/?error=auth_failed"
+        viewport: [375, 812]
+        desc: "Error state when OAuth flow fails"
+        actions: []
+        ux_checks:
+          - "Error message visible"
+          - "Red/destructive color for error text"
+          - "Retry affordance available"
+
+      # --- Desktop (1280px) ---
+      - id: 06-public-topnav-connexion-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Public page top nav with Connexion button on desktop"
+        actions: []
+        ux_checks:
+          - "Connexion/Sign In button visible right-aligned in top nav"
+          - "Button uses primary or outline variant (indigo-600)"
+          - "Full nav links visible (not hamburger)"
+          - "Inter font throughout"
+
+      - id: 07-login-page-desktop
+        url: /login
+        viewport: [1280, 800]
+        desc: "Login page with email input and Google button on desktop"
+        actions: []
+        ux_checks:
+          - "Google login button prominent"
+          - "Email input with label above field"
+          - "Form centered or contained in card"
+          - "Card with rounded-2xl and elevation-1 shadow"
+          - "Max-width constraint on form (not full-width on desktop)"
+          - "Primary button right-aligned or centered"
+          - "indigo-600 accent on primary actions"
+
+      - id: 08-login-page-error-user-not-found-desktop
+        url: "/?error=user_not_found"
+        viewport: [1280, 800]
+        desc: "Error state on desktop when unmatched email"
+        actions: []
+        ux_checks:
+          - "Error message visible with French text"
+          - "Red/destructive styling"
+          - "Does not break page layout"
+
+  1-5-email-password-sign-in-and-first-login-password-set:
+    description: "Email/password login flow: email step, password step, set-password step, forgot password"
+    role: anonymous
+    screens:
+      - id: 01-login-email-step-mobile
+        url: /login
+        viewport: [375, 812]
+        desc: "Login page email entry step"
+        actions: []
+        ux_checks:
+          - "Email input with visible label"
+          - "Continue/Submit button"
+          - "Google login button as alternative"
+          - "Full-width buttons on mobile"
+
+      - id: 02-login-password-step-mobile
+        url: /login
+        viewport: [375, 812]
+        desc: "Login page password step after email submission"
+        actions:
+          - fill: "email field with test user email"
+          - click: "submit/continue button"
+        ux_checks:
+          - "Password field visible with label"
+          - "Forgot password link visible"
+          - "Submit button"
+          - "Back/change email affordance"
+
+      - id: 03-login-set-password-mobile
+        url: /login
+        viewport: [375, 812]
+        desc: "First-login password setup with strength indicator"
+        actions:
+          - fill: "email field with first-login user email"
+          - click: "submit/continue button"
+        ux_checks:
+          - "Password field and confirm password field"
+          - "PasswordStrengthIndicator showing 4 criteria"
+          - "Green checkmarks for met criteria, red for unmet"
+          - "Submit button disabled until valid"
+
+      - id: 04-forgot-password-mobile
+        url: /forgot-password
+        viewport: [375, 812]
+        desc: "Forgot password page"
+        actions: []
+        ux_checks:
+          - "Email input field"
+          - "Submit button"
+          - "Back to login link"
+          - "Single-column form layout"
+
+      - id: 05-login-page-desktop
+        url: /login
+        viewport: [1280, 800]
+        desc: "Login page on desktop"
+        actions: []
+        ux_checks:
+          - "Centered form card"
+          - "Max-width constraint"
+          - "Card with rounded-2xl shadow"
+
+      - id: 06-forgot-password-desktop
+        url: /forgot-password
+        viewport: [1280, 800]
+        desc: "Forgot password page on desktop"
+        actions: []
+        ux_checks:
+          - "Centered form card"
+          - "Back to login link"
+
+  1-6-application-shell-dual-navigation-and-i18n:
+    description: "App shell with public/auth navigation, bottom tabs, sidebar, i18n toggle"
+    role: anonymous  # Start anonymous, then check authenticated
+    screens:
+      # Public navigation
+      - id: 01-public-nav-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Public navigation on mobile — bottom tab bar"
+        actions: []
+        ux_checks:
+          - "Bottom tab bar visible with 4 tabs"
+          - "Tabs: Accueil, Calendrier, Départements, Plus (or similar)"
+          - "Active tab: indigo-600 fill"
+          - "Inactive tabs: slate-500"
+          - "48px minimum height on tab bar"
+          - "French labels by default"
+
+      - id: 02-public-nav-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Public navigation on desktop — top nav or sidebar"
+        actions: []
+        ux_checks:
+          - "Full nav links visible"
+          - "Connexion button right-aligned"
+          - "Church name/logo in nav"
+          - "French labels by default"
+
+      - id: 03-language-toggle-en
+        url: /
+        viewport: [375, 812]
+        desc: "Language toggle switched to English"
+        actions:
+          - click: "language toggle to EN"
+        ux_checks:
+          - "UI labels switch to English"
+          - "Nav items in English"
+          - "Toggle shows EN active"
+
+      - id: 04-language-toggle-fr
+        url: /
+        viewport: [375, 812]
+        desc: "Language toggle back to French (default)"
+        actions:
+          - click: "language toggle to FR"
+        ux_checks:
+          - "UI labels back to French"
+          - "French is default"
+
+      # Authenticated navigation (requires login)
+      - id: 05-auth-nav-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Authenticated bottom tab bar"
+        actions:
+          - login: "as viewer user"
+        ux_checks:
+          - "Bottom tab bar with operational tabs"
+          - "Active tab: indigo-600"
+          - "User avatar or name visible"
+
+      - id: 06-auth-nav-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Authenticated desktop sidebar"
+        actions:
+          - login: "as viewer user"
+        ux_checks:
+          - "Persistent left sidebar (288px)"
+          - "Dashboard, Calendrier, Départements, Administration, Paramètres"
+          - "indigo-600 active state on current item"
+          - "User info visible in sidebar"
+
+  1-7-sign-out-and-session-cleanup:
+    description: "Sign out flow and session expired handling"
+    role: viewer
+    screens:
+      - id: 01-signout-trigger-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Sign out action location on mobile"
+        actions:
+          - login: "as viewer user"
+          - click: "More tab or user menu"
+        ux_checks:
+          - "Déconnexion / Sign Out option visible"
+          - "44px touch target"
+
+      - id: 02-after-signout-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "State after successful sign out"
+        actions:
+          - login: "as viewer user"
+          - click: "sign out button"
+        ux_checks:
+          - "Redirected to public view"
+          - "Connexion button visible again"
+          - "No authenticated nav items"
+
+      - id: 03-signout-trigger-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Sign out on desktop"
+        actions:
+          - login: "as viewer user"
+        ux_checks:
+          - "Déconnexion option in sidebar or user menu"

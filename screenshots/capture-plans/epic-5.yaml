@@ -1,0 +1,578 @@
+# Capture Plan — Epic 5: Public Dashboard & Anonymous Experience
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 5
+name: "Public Dashboard & Anonymous Experience"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [anonymous]
+  seed_data: "At least 1 public-visibility activity with prédicateur assigned, church identity configured"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Color System, Typography System"
+  - "§7 Design Direction — Mock Faithful Command (A+D Hybrid)"
+  - "§8 User Journey Flows — Journey 1: Open and Know"
+  - "§9 Component Strategy — ActivityCard hero variant, StaffingIndicator"
+  - "§10 UX Consistency Patterns — Public Register rules"
+  - "§11 Responsive Design & Accessibility"
+
+stories:
+  5-1-public-dashboard-hero-section-and-next-activity:
+    description: "Public dashboard hero with church identity and next activity"
+    role: anonymous
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-hero-mobile-loaded
+        url: /
+        viewport: [375, 812]
+        desc: "Hero section mobile — church identity + next activity with prédicateur"
+        actions: []
+        ux_checks:
+          - "bg-slate-800 dark hero background (NOT slate-900)"
+          - "Church name in text-3xl font-black text-white"
+          - "Address + welcome message in text-sm text-slate-300"
+          - "Prédicateur 48px avatar (circular, rounded-full)"
+          - "Prédicateur name in text-xl font-bold text-white"
+          - "Department badge with abbreviation"
+          - "Date in warm French format ('Ce Sabbat' or lowercase date)"
+          - "Start/end times visible"
+          - "Full-width, vertically stacked layout"
+          - "Prédicateur visible above fold without scrolling"
+          - "Minimum 14px text (public register — no micro-labels)"
+          - "Inter font throughout"
+
+      - id: 02-hero-mobile-topnav
+        url: /
+        viewport: [375, 812]
+        desc: "Public top nav on mobile with hero below"
+        actions: []
+        ux_checks:
+          - "Sticky top nav visible"
+          - "Church name in nav"
+          - "Hamburger menu icon (not full nav links)"
+          - "Connexion button visible"
+          - "French labels by default"
+
+      # --- Desktop (1280px) ---
+      - id: 03-hero-desktop-loaded
+        url: /
+        viewport: [1280, 800]
+        desc: "Hero section desktop — side-by-side church identity + activity"
+        actions: []
+        ux_checks:
+          - "bg-slate-800 dark hero background"
+          - "lg:flex layout — church identity left, activity right"
+          - "Inner content constrained: max-w-7xl"
+          - "48px prédicateur avatar + name"
+          - "Department badge with abbreviation"
+          - "Full top nav with all links visible (not hamburger)"
+          - "Connexion button right-aligned in nav"
+          - "py-16 vertical padding on desktop (sm:py-16)"
+
+      # --- Empty state ---
+      - id: 04-hero-empty-state
+        url: /
+        viewport: [375, 812]
+        desc: "Hero section when no upcoming activities (204 response)"
+        actions:
+          - mock_override: "publicHandlersEmpty"
+        ux_checks:
+          - "Church identity still visible (name, address, welcome)"
+          - "Empty message: 'Aucune activité à venir — revenez bientôt!'"
+          - "Message in text-base text-slate-300"
+          - "No broken layout or missing sections"
+
+      # --- Loading state ---
+      - id: 05-hero-loading-skeleton
+        url: /
+        viewport: [375, 812]
+        desc: "Hero section skeleton loading state"
+        actions:
+          - mock_override: "publicHandlersDelayed"
+          - note: "Capture before data resolves — skeleton should show"
+        ux_checks:
+          - "Church identity loads first (from cached config)"
+          - "Skeleton placeholders for activity data"
+          - "Skeleton uses bg-slate-700 (NOT default bg-accent)"
+          - "Skeleton shapes match final layout (circle for avatar, bars for text)"
+
+      # --- Error state ---
+      - id: 06-hero-error-state
+        url: /
+        viewport: [375, 812]
+        desc: "Hero section when API returns error"
+        actions:
+          - mock_override: "publicHandlersError"
+        ux_checks:
+          - "Church identity still visible"
+          - "Error message: 'Impossible de charger les activités'"
+          - "Subtle error text in text-sm text-slate-400"
+          - "No full error page or crash"
+
+      # --- Other public pages (layout impact from 5.1) ---
+      - id: 07-public-calendar-page
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Public calendar page with own max-w wrapper (post 5.1 layout change)"
+        actions: []
+        ux_checks:
+          - "Content has mx-auto max-w-7xl wrapper"
+          - "Not full-bleed (unlike hero)"
+          - "Top nav consistent with homepage"
+
+      - id: 08-public-departments-page
+        url: /departments
+        viewport: [1280, 800]
+        desc: "Public departments page with own max-w wrapper"
+        actions: []
+        ux_checks:
+          - "Content has mx-auto max-w-7xl wrapper"
+          - "Top nav consistent"
+
+      # --- Language toggle ---
+      - id: 09-hero-english-toggle
+        url: /
+        viewport: [1280, 800]
+        desc: "Hero section after switching to English"
+        actions:
+          - click: "language-toggle"
+        ux_checks:
+          - "All hero text in English"
+          - "'This Sabbath' or English date format"
+          - "'Preacher' label instead of 'Prédicateur'"
+          - "Nav labels in English"
+
+  5-2-youtube-live-stream-embed:
+    description: "YouTube section with live indicator, embed modes, and link card fallback"
+    role: anonymous
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- Link Card Mode (channel URL, not live) ---
+      - id: 01-youtube-link-card-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "HomePage YouTube section — link card mode (channel URL, not live)"
+        actions:
+          - route_mock: { "/api/config": "configWithYouTubeChannel", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "YouTube section visible below hero"
+          - "Heading 'Suivez le culte en direct' in text-2xl font-bold text-slate-900"
+          - "NO live indicator (EN DIRECT) shown"
+          - "Link card with YouTube play icon (red circle, white triangle)"
+          - "'Regarder sur YouTube' text in text-base font-semibold"
+          - "Card has rounded-2xl border border-slate-200 bg-slate-50"
+          - "aspect-video maintained (16:9 ratio)"
+          - "Section bg-white (contrast with dark hero above)"
+          - "Minimum 14px text (public register)"
+          - "Full-width on mobile"
+
+      - id: 02-youtube-link-card-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "HomePage YouTube section — link card desktop"
+        actions:
+          - route_mock: { "/api/config": "configWithYouTubeChannel", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "YouTube section below hero, constrained by max-w-7xl"
+          - "Heading + content within px-4 sm:py-12 padding"
+          - "Link card centered in container"
+          - "rounded-2xl card with shadow on hover (verify hover state if possible)"
+          - "Content not full-bleed, proper max-width constraint"
+
+      # --- Live Embed Mode (API returns isLive=true) ---
+      - id: 03-youtube-live-embed-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "HomePage YouTube section — live embed with EN DIRECT indicator"
+        actions:
+          - route_mock: { "/api/config": "configWithYouTubeChannel", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "live" }
+        ux_checks:
+          - "YouTube section visible below hero"
+          - "Heading 'Suivez le culte en direct'"
+          - "LiveIndicator visible: pulsing rose-500 dot (8px, animate-pulse) + 'EN DIRECT' text"
+          - "EN DIRECT text in text-sm font-semibold text-rose-500"
+          - "Heading + LiveIndicator inline-flex on same line (gap-3)"
+          - "iframe embed visible with 16:9 aspect ratio (aspect-video)"
+          - "iframe has rounded-2xl overflow-hidden shadow-lg"
+          - "Full-width embed on mobile"
+
+      - id: 04-youtube-live-embed-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "HomePage YouTube section — live embed desktop"
+        actions:
+          - route_mock: { "/api/config": "configWithYouTubeChannel", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "live" }
+        ux_checks:
+          - "iframe embed at 16:9 ratio within max-w-7xl"
+          - "LiveIndicator inline with heading"
+          - "rounded-2xl shadow-lg on embed container"
+          - "sm:py-12 vertical padding"
+
+      # --- Static Embed Mode (video URL, not live) ---
+      - id: 05-youtube-static-embed-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "HomePage YouTube section — static embed (video URL in config, not live)"
+        actions:
+          - route_mock: { "/api/config": "configWithVideoUrl", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "iframe embed visible (static video from URL)"
+          - "NO live indicator shown (not live)"
+          - "aspect-video 16:9 ratio maintained"
+          - "rounded-2xl shadow-lg on embed"
+
+      # --- No YouTube URL (section hidden) ---
+      - id: 06-youtube-no-url-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "HomePage — YouTube section completely hidden when no URL configured"
+        actions:
+          - route_mock: { "/api/config": "configNoYouTube", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "NO YouTube section visible"
+          - "Hero section renders normally"
+          - "No empty container, no broken embed, no gap"
+          - "Page flows directly from hero to next section placeholder"
+
+      # --- LivePage ---
+      - id: 07-live-page-link-card-desktop
+        url: /live
+        viewport: [1280, 800]
+        desc: "LivePage with YouTubeSection — link card mode"
+        actions:
+          - route_mock: { "/api/config": "configWithYouTubeChannel", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "Page title 'En Direct' in text-2xl font-black"
+          - "YouTubeSection rendered below title"
+          - "Link card mode (channel URL, not live)"
+          - "Page wrapper mx-auto max-w-7xl px-4 py-6"
+          - "Content constrained, not full-bleed"
+
+      - id: 08-live-page-live-mobile
+        url: /live
+        viewport: [375, 812]
+        desc: "LivePage with live embed + EN DIRECT indicator"
+        actions:
+          - route_mock: { "/api/config": "configWithYouTubeChannel", "/api/public/live-status": "live" }
+        ux_checks:
+          - "Page title 'En Direct'"
+          - "YouTubeSection with live embed iframe"
+          - "LiveIndicator pulsing rose-500 dot + 'EN DIRECT'"
+          - "Full-width embed on mobile"
+
+  5-3-upcoming-activities-and-program-times:
+    description: "Upcoming activities list with activity cards + recurring program times schedule"
+    role: anonymous
+    note: "Backend live — real API responses for loaded state. Playwright route interception for empty/error states."
+    screens:
+      # --- Mobile (375px) — Upcoming Activities ---
+      - id: 01-upcoming-activities-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Upcoming activities section on mobile — activity cards stacked full-width"
+        actions:
+          - scroll_to: "section[aria-labelledby='upcoming-activities-heading']"
+        ux_checks:
+          - "Section heading 'Activités à venir' in text-2xl font-bold text-slate-900"
+          - "bg-white section background"
+          - "Activity cards stacked vertically (single column on mobile)"
+          - "Each card has rounded-2xl border border-slate-200 bg-white"
+          - "Each card has 4px left border colored with department color"
+          - "Date line in text-sm font-semibold text-indigo-600"
+          - "Time range in text-sm text-slate-600 (French format: 9h30–12h00)"
+          - "Activity title in text-lg font-bold text-slate-900"
+          - "Department badge (Badge variant=secondary) with abbreviation"
+          - "Prédicateur row: 28px avatar (initials fallback bg-indigo-600) + name in text-sm text-slate-700"
+          - "No prédicateur row when predicateurName is null"
+          - "Special type badge (variant=outline) when specialType present"
+          - "Minimum 14px text (public register — no micro-labels)"
+          - "mx-auto max-w-7xl px-4 py-8 inner wrapper"
+          - "gap-4 between cards"
+
+      # --- Desktop (1280px) — Upcoming Activities ---
+      - id: 02-upcoming-activities-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Upcoming activities section on desktop — 2-column grid"
+        actions:
+          - scroll_to: "section[aria-labelledby='upcoming-activities-heading']"
+        ux_checks:
+          - "Section heading 'Activités à venir' in text-2xl font-bold"
+          - "2-column grid layout (sm:grid-cols-2)"
+          - "Activity cards with department color left-border accent"
+          - "Cards have sm:p-5 padding on desktop"
+          - "max-w-7xl content constraint"
+          - "sm:py-12 section vertical padding"
+
+      # --- Mobile (375px) — Program Times ---
+      - id: 03-program-times-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Program times section on mobile — schedule rows stacked vertically"
+        actions:
+          - scroll_to: "section[aria-labelledby='program-schedules-heading']"
+        ux_checks:
+          - "Section heading 'Horaire des programmes' in text-2xl font-bold text-slate-900"
+          - "bg-slate-50 section background (subtle contrast from white upcoming section)"
+          - "Each program row: title + host stacked above day + time (flex-col on mobile)"
+          - "Program title in text-base font-semibold text-slate-900"
+          - "Host name in text-sm text-slate-500 with dash separator"
+          - "Day name in text-sm font-medium text-slate-700 (French: 'Samedi')"
+          - "Time range in text-sm text-slate-500 (French format: 9h30–10h30)"
+          - "divide-y divide-slate-200 separators between rows"
+          - "Readable without horizontal scrolling"
+          - "Minimum 14px text"
+          - "mx-auto max-w-7xl px-4 py-8 inner wrapper"
+
+      # --- Desktop (1280px) — Program Times ---
+      - id: 04-program-times-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Program times section on desktop — side-by-side layout"
+        actions:
+          - scroll_to: "section[aria-labelledby='program-schedules-heading']"
+        ux_checks:
+          - "Program rows: title+host left, day+time right (sm:flex-row sm:justify-between)"
+          - "bg-slate-50 section background"
+          - "sm:py-12 section vertical padding"
+          - "max-w-7xl content constraint"
+
+      # --- Empty Upcoming Activities (requires route interception) ---
+      - id: 05-upcoming-empty-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Upcoming activities section with empty state — no activities"
+        actions:
+          - route_mock: { "/api/public/upcoming-activities": "empty_array" }
+          - scroll_to: "section[aria-labelledby='upcoming-activities-heading']"
+        ux_checks:
+          - "Section heading still visible"
+          - "Empty message: 'Aucune activité à venir — revenez bientôt!'"
+          - "Empty text in text-base text-slate-500 text-center"
+          - "No broken layout, no missing sections"
+
+      # --- Empty Program Schedules (section hidden) ---
+      - id: 06-programs-empty-hidden
+        url: /
+        viewport: [375, 812]
+        desc: "Full homepage when program schedules are empty — section should be completely hidden"
+        actions:
+          - route_mock: { "/api/public/program-schedules": "empty_array" }
+        ux_checks:
+          - "No 'Horaire des programmes' heading visible"
+          - "No empty container or gap where section would be"
+          - "Upcoming activities section flows to next section placeholder"
+
+      # --- English Language Toggle ---
+      - id: 07-sections-english-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Both sections after switching to English"
+        actions:
+          - click: "language-toggle"
+          - scroll_to: "section[aria-labelledby='upcoming-activities-heading']"
+        ux_checks:
+          - "Section heading 'Upcoming Activities' (English)"
+          - "'Program Schedule' heading (English)"
+          - "Day names in English ('Saturday')"
+          - "Date format in English"
+          - "All card text in English"
+
+  5-4-public-department-overview:
+    description: "Department overview section with card grid, next activity per dept, responsive layout"
+    role: anonymous
+    note: "Backend live — real API responses for loaded state. Playwright route interception for empty/error states."
+    screens:
+      # --- Mobile (375px) — Department Overview ---
+      - id: 01-departments-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Department overview section on mobile — single-column card grid"
+        actions:
+          - scroll_to: "section[aria-labelledby='department-overview-heading']"
+        ux_checks:
+          - "Section heading 'Nos Départements' in text-2xl font-bold text-slate-900"
+          - "bg-slate-50 section background (visual separation from ProgramTimes above)"
+          - "Single-column layout on mobile (grid-cols-1)"
+          - "Department cards with rounded-2xl border border-l-4 border-slate-200 bg-white"
+          - "4px left border colored with department hex color (inline borderLeftColor)"
+          - "Department name in text-lg font-bold text-slate-900"
+          - "Abbreviation badge (Badge variant=secondary) next to name"
+          - "Description truncated to 2 lines (line-clamp-2) in text-sm text-slate-600"
+          - "Separator line (border-t border-slate-100) before next activity"
+          - "Next activity: date + time + title in text-sm text-slate-500"
+          - "Dept with no activity: 'Aucune activité planifiée' in text-sm italic text-slate-400"
+          - "Minimum 14px text (public register — no micro-labels)"
+          - "mx-auto max-w-7xl px-4 py-8 inner wrapper"
+          - "gap-4 between cards"
+          - "No hover effects, no cursor-pointer (static cards)"
+
+      # --- Desktop (1280px) — Department Overview ---
+      - id: 02-departments-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Department overview section on desktop — 3-column grid"
+        actions:
+          - scroll_to: "section[aria-labelledby='department-overview-heading']"
+        ux_checks:
+          - "3-column grid layout (lg:grid-cols-3)"
+          - "bg-slate-50 section background"
+          - "sm:py-12 section vertical padding on desktop"
+          - "max-w-7xl content constraint"
+          - "Department cards with department color left-border accent"
+          - "Badge variant=secondary for abbreviation"
+          - "Description with line-clamp-2 and title attribute for full text on hover"
+          - "Cards have sm:p-5 padding on desktop"
+          - "gap-4 between cards"
+
+      # --- Tablet (640px) — Department Overview ---
+      - id: 03-departments-tablet
+        url: /
+        viewport: [768, 1024]
+        desc: "Department overview section on tablet — 2-column grid"
+        actions:
+          - scroll_to: "section[aria-labelledby='department-overview-heading']"
+        ux_checks:
+          - "2-column grid layout (sm:grid-cols-2)"
+          - "Cards evenly distributed across 2 columns"
+          - "bg-slate-50 background"
+          - "Readable card content at tablet width"
+
+      # --- Empty Departments (section hidden) ---
+      - id: 04-departments-empty-hidden
+        url: /
+        viewport: [375, 812]
+        desc: "Full homepage when no departments exist — section completely hidden"
+        actions:
+          - route_mock: { "/api/public/departments": "empty_array" }
+        ux_checks:
+          - "No 'Nos Départements' heading visible"
+          - "No empty container or gap where section would be"
+          - "Program Times section flows to page end cleanly"
+
+      # --- Error State ---
+      - id: 05-departments-error-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Department section when API returns 500 — error message"
+        actions:
+          - route_mock: { "/api/public/departments": "error_500" }
+          - scroll_to: "section[aria-labelledby='department-overview-heading']"
+        ux_checks:
+          - "Section heading 'Nos Départements' still visible"
+          - "Error message text (loadError key) in text-base text-slate-500"
+          - "No broken layout, no crash"
+
+      # --- English Language Toggle ---
+      - id: 06-departments-english-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Department section after switching to English"
+        actions:
+          - click: "language-toggle"
+          - scroll_to: "section[aria-labelledby='department-overview-heading']"
+        ux_checks:
+          - "Section heading 'Our Departments' (English)"
+          - "'No planned activities' for dept without next activity (English)"
+          - "Date format adapts to English locale"
+
+  5-5-public-calendar-view:
+    description: "Public calendar page with Schedule-X, department color coding, Sunday-first, responsive"
+    role: anonymous
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- Desktop (1280px) — Month Grid (Default View) ---
+      - id: 01-calendar-month-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Default month grid view on desktop with department-colored events"
+        actions:
+          - route_mock: { "/api/config": "publicConfig", "/api/public/departments": "departments", "/api/public/calendar": "calendarActivities", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "Page heading 'Calendrier' in text-2xl font-bold text-slate-900"
+          - "Schedule-X month grid visible with day cells"
+          - "Sunday-first week layout (firstDayOfWeek: 7)"
+          - "Department-colored event blocks visible (CU rose, JA teal, MIFEM violet)"
+          - "Event blocks show department abbreviation in title ([CU], [JA], [MIFEM])"
+          - "Color blocks large enough for quick-scan category signal"
+          - "mx-auto max-w-7xl px-4 sm:py-8 wrapper"
+          - "Calendar container has explicit height (h-[800px] on lg)"
+          - "Top nav consistent with other public pages"
+          - "View switcher buttons visible (Month, Week, Day)"
+          - "role=region with aria-label on calendar container"
+
+      # --- Mobile (375px) — Responsive Day View ---
+      - id: 02-calendar-mobile-responsive
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Calendar auto-switches to day view on mobile (isResponsive: true)"
+        actions:
+          - route_mock: { "/api/config": "publicConfig", "/api/public/departments": "departments", "/api/public/calendar": "calendarActivities", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "Page heading 'Calendrier' visible"
+          - "Day view rendered (not month grid — responsive mode)"
+          - "No horizontal scrolling"
+          - "Calendar fills container width"
+          - "Department-colored events visible on day timeline"
+          - "Event blocks show department abbreviation in title"
+          - "h-[600px] calendar container height on mobile"
+          - "px-4 py-6 padding"
+
+      # --- Desktop (1280px) — Week View ---
+      - id: 03-calendar-week-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Week view on desktop after switching from month grid"
+        actions:
+          - route_mock: { "/api/config": "publicConfig", "/api/public/departments": "departments", "/api/public/calendar": "calendarActivities", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+          - click_view: "week"
+        ux_checks:
+          - "7-day week view with time axis (06:00–22:00)"
+          - "Sunday-first layout (first column is Sunday)"
+          - "Department-colored event blocks in time slots"
+          - "Events positioned correctly in time slots"
+          - "Event width ~95% of column (eventWidth: 95)"
+
+      # --- Desktop (1280px) — Error State ---
+      - id: 04-calendar-error-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Calendar page with API error and retry button"
+        actions:
+          - route_mock: { "/api/config": "publicConfig", "/api/public/departments": "departments", "/api/public/calendar": "error_500", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+        ux_checks:
+          - "Page heading 'Calendrier' still visible"
+          - "Error message text in text-sm text-red-600"
+          - "Retry button visible (rounded-md bg-slate-100 text-sm font-medium)"
+          - "Calendar container still rendered (not crashed)"
+          - "No broken layout"
+
+      # --- Desktop (1280px) — English Toggle ---
+      - id: 05-calendar-english-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Calendar page after switching to English"
+        actions:
+          - route_mock: { "/api/config": "publicConfig", "/api/public/departments": "departments", "/api/public/calendar": "calendarActivities", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+          - click: "language-toggle"
+        ux_checks:
+          - "Page heading 'Calendar' (English)"
+          - "Schedule-X UI labels in English (en-US locale)"
+          - "Nav labels in English"
+          - "Day headers in English"
+
+      # --- Mobile (375px) — Skeleton Loading ---
+      - id: 06-calendar-skeleton-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Calendar loading skeleton while departments fetch"
+        actions:
+          - route_mock: { "/api/config": "publicConfig", "/api/public/departments": "delayed_5s", "/api/public/calendar": "calendarActivities", "/api/public/next-activity": "nextActivity", "/api/public/live-status": "notLive" }
+          - capture_before_resolve: true
+        ux_checks:
+          - "Skeleton h-8 w-48 for title placeholder"
+          - "Skeleton h-[600px] w-full rounded-2xl for calendar placeholder"
+          - "mx-auto max-w-7xl px-4 py-6 wrapper"
+          - "No broken layout during loading"

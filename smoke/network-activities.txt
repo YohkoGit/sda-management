@@ -1,0 +1,9 @@
+133. [GET] http://localhost:5173/api/activities?departmentId=2 => [200] OK
+139. [POST] http://localhost:5173/api/activities => [201] Created
+140. [GET] http://localhost:5173/api/activities?departmentId=2 => [200] OK
+141. [GET] http://localhost:5173/api/activities?departmentId=2 => [200] OK
+142. [GET] http://localhost:5173/api/activities/8 => [200] OK
+143. [GET] http://localhost:5173/api/activities?pageSize=10 => [403] Forbidden
+144. [GET] http://localhost:5173/api/activities?pageSize=10 => [403] Forbidden
+
+Note: 128 static requests not shown, run with "static" option to see them.

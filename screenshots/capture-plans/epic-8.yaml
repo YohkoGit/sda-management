@@ -1,0 +1,403 @@
+# Capture Plan — Epic 8: Department Management
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 8
+name: "Department Management"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [viewer, admin]
+  seed_data: "N/A — all API responses mocked via Playwright route interception"
+  note: "Backend running but route interception used for consistent screenshots"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Department Color Palette, Status Indicators"
+  - "§7 Typography System — Micro-labels, Operational Register"
+  - "§8 User Journey Flows — Journey 3: Department Director Monitoring, Journey 4: Pastor Cross-Department"
+  - "§9 Component Strategy — StaffingIndicator, DepartmentBadge, ActivityCard"
+  - "§10 UX Consistency Patterns — Vocabulary Register (Unités Ministérielles)"
+  - "§11 Responsive Design — Breakpoint Behavior Per View (Department View)"
+  - "§12 Empty States — Encouraging tone, not clinical"
+
+route_mocks:
+  publicConfig:
+    endpoint: "/api/config"
+    response:
+      churchName: "Église Adventiste de Saint-Hubert"
+      youTubeChannelUrl: null
+
+  auth_me_viewer:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 2
+      email: "viewer@test.local"
+      firstName: "Marie"
+      lastName: "Laurent"
+      role: "Viewer"
+      departmentIds: []
+
+  auth_me_admin:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 3
+      email: "admin@test.local"
+      firstName: "Ketsia"
+      lastName: "Pierre"
+      role: "Admin"
+      departmentIds: [2, 3]
+
+  departmentsWithStaffing:
+    endpoint: "/api/departments/with-staffing"
+    response:
+      - id: 1
+        name: "Culte"
+        abbreviation: "CU"
+        color: "#F43F5E"
+        description: "Organisation des cultes et services religieux chaque sabbat."
+        subMinistryCount: 2
+        aggregateStaffingStatus: "FullyStaffed"
+        upcomingActivityCount: 4
+      - id: 2
+        name: "Jeunesse Adventiste"
+        abbreviation: "JA"
+        color: "#14B8A6"
+        description: "Activités pour les jeunes et les Explorateurs."
+        subMinistryCount: 3
+        aggregateStaffingStatus: "PartiallyStaffed"
+        upcomingActivityCount: 2
+      - id: 3
+        name: "Ministère de la Femme"
+        abbreviation: "MIFEM"
+        color: "#8B5CF6"
+        description: "Soutien et activités pour les femmes de la communauté."
+        subMinistryCount: 1
+        aggregateStaffingStatus: "CriticalGap"
+        upcomingActivityCount: 3
+      - id: 4
+        name: "Diaconat"
+        abbreviation: "DIA"
+        color: "#0EA5E9"
+        description: "Service d'accueil et d'hospitalité."
+        subMinistryCount: 0
+        aggregateStaffingStatus: "NoActivities"
+        upcomingActivityCount: 0
+      - id: 5
+        name: "Ministère des Enfants"
+        abbreviation: "ME"
+        color: "#F59E0B"
+        description: "Programmes éducatifs et récréatifs pour les enfants."
+        subMinistryCount: 2
+        aggregateStaffingStatus: "FullyStaffed"
+        upcomingActivityCount: 1
+
+  departmentDetail_JA:
+    endpoint: "/api/departments/2"
+    response:
+      id: 2
+      name: "Jeunesse Adventiste"
+      abbreviation: "JA"
+      color: "#14B8A6"
+      description: "Activités pour les jeunes et les Explorateurs."
+      subMinistries:
+        - id: 10
+          name: "Explorateurs"
+        - id: 11
+          name: "Tisons"
+        - id: 12
+          name: "Ambassadeurs"
+      createdAt: "2026-01-15T00:00:00Z"
+      updatedAt: "2026-03-10T00:00:00Z"
+
+  activitiesByDept_JA:
+    endpoint: "/api/activities?departmentId=2"
+    response:
+      - id: 301
+        title: "Programme JA"
+        date: "2026-03-21"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        staffingStatus: "FullyStaffed"
+        assignedCount: 4
+        totalHeadcount: 4
+        specialType: null
+      - id: 302
+        title: "Sortie Explorateurs"
+        date: "2026-03-28"
+        startTime: "09:00:00"
+        endTime: "17:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        staffingStatus: "PartiallyStaffed"
+        assignedCount: 2
+        totalHeadcount: 5
+        specialType: null
+      - id: 303
+        title: "Camp de jeunesse"
+        date: "2026-04-05"
+        startTime: "08:00:00"
+        endTime: "18:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        staffingStatus: "CriticalGap"
+        assignedCount: 0
+        totalHeadcount: 8
+        specialType: "camp"
+      - id: 304
+        title: "Ancien programme"
+        date: "2026-02-15"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        staffingStatus: "FullyStaffed"
+        assignedCount: 3
+        totalHeadcount: 3
+        specialType: null
+
+  departmentDetail_DIA:
+    endpoint: "/api/departments/4"
+    response:
+      id: 4
+      name: "Diaconat"
+      abbreviation: "DIA"
+      color: "#0EA5E9"
+      description: "Service d'accueil et d'hospitalité."
+      subMinistries: []
+      createdAt: "2026-01-15T00:00:00Z"
+      updatedAt: "2026-03-10T00:00:00Z"
+
+  activitiesByDept_DIA:
+    endpoint: "/api/activities?departmentId=4"
+    response: []
+
+stories:
+  8-1-department-list-and-detail-view:
+    description: "Auth department list with aggregate staffing + detail view with activity pipeline"
+    role: viewer
+    note: "Route interception used for consistent data across captures"
+    screens:
+      # --- DEPARTMENT LIST: Desktop ---
+      - id: 01-dept-list-desktop
+        url: /my-departments
+        viewport: [1280, 800]
+        desc: "Department list with 5 departments, aggregate staffing dots, color-coded borders, responsive 3-col grid"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+        ux_checks:
+          - "Page heading: 'Unités Ministérielles' (not 'Départements') — operational vocabulary"
+          - "3-column card grid on desktop (lg:grid-cols-3)"
+          - "Each card has color-coded 4px left border matching department color"
+          - "Department name (text-lg font-bold) + abbreviation Badge visible"
+          - "Description text (line-clamp-2, text-sm text-slate-600)"
+          - "Sub-ministry count shown (text-xs text-slate-400)"
+          - "Aggregate staffing dots: CU green (FullyStaffed), JA amber (PartiallyStaffed), MIFEM red (CriticalGap)"
+          - "DIA has no staffing dot (NoActivities)"
+          - "Cards are fully clickable links (entire card, not just title)"
+          - "Card hover effect: shadow-md + translateY(-2px)"
+          - "rounded-2xl card corners"
+          - "mx-auto max-w-7xl px-4 sm:py-8 wrapper"
+          - "Authenticated sidebar visible on left (desktop layout)"
+
+      # --- DEPARTMENT LIST: Mobile ---
+      - id: 02-dept-list-mobile
+        url: /my-departments
+        viewport: [375, 812]
+        desc: "Department list on mobile — single column stack"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+        ux_checks:
+          - "Single-column card stack (grid-cols-1)"
+          - "Page heading visible"
+          - "Color-coded left borders on cards"
+          - "Abbreviation badges visible"
+          - "Staffing dots visible (green, amber, red)"
+          - "Bottom nav visible (authenticated mobile layout)"
+          - "Cards fill available width"
+          - "No horizontal scroll"
+
+      # --- DEPARTMENT DETAIL: Desktop (JA with activities) ---
+      - id: 03-dept-detail-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "JA department detail — 2-col layout with activity pipeline left, dept info sidebar right"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+              "/api/departments/2": "departmentDetail_JA"
+              "/api/activities?departmentId=2": "activitiesByDept_JA"
+        ux_checks:
+          - "Breadcrumb: 'Unités Ministérielles / JA' with link back"
+          - "2-column layout: pipeline left, sidebar right (sm:grid-cols-[1fr_320px])"
+          - "Sidebar: teal color bar accent, department name + abbreviation badge"
+          - "Sidebar: description text"
+          - "Sub-ministries as chips (rounded-full bg-slate-100): Explorateurs, Tisons, Ambassadeurs"
+          - "Sub-ministries heading: uppercase tracking-wide micro-label"
+          - "Activity pipeline: 3 upcoming activities (past activity filtered out)"
+          - "Each activity row: date+time, title, staffing dot, special type badge"
+          - "Programme JA: green dot (FullyStaffed)"
+          - "Sortie Explorateurs: amber dot (PartiallyStaffed)"
+          - "Camp de jeunesse: red outline dot (CriticalGap) + 'camp' badge"
+          - "Activity rows are clickable links to /activities/:id"
+          - "Hover state on activity rows (bg-slate-50)"
+          - "No edit/create controls visible (read-only view)"
+
+      # --- DEPARTMENT DETAIL: Mobile (JA with activities) ---
+      - id: 04-dept-detail-mobile
+        url: /my-departments/2
+        viewport: [375, 812]
+        desc: "JA department detail on mobile — stacked layout, sidebar info first"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+              "/api/departments/2": "departmentDetail_JA"
+              "/api/activities?departmentId=2": "activitiesByDept_JA"
+        ux_checks:
+          - "Stacked layout: sidebar info FIRST (order-first), pipeline below"
+          - "Breadcrumb visible"
+          - "Teal color bar accent at top"
+          - "Sub-ministry chips wrap naturally"
+          - "Activity rows fill width"
+          - "Staffing dots visible in activity rows"
+          - "Bottom nav visible"
+          - "No horizontal scroll"
+
+      # --- DEPARTMENT DETAIL: Empty (Viewer — no activities) ---
+      - id: 05-dept-empty-viewer-desktop
+        url: /my-departments/4
+        viewport: [1280, 800]
+        desc: "DIA department detail — no upcoming activities, viewer empty state message"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+              "/api/departments/4": "departmentDetail_DIA"
+              "/api/activities?departmentId=4": "activitiesByDept_DIA"
+        ux_checks:
+          - "Empty state: 'Aucune activité planifiée' (viewer message, not admin)"
+          - "Italic text-sm text-slate-400 style"
+          - "No sub-ministries: 'Aucun sous-ministère' message"
+          - "Sky-blue color bar accent (DIA department color)"
+          - "No create/edit controls visible"
+
+      # --- DEPARTMENT DETAIL: Empty (Admin — with scope) ---
+      - id: 06-dept-empty-admin-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "JA department detail as ADMIN — empty activities shows encouraging message"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_admin"
+              "/api/config": "publicConfig"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+              "/api/departments/2": "departmentDetail_JA"
+              "/api/activities?departmentId=2": "activitiesByDept_DIA"
+        ux_checks:
+          - "Admin empty state: encouraging message 'Prêt à planifier. Créez votre première activité.'"
+          - "Different from viewer empty state — admin gets action-oriented copy"
+          - "Sub-ministries still visible (JA has 3)"
+          - "No write controls yet (Stories 8.2/8.3)"
+
+  8-3-sub-ministry-management:
+    description: "Sub-ministry management with lead picker — ADMIN CRUD + VIEWER read-only"
+    role: admin
+    note: "Route interception used for all API mocks (backend down). Bug F1 found and fixed during capture."
+    screens:
+      - id: 01-admin-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "ADMIN with scope — JA detail with SubMinistryManager showing leads + edit/delete/add"
+        ux_checks:
+          - "SOUS-MINISTERES micro-label heading (uppercase, tracking-wide)"
+          - "Each sub-ministry: name + lead with initials avatar (28px xs)"
+          - "Tisons shows '—' for no lead"
+          - "Edit/Delete icon buttons per row"
+          - "Ajouter un sous-ministère button with Plus icon"
+          - "Teal color bar accent for JA"
+          - "2-column layout: pipeline left, sidebar right"
+
+      - id: 02-admin-mobile
+        url: /my-departments/2
+        viewport: [375, 812]
+        desc: "ADMIN with scope — mobile stacked layout, sidebar first"
+        ux_checks:
+          - "Stacked layout: sidebar info FIRST (order-first)"
+          - "Sub-ministries with edit/delete buttons"
+          - "Lead info with avatar initials visible"
+          - "Touch targets adequate for edit/delete buttons"
+
+      - id: 03-viewer-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "VIEWER — read-only sub-ministries with lead info, no controls"
+        ux_checks:
+          - "No edit/delete/add buttons"
+          - "Lead names + initials avatars displayed"
+          - "No Nouvelle activité/réunion buttons"
+
+      - id: 04-viewer-mobile
+        url: /my-departments/2
+        viewport: [375, 812]
+        desc: "VIEWER — mobile read-only with lead info"
+        ux_checks:
+          - "Read-only sub-ministries"
+          - "No management controls"
+          - "Stacked layout"
+
+      - id: 05-admin-no-scope-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "ADMIN without scope on JA — read-only like VIEWER"
+        ux_checks:
+          - "No management controls (same as VIEWER)"
+          - "Lead info displayed correctly"
+
+      - id: 06-admin-edit-mode-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "ADMIN edit mode — name input + lead picker stacked"
+        actions:
+          - click: "Edit button on Explorateurs"
+        ux_checks:
+          - "Name input pre-filled"
+          - "Lead picker (Select) below name input"
+          - "Confirm/Cancel icon buttons"
+
+      - id: 07-admin-add-form-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "ADMIN add form — name input + lead picker defaulting to Aucun responsable"
+        actions:
+          - click: "Ajouter un sous-ministère"
+        ux_checks:
+          - "Name input with placeholder"
+          - "Lead picker defaulting to Aucun responsable"
+
+      - id: 08-lead-picker-open-desktop
+        url: /my-departments/2
+        viewport: [1280, 800]
+        desc: "Lead picker dropdown open showing department members"
+        actions:
+          - click: "Ajouter un sous-ministère"
+          - click: "Lead picker combobox"
+        ux_checks:
+          - "Aucun responsable option with checkmark"
+          - "Department members listed (filtered to JA only)"
+          - "Clean shadcn/ui Select dropdown"

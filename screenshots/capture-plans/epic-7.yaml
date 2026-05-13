@@ -1,0 +1,758 @@
+# Capture Plan — Epic 7: Calendar
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 7
+name: "Calendar"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [anonymous, viewer]
+  seed_data: "N/A — all API responses mocked via Playwright route interception"
+  note: "Backend down — all API responses mocked via Playwright route interception"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Department Color Palette (muted tints, color+text rule)"
+  - "§8 User Journey Flows — Journey 1: Open and Know (calendar tab)"
+  - "§9 Component Strategy — WeekCalendar (Schedule-X), ADR-1"
+  - "§10 UX Consistency Patterns — Public Register rules"
+  - "§11 Responsive Design & Accessibility — Calendar breakpoint table, horizontal scroll rule"
+  - "§11 Touch & Gesture Patterns — swipe horizontal for calendar"
+
+route_mocks:
+  publicConfig:
+    endpoint: "/api/config"
+    response:
+      churchName: "Église Adventiste de Saint-Hubert"
+      youTubeChannelUrl: null
+
+  departments:
+    endpoint: "/api/public/departments"
+    response:
+      - id: 1
+        name: "Culte"
+        abbreviation: "CU"
+        color: "#F43F5E"
+        description: "Organisation des cultes et services religieux chaque sabbat."
+        nextActivityTitle: "Culte du Sabbat"
+        nextActivityDate: "2026-03-14"
+        nextActivityStartTime: "09:30:00"
+      - id: 2
+        name: "Jeunesse Adventiste"
+        abbreviation: "JA"
+        color: "#14B8A6"
+        description: "Activités pour les jeunes et les Explorateurs."
+        nextActivityTitle: "Programme JA"
+        nextActivityDate: "2026-03-14"
+        nextActivityStartTime: "14:00:00"
+      - id: 3
+        name: "Ministère de la Femme"
+        abbreviation: "MIFEM"
+        color: "#8B5CF6"
+        description: "Soutien et activités pour les femmes."
+        nextActivityTitle: null
+        nextActivityDate: null
+        nextActivityStartTime: null
+
+  calendarActivities:
+    endpoint: "/api/public/calendar"
+    note: "Matches any query params (start, end). Returns activities spanning multiple Sabbaths."
+    response:
+      - id: 101
+        title: "Culte du Sabbat"
+        date: "2026-03-14"
+        startTime: "09:30:00"
+        endTime: "12:00:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 102
+        title: "Programme JA"
+        date: "2026-03-14"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 103
+        title: "Sainte-Cène"
+        date: "2026-03-21"
+        startTime: "09:30:00"
+        endTime: "12:30:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        specialType: "sainte-cene"
+      - id: 104
+        title: "Réunion MIFEM"
+        date: "2026-03-18"
+        startTime: "19:00:00"
+        endTime: "20:30:00"
+        departmentName: "Ministère de la Femme"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+
+  nextActivity:
+    endpoint: "/api/public/next-activity"
+    response:
+      id: 101
+      title: "Culte du Sabbat"
+      date: "2026-03-14"
+      startTime: "09:30:00"
+      endTime: "12:00:00"
+      departmentName: "Culte"
+      departmentAbbreviation: "CU"
+      departmentColor: "#F43F5E"
+      predicateurName: "Pasteur Vicuna"
+      predicateurAvatarUrl: null
+      specialType: null
+
+  notLive:
+    endpoint: "/api/public/live-status"
+    response:
+      isLive: false
+      liveUrl: null
+
+  auth_me_viewer:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 1
+      email: "viewer@test.local"
+      firstName: "Marie"
+      lastName: "Laurent"
+      role: "Viewer"
+      departmentIds: [1, 2]
+
+  calendarActivities_empty:
+    endpoint: "/api/public/calendar"
+    response: []
+
+  calendarActivities_error:
+    endpoint: "/api/public/calendar"
+    status: 500
+    response: null
+
+  # --- Story 7-2 route mocks ---
+  auth_me_unauthenticated:
+    endpoint: "/api/auth/me"
+    status: 401
+    response:
+      type: "urn:sdac:unauthenticated"
+      status: 401
+
+  authCalendarActivities:
+    endpoint: "/api/calendar"
+    note: "Auth endpoint — returns both Public AND Authenticated visibility activities"
+    response:
+      - id: 201
+        title: "Culte du Sabbat"
+        date: "2026-03-14"
+        startTime: "09:30:00"
+        endTime: "12:00:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 202
+        title: "Programme JA"
+        date: "2026-03-14"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 203
+        title: "Réunion Comité"
+        date: "2026-03-18"
+        startTime: "19:00:00"
+        endTime: "21:00:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 204
+        title: "Sainte-Cène"
+        date: "2026-03-21"
+        startTime: "09:30:00"
+        endTime: "12:30:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        specialType: "sainte-cene"
+      - id: 205
+        title: "Réunion MIFEM"
+        date: "2026-03-18"
+        startTime: "19:00:00"
+        endTime: "20:30:00"
+        departmentName: "Ministère de la Femme"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+
+  authCalendarFiltered_JA:
+    endpoint: "/api/calendar"
+    note: "Filtered to JA department only (departmentIds=2)"
+    response:
+      - id: 202
+        title: "Programme JA"
+        date: "2026-03-14"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+
+stories:
+  7-1-calendar-core-sunday-first-with-multiple-views:
+    description: "Calendar core with Sunday-first layout, ViewSwitcher (Day/Week/Month/Year), YearGrid, drill-to-day"
+    role: anonymous
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- PUBLIC CALENDAR: Month Grid ---
+      - id: 01-month-grid-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Default month grid view on desktop with ViewSwitcher and department-colored events"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+        ux_checks:
+          - "Schedule-X month grid visible with day cells"
+          - "Sunday-first week layout (first column is Sunday)"
+          - "Department-colored event blocks visible (CU rose, JA teal, MIFEM violet)"
+          - "Event blocks show department abbreviation in title ([CU], [JA], [MIFEM])"
+          - "Color blocks large enough for quick-scan category signal (UX §579)"
+          - "Color + text rule: department abbreviation always accompanies color (UX §577)"
+          - "ViewSwitcher visible with 4 buttons: Day / Week / Month / Year (full labels on desktop)"
+          - "Month button highlighted as active view (aria-selected=true)"
+          - "ViewSwitcher uses role=tablist with role=tab on each button"
+          - "Calendar container has explicit height (h-[800px] on lg)"
+          - "mx-auto max-w-7xl px-4 sm:py-8 wrapper"
+          - "role=region with aria-label on calendar container"
+          - "No unintentional horizontal scroll (UX §1726)"
+
+      - id: 02-month-grid-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Month grid on mobile with abbreviated ViewSwitcher labels"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+        ux_checks:
+          - "Month grid visible — compact on mobile"
+          - "Sunday-first layout"
+          - "Department-colored events visible"
+          - "ViewSwitcher shows abbreviated labels: D / W / M / Y (mobile)"
+          - "M button highlighted as active"
+          - "h-[600px] calendar container height on mobile"
+          - "No horizontal scroll"
+          - "px-4 py-6 padding"
+
+      # --- PUBLIC CALENDAR: Week View ---
+      - id: 03-week-view-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Week view on desktop — Sunday-first 7-day grid with time axis"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_view: "week"
+        ux_checks:
+          - "7-day week view with time axis (06:00–22:00)"
+          - "Sunday-first layout (first column is Sunday, last is Saturday)"
+          - "Department-colored event blocks in time slots"
+          - "Events positioned correctly by time"
+          - "Event width ~95% of column (weekOptions.eventWidth: 95)"
+          - "ViewSwitcher shows Week as active"
+          - "Day headers show day name + date number"
+          - "No horizontal scroll on desktop"
+
+      - id: 04-week-view-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Week view on mobile — responsive day view (isResponsive: true)"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_view: "week"
+        ux_checks:
+          - "Schedule-X responsive mode — day view on mobile viewport"
+          - "Department-colored events visible on timeline"
+          - "No horizontal scroll"
+          - "Calendar fills container width"
+          - "h-[600px] container height"
+
+      # --- PUBLIC CALENDAR: Day View ---
+      - id: 05-day-view-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Day view on desktop — single day timeline with events"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_view: "day"
+        ux_checks:
+          - "Single day view with time axis"
+          - "Department-colored event blocks positioned by time"
+          - "ViewSwitcher shows Day as active"
+          - "Event blocks show department abbreviation + title"
+          - "Day header shows full date"
+
+      - id: 06-day-view-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Day view on mobile"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_view: "day"
+        ux_checks:
+          - "Day view fills mobile width"
+          - "Events visible with department colors"
+          - "No horizontal scroll"
+          - "ViewSwitcher shows D as active (abbreviated)"
+
+      # --- PUBLIC CALENDAR: Year View ---
+      - id: 07-year-view-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Year view on desktop — custom YearGrid with 12 mini-months in 4x3 grid"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_view: "year"
+        ux_checks:
+          - "12 mini-month calendars visible in 4x3 grid layout (lg:grid-cols-4)"
+          - "Year prominently displayed in header (2026)"
+          - "Prev/next year navigation arrows in header"
+          - "Each mini-month shows Sunday-first 7-column grid"
+          - "Day numbers visible in each mini-month"
+          - "Today's date marked/highlighted"
+          - "Department-colored activity dots on days with activities"
+          - "Month headers visible (January–December or localized)"
+          - "ViewSwitcher shows Year as active"
+          - "role=grid with aria-label on YearGrid"
+          - "No explicit fixed height — auto height with content"
+
+      - id: 08-year-view-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Year view on mobile — 2-column responsive grid"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_view: "year"
+        ux_checks:
+          - "2-column mini-month grid on mobile (< 640px)"
+          - "Year header with navigation arrows"
+          - "Mini-months with Sunday-first layout"
+          - "Department-colored dots visible"
+          - "Scrollable content (not fixed height)"
+          - "ViewSwitcher shows Y as active (abbreviated)"
+          - "No horizontal scroll"
+
+      # --- PUBLIC CALENDAR: Drill-to-Day ---
+      - id: 09-drill-to-day-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Month grid → click a day → drills into Day view"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_day_in_month: "2026-03-14"
+        ux_checks:
+          - "After clicking a day in month grid, switches to Day view"
+          - "Day view shows the clicked date (March 14)"
+          - "ViewSwitcher now shows Day as active"
+          - "Events for that day visible with department colors"
+          - "onClickDate callback successfully triggered view switch"
+
+      # --- AUTH CALENDAR ---
+      - id: 10-auth-month-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Authenticated calendar page — month grid with sidebar visible"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+        ux_checks:
+          - "Calendar renders same as public calendar"
+          - "Authenticated sidebar visible on left"
+          - "ViewSwitcher with 4 options visible"
+          - "Month grid with department-colored events"
+          - "Sunday-first layout"
+          - "No 'REGISTRE PERSONNEL' micro-label yet (deferred to 7.2)"
+
+      - id: 11-auth-month-mobile
+        url: /my-calendar
+        viewport: [375, 812]
+        desc: "Authenticated calendar page on mobile"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+        ux_checks:
+          - "Calendar renders on mobile"
+          - "Bottom nav visible (authenticated mobile layout)"
+          - "ViewSwitcher abbreviated labels (D/W/M/Y)"
+          - "Month grid with events"
+          - "No horizontal scroll"
+
+  7-2-calendar-visibility-and-department-filtering:
+    description: "Auth calendar with department filter, auth-scoped endpoint, regression: public calendar has no filter"
+    role: viewer
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- AUTH CALENDAR: Filter Default (All) ---
+      - id: 12-auth-filter-default-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Auth calendar with DepartmentFilter visible, 'All' chip active (default state)"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/calendar": "authCalendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+        ux_checks:
+          - "DepartmentFilter visible between heading and calendar"
+          - "'All' chip active (bg-indigo-600 text-white)"
+          - "3 department chips: CU, JA, MIFEM — each with color dot + abbreviation"
+          - "Inactive chips have bg-slate-100 text-slate-700 style"
+          - "Color dots: CU rose (#F43F5E), JA teal (#14B8A6), MIFEM violet (#8B5CF6)"
+          - "DepartmentFilter uses role='toolbar' with aria-label"
+          - "Each chip has role='checkbox' with aria-checked"
+          - "gap-2 between chips, mb-4 below filter"
+          - "Calendar shows 5 activities (3 CU + 1 JA + 1 MIFEM) — more than public calendar's 4"
+          - "Auth calendar uses /api/calendar endpoint (not /api/public/calendar)"
+          - "Calendar heading: text-2xl font-bold text-slate-900"
+          - "ViewSwitcher visible alongside heading"
+
+      - id: 13-auth-filter-default-mobile
+        url: /my-calendar
+        viewport: [375, 812]
+        desc: "Auth calendar with DepartmentFilter on mobile — horizontal scroll if needed"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/calendar": "authCalendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+        ux_checks:
+          - "DepartmentFilter chips visible on mobile"
+          - "'All' chip active (indigo-600)"
+          - "Chips row has overflow-x-auto for horizontal scroll if chips overflow"
+          - "Each chip shows color dot + abbreviation"
+          - "Bottom nav visible (authenticated mobile layout)"
+          - "Calendar month grid below filter"
+          - "No unintentional page-level horizontal scroll"
+          - "shrink-0 on chips prevents wrapping/compression"
+
+      # --- AUTH CALENDAR: Filter Active (JA selected) ---
+      - id: 14-auth-filter-active-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Auth calendar with JA department selected — filtered view showing only JA activities"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/calendar": "authCalendarFiltered_JA"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_chip: "JA"
+        ux_checks:
+          - "'All' chip is now inactive (bg-slate-100)"
+          - "JA chip is active — filled with JA color (#14B8A6) and white text"
+          - "CU and MIFEM chips are inactive (bg-slate-100)"
+          - "Active chip shows white/40 dot (not color dot)"
+          - "Calendar shows only JA activities (Programme JA)"
+          - "Month grid with reduced activity count reflects filter"
+          - "Filter persists — chip state matches data displayed"
+
+      - id: 15-auth-filter-active-mobile
+        url: /my-calendar
+        viewport: [375, 812]
+        desc: "Auth calendar filtered to JA on mobile"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/calendar": "authCalendarFiltered_JA"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+          - click_chip: "JA"
+        ux_checks:
+          - "JA chip active with department color fill on mobile"
+          - "'All' chip inactive"
+          - "Calendar shows only JA activities"
+          - "Bottom nav visible"
+          - "No horizontal scroll"
+
+      # --- PUBLIC CALENDAR: No Filter Regression ---
+      - id: 16-public-no-filter-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Public calendar — NO department filter shown (regression check)"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+              "/api/auth/me": "auth_me_unauthenticated"
+        ux_checks:
+          - "NO DepartmentFilter component rendered"
+          - "NO toolbar role element with filter chips"
+          - "Calendar heading directly above calendar body (no filter gap)"
+          - "Calendar shows public activities only (no Réunion Comité)"
+          - "Public calendar uses /api/public/calendar (not /api/calendar)"
+          - "ViewSwitcher visible"
+          - "Month grid with department-colored events"
+
+      - id: 17-public-no-filter-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Public calendar on mobile — NO department filter (regression)"
+        actions:
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/public/departments": "departments"
+              "/api/public/calendar": "calendarActivities"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/live-status": "notLive"
+              "/api/auth/me": "auth_me_unauthenticated"
+        ux_checks:
+          - "NO DepartmentFilter component on mobile"
+          - "NO toolbar role element"
+          - "Calendar renders directly under heading"
+          - "Bottom public nav (no auth sidebar/bottom nav)"
+          - "No horizontal scroll"
+
+  7-3-admin-quick-create-from-calendar:
+    description: "Day detail dialog with multi-step quick-create, role-aware visibility, responsive Drawer/Dialog"
+    role: admin
+    note: "Backend running — uses real API responses. Auth via cookie from login."
+    screens:
+      # --- AUTH CALENDAR: ADMIN Day Detail (Desktop) ---
+      - id: 18-day-detail-admin-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Auth calendar — click a day with activities — DayDetailDialog (Dialog) shows activity list, 'Nouvelle activite' button, 'View full day' link"
+        actions:
+          - login_as: admin
+          - click_day_in_month: "day with activities"
+        ux_checks:
+          - "Dialog (centered modal) on desktop — not Drawer"
+          - "Formatted date heading (e.g., 'samedi 14 mars 2026' with locale)"
+          - "Activity list with department color dots + abbreviation badges"
+          - "Time range displayed (HH:MM–HH:MM)"
+          - "Special type badges visible when applicable"
+          - "'Nouvelle activite' button prominent at top — full width, primary variant, Plus icon"
+          - "'View full day' link visible at bottom — subtle text style"
+          - "Dialog max-w-lg max-h-[80vh] overflow-y-auto"
+          - "aria-label on dialog content"
+          - "role='list' container for activities, role='listitem' per activity"
+
+      # --- AUTH CALENDAR: ADMIN Day Detail (Mobile) ---
+      - id: 19-day-detail-admin-mobile
+        url: /my-calendar
+        viewport: [375, 812]
+        desc: "Auth calendar mobile — click day — DayDetailDialog as Drawer (bottom sheet)"
+        actions:
+          - login_as: admin
+          - click_day_in_month: "day with activities"
+        ux_checks:
+          - "Drawer (vaul bottom sheet) on mobile — not Dialog"
+          - "max-h-[85vh] constraint"
+          - "Drag handle visible at top"
+          - "Formatted date heading"
+          - "Activity list with department color dots"
+          - "'Nouvelle activite' button — full width, min-h-[44px] touch target"
+          - "'View full day' link at bottom"
+          - "Content scrollable independently (overflow-y-auto flex-1 px-4 pb-4)"
+
+      # --- AUTH CALENDAR: ADMIN Empty Day (Desktop) ---
+      - id: 20-day-detail-empty-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Auth calendar — click a day with no activities — empty state message + create button"
+        actions:
+          - login_as: admin
+          - click_day_in_month: "day without activities"
+        ux_checks:
+          - "Empty state text: 'No activities planned' or i18n equivalent"
+          - "'Nouvelle activite' button still visible at top"
+          - "'View full day' link still visible"
+          - "Clean, uncluttered empty state"
+
+      # --- AUTH CALENDAR: Template Selection Step (Desktop) ---
+      - id: 21-template-step-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "DayDetailDialog — ADMIN clicks 'Nouvelle activite' — transitions to template selection step"
+        actions:
+          - login_as: admin
+          - click_day_in_month: "day with activities"
+          - click_button: "Nouvelle activite"
+        ux_checks:
+          - "Dialog title changes to template selector title"
+          - "Back button visible (ChevronLeft + 'Back')"
+          - "TemplateSelector component rendered with template cards"
+          - "Template cards in radiogroup layout"
+          - "aria-live='polite' on step content"
+
+      # --- AUTH CALENDAR: Activity Form Step (Desktop) ---
+      - id: 22-form-step-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "DayDetailDialog — after template selection — full activity creation form with pre-filled date"
+        actions:
+          - login_as: admin
+          - click_day_in_month: "day with activities"
+          - click_button: "Nouvelle activite"
+          - select_template: "first available"
+        ux_checks:
+          - "Back button: ChevronLeft + 'Back to templates'"
+          - "Date field pre-filled with selected day (YYYY-MM-DD)"
+          - "Department selector visible (filtered by admin's departments)"
+          - "Title, description, time fields visible"
+          - "Visibility selector (Public/Authenticated)"
+          - "Role roster from template pre-populated"
+          - "Save/Submit button at bottom"
+          - "Dialog still scrollable for long form content"
+
+      # --- AUTH CALENDAR: Template Step (Mobile) ---
+      - id: 23-template-step-mobile
+        url: /my-calendar
+        viewport: [375, 812]
+        desc: "DayDetailDialog mobile — template selection in Drawer"
+        actions:
+          - login_as: admin
+          - click_day_in_month: "day with activities"
+          - click_button: "Nouvelle activite"
+        ux_checks:
+          - "Drawer surface with template cards"
+          - "Back button visible"
+          - "Template cards layout adapted to mobile width"
+          - "Content scrollable within Drawer"
+
+      # --- AUTH CALENDAR: VIEWER Day Detail (Desktop) ---
+      - id: 24-day-detail-viewer-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Auth calendar VIEWER — day detail shows activities but NO create button"
+        actions:
+          - login_as: viewer
+          - click_day_in_month: "day with activities"
+        ux_checks:
+          - "Activity list visible with same formatting as ADMIN view"
+          - "NO 'Nouvelle activite' button rendered"
+          - "'View full day' link still visible"
+          - "Dialog heading shows formatted date"
+          - "Department color dots and badges visible"
+
+      # --- PUBLIC CALENDAR: Anonymous Day Detail (Desktop) ---
+      - id: 25-day-detail-public-desktop
+        url: /calendar
+        viewport: [1280, 800]
+        desc: "Public calendar — click day — anonymous day detail, no create button, public activities only"
+        actions:
+          - click_day_in_month: "day with activities"
+        ux_checks:
+          - "Dialog shows public activities only"
+          - "NO 'Nouvelle activite' button"
+          - "'View full day' link visible"
+          - "No sign-in required to view"
+          - "Department color dots and abbreviation badges"
+
+      # --- PUBLIC CALENDAR: Anonymous Day Detail (Mobile) ---
+      - id: 26-day-detail-public-mobile
+        url: /calendar
+        viewport: [375, 812]
+        desc: "Public calendar mobile — anonymous day detail in Drawer"
+        actions:
+          - click_day_in_month: "day with activities"
+        ux_checks:
+          - "Drawer (bottom sheet) on mobile"
+          - "Public activities only, no create button"
+          - "'View full day' link visible"
+          - "Drag handle visible"
+          - "No auth-related UI elements"

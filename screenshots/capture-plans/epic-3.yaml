@@ -1,0 +1,425 @@
+# Capture Plan — Epic 3: User & Role Administration
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 3
+name: "User & Role Administration"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [viewer, admin, owner]
+  seed_data: "Owner seeded, multiple users with Viewer/Admin/Owner roles, departments created, some users with avatars, some without"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Color System, Typography System, Spacing & Layout"
+  - "§7 Design Direction — Mock Faithful Command (A+D Hybrid)"
+  - "§9 Component Strategy — InitialsAvatar, DepartmentBadge"
+  - "§10 UX Consistency Patterns — Button Hierarchy, Form Patterns, Feedback Patterns, Modal & Overlay"
+  - "§11 Responsive Design & Accessibility — Touch Targets, Focus Management"
+
+stories:
+  3-1-single-user-account-creation:
+    description: "User list page and single user creation form"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-user-list-empty-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Empty state when no users (except owner)"
+        actions:
+          - login: "as owner user"
+          - mock_override: "usersEmpty"
+        ux_checks:
+          - "Empty state with guidance text"
+          - "French text: 'Aucun membre' or similar"
+          - "Create button visible"
+          - "Single-column layout"
+
+      - id: 02-user-list-populated-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "User list with multiple users on mobile"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Single-column user cards"
+          - "Each card: InitialsAvatar (40px+), name, role badge, email"
+          - "Role badges colored by role (Viewer/Admin/Owner)"
+          - "Department badges with colored dots + abbreviation"
+          - "Edit button (Pencil) visible for ADMIN+"
+          - "Delete button (Trash2, red) visible for OWNER"
+          - "44px touch targets on action buttons"
+          - "rounded-2xl cards"
+
+      - id: 03-user-create-dialog-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Create user form (Sheet on mobile)"
+        actions:
+          - login: "as owner user"
+          - click: "Ajouter un utilisateur button"
+        ux_checks:
+          - "Sheet slides up from bottom"
+          - "Title: 'Nouvel utilisateur'"
+          - "Fields: First Name, Last Name, Email, Role, Departments"
+          - "Labels above fields"
+          - "Full-width inputs"
+          - "Role select dropdown"
+          - "Department multi-select with chips"
+          - "'Créer' primary button full-width"
+          - "'Annuler' cancel button as secondary"
+
+      - id: 04-user-create-department-picker-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Department multi-select popover open"
+        actions:
+          - login: "as owner user"
+          - click: "Ajouter un utilisateur button"
+          - click: "departments field/trigger"
+        ux_checks:
+          - "Popover with checkbox list"
+          - "Colored dots + department names in list"
+          - "Selected departments as removable chips below trigger"
+          - "Chip shows abbreviation + color dot + X button"
+
+      - id: 05-user-create-validation-error-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Form validation errors on user creation"
+        actions:
+          - login: "as owner user"
+          - click: "Ajouter un utilisateur button"
+          - click: "submit without filling required fields"
+        ux_checks:
+          - "Red border on invalid fields"
+          - "Inline error messages below fields"
+          - "Submit button state"
+          - "Errors in French"
+
+      # --- Desktop (1280px) ---
+      - id: 06-user-list-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "User list on desktop with sidebar"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Persistent left sidebar (288px)"
+          - "User cards in content area"
+          - "Page title text-2xl font-black"
+          - "'Ajouter un utilisateur' and 'Création en lot' buttons top-right"
+          - "Cards with elevation-1"
+          - "Role badges, department badges visible"
+          - "Edit/Delete buttons per card"
+
+      - id: 07-user-create-dialog-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Create user dialog on desktop"
+        actions:
+          - login: "as owner user"
+          - click: "Ajouter un utilisateur button"
+        ux_checks:
+          - "Dialog (not sheet) on desktop"
+          - "Title: 'Nouvel utilisateur'"
+          - "Form fields with labels above"
+          - "Max-width constraint on dialog"
+          - "rounded-2xl dialog container"
+          - "Submit button right-aligned"
+          - "Department chips visible if selected"
+
+      - id: 08-user-create-success-toast-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Success toast after user creation"
+        actions:
+          - login: "as owner user"
+          - fill: "valid user form data"
+          - click: "submit"
+        ux_checks:
+          - "Green success toast"
+          - "Toast text: 'Utilisateur créé'"
+          - "Toast at top-center on desktop"
+          - "Dialog closes after success"
+          - "User list refreshed with new user"
+
+  3-2-bulk-user-creation:
+    description: "Bulk user creation dialog with dynamic rows"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-bulk-create-dialog-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Bulk creation dialog/sheet with 3 default rows on mobile"
+        actions:
+          - login: "as owner user"
+          - click: "Création en lot button"
+        ux_checks:
+          - "Sheet on mobile"
+          - "Title: 'Création en lot'"
+          - "Row counter: 'X / 30 lignes'"
+          - "3 default empty rows"
+          - "Each row: numbered badge + fields stacked vertically"
+          - "Fields: First Name, Last Name, Email, Role, Departments"
+          - "Delete X button per row"
+          - "'Ajouter une ligne' button (Plus icon)"
+          - "'Créer tous' primary button"
+          - "Scrollable container"
+
+      - id: 02-bulk-create-row-errors-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Bulk creation with per-row validation errors"
+        actions:
+          - login: "as owner user"
+          - click: "Création en lot button"
+          - click: "submit with empty/invalid rows"
+        ux_checks:
+          - "Per-field inline errors on each invalid row"
+          - "Red border on invalid inputs"
+          - "Row border highlights errors"
+
+      # --- Desktop (1280px) ---
+      - id: 03-bulk-create-dialog-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Bulk creation dialog on desktop with horizontal row layout"
+        actions:
+          - login: "as owner user"
+          - click: "Création en lot button"
+        ux_checks:
+          - "Dialog max-w-4xl"
+          - "Horizontal row layout: First Name | Last Name | Email | Role | Departments"
+          - "Row counter visible"
+          - "Scrollable rows container"
+          - "Add row button full-width outline"
+          - "'Créer tous' primary button"
+
+      - id: 04-bulk-create-many-rows-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Bulk creation with multiple rows showing scroll"
+        actions:
+          - login: "as owner user"
+          - click: "Création en lot button"
+          - click: "add several rows"
+        ux_checks:
+          - "Scrollable area active (max-h-60vh)"
+          - "Multiple numbered rows"
+          - "Add row button visible below scroll area"
+          - "Row count updates"
+
+  3-3-user-role-and-department-management:
+    description: "Edit user dialog — role and department changes"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-user-edit-dialog-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Edit user sheet on mobile with pre-populated fields"
+        actions:
+          - login: "as owner user"
+          - click: "edit button on a user card"
+        ux_checks:
+          - "Sheet on mobile"
+          - "Title: 'Modifier l'utilisateur'"
+          - "Fields pre-populated"
+          - "Email field disabled (grey background)"
+          - "Helper text: 'Le courriel ne peut pas être modifié'"
+          - "Role dropdown pre-selected"
+          - "Department chips showing current assignments"
+          - "'Modifier' button (disabled if no changes)"
+
+      - id: 02-user-edit-self-role-disabled-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Self-edit — role dropdown disabled"
+        actions:
+          - login: "as owner user"
+          - click: "edit button on own user card"
+        ux_checks:
+          - "Role dropdown disabled/greyed out"
+          - "Helper text: 'Votre rôle ne peut être modifié que par un autre administrateur'"
+          - "Other fields editable"
+
+      # --- Desktop (1280px) ---
+      - id: 03-user-edit-dialog-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Edit user dialog on desktop"
+        actions:
+          - login: "as owner user"
+          - click: "edit button on a user card"
+        ux_checks:
+          - "Dialog with pre-populated form"
+          - "Email field disabled"
+          - "Department multi-select with current assignments as chips"
+          - "'Modifier' button right-aligned"
+          - "Cancel button left of primary"
+
+      - id: 04-user-edit-role-downgrade-warning-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Warning when changing Admin to Viewer"
+        actions:
+          - login: "as owner user"
+          - click: "edit button on admin user"
+          - select: "Viewer role"
+        ux_checks:
+          - "Warning text: 'Cet utilisateur perdra ses privilèges d'administration'"
+          - "Amber/warning color on warning text"
+          - "Submit button still enabled"
+
+      - id: 05-user-edit-admin-view-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Edit dialog from ADMIN perspective (scoped departments)"
+        actions:
+          - login: "as admin user"
+          - click: "edit button on a user card"
+        ux_checks:
+          - "Department picker shows only managed departments"
+          - "Role options: Viewer, Admin only (no Owner)"
+          - "Can edit users in their department scope"
+
+  3-4-owner-user-management-full-access:
+    description: "OWNER-only delete functionality with confirmation"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-delete-button-visible-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Delete button visible on user cards for OWNER"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Trash2 icon in red-500 visible on user cards"
+          - "Delete button NOT on own card (self-delete prevention)"
+          - "44px touch target"
+          - "Ghost variant button"
+
+      - id: 02-delete-confirmation-dialog-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Delete confirmation AlertDialog"
+        actions:
+          - login: "as owner user"
+          - click: "delete button on a user card"
+        ux_checks:
+          - "AlertDialog visible"
+          - "Title: 'Supprimer l'utilisateur'"
+          - "Description includes user's name"
+          - "Description: 'Cette action est irréversible'"
+          - "'Supprimer' button in destructive red-600"
+          - "'Annuler' cancel button as secondary"
+          - "French text throughout"
+
+      # --- Desktop (1280px) ---
+      - id: 03-delete-confirmation-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Delete confirmation on desktop"
+        actions:
+          - login: "as owner user"
+          - click: "delete button on a user card"
+        ux_checks:
+          - "AlertDialog centered on desktop"
+          - "User name interpolated in description"
+          - "Destructive button red-600"
+          - "Cancel button accessible"
+
+      - id: 04-admin-no-delete-button-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "ADMIN perspective — no delete buttons visible"
+        actions:
+          - login: "as admin user"
+        ux_checks:
+          - "Edit buttons visible (Pencil)"
+          - "NO delete buttons (Trash2) — OWNER only"
+          - "User cards still show all info"
+
+      - id: 05-viewer-readonly-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "VIEWER perspective — read-only, no action buttons"
+        actions:
+          - login: "as viewer user"
+        ux_checks:
+          - "User list visible (read-only)"
+          - "NO edit or delete buttons"
+          - "NO 'Ajouter un utilisateur' or 'Création en lot' buttons"
+          - "User cards show names, roles, departments"
+
+  3-5-avatar-upload-and-display:
+    description: "Avatar upload on click, InitialsAvatar display, upload states"
+    role: owner
+    screens:
+      # --- Mobile (375px) ---
+      - id: 01-initials-avatar-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "User cards showing InitialsAvatar (no uploaded avatar)"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Circular avatars (rounded-full)"
+          - "Initials from first+last name"
+          - "Deterministic background colors from palette"
+          - "Colors: slate-200, indigo-100, emerald-100, amber-100, rose-100"
+          - "font-semibold initials text"
+          - "aria-label with full name"
+
+      - id: 02-avatar-hover-state-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "Avatar with upload affordance on tap/hover"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "cursor-pointer on avatar for ADMIN+"
+          - "On hover/focus: black/20 overlay + Pencil icon"
+          - "Pencil icon h-3 w-3, white"
+
+      - id: 03-avatar-uploaded-mobile
+        url: /admin/users
+        viewport: [375, 812]
+        desc: "User card with uploaded avatar image"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "img tag with avatarUrl src"
+          - "rounded-full, object-cover"
+          - "Same size as InitialsAvatar"
+          - "Upload overlay still shows on hover for ADMIN+"
+
+      # --- Desktop (1280px) ---
+      - id: 04-avatar-mixed-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "User list showing mix of uploaded avatars and initials"
+        actions:
+          - login: "as owner user"
+        ux_checks:
+          - "Mix of img avatars and InitialsAvatar visible"
+          - "Consistent sizing across both types"
+          - "Hover effect on avatars for ADMIN+"
+          - "No hover effect for VIEWER (cursor-default)"
+
+      - id: 05-avatar-uploading-state-desktop
+        url: /admin/users
+        viewport: [1280, 800]
+        desc: "Avatar upload in progress (spinner overlay)"
+        actions:
+          - login: "as owner user"
+          - click: "avatar to trigger file upload"
+        ux_checks:
+          - "Loader2 spinner overlay on avatar"
+          - "black/40 background overlay"
+          - "White spinner icon"
+          - "Other cards still interactive"

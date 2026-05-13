@@ -1,0 +1,637 @@
+# Capture Plan — Epic 9: Real-Time Updates & Live Experience
+# Stories 9-1 and 9-2 are backend/infrastructure — no visual screens
+# Story 9-3 adds "Modifié" badge across 6 frontend views
+
+epic: 9
+name: "Real-Time Updates & Live Experience"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [anonymous, viewer, admin]
+  seed_data: "N/A — all API responses mocked via Playwright route interception"
+  note: "Backend not required. Route interception for API mocks. localStorage injection for badge state."
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Semantic Status Colors (Modified: amber-500 badge)"
+  - "§7 Typography System — Caption: text-xs (12px) font-medium (500) for badge content"
+  - "§9 Component Strategy — ModifiedBadge (amber-500 pill, aria-live=polite)"
+  - "§12 Accessibility — aria-live=polite for dynamic change announcements"
+  - "§11 Responsive Design — Breakpoint Behavior (sm: 640px, lg: 1024px)"
+
+# localStorage injection — set BEFORE each navigation
+localStorage_injection:
+  sdac-modified-badges:
+    key: "sdac-modified-badges"
+    value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+    note: "Simulates two activities (ID 101, 301) having received ActivityUpdated SignalR events. Timestamp is recent (within 24h). Inject BEFORE navigation so badge store hydrates from localStorage on app mount."
+
+route_mocks:
+  publicConfig:
+    endpoint: "/api/config"
+    response:
+      churchName: "Église Adventiste de Saint-Hubert"
+      youTubeChannelUrl: null
+
+  publicChurchInfo:
+    endpoint: "/api/config/public"
+    response:
+      churchName: "Église Adventiste de Saint-Hubert"
+      youTubeChannelUrl: null
+
+  liveStatus:
+    endpoint: "/api/public/live-status"
+    response:
+      isLive: false
+      youTubeChannelUrl: null
+
+  auth_me_viewer:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 2
+      email: "viewer@test.local"
+      firstName: "Marie"
+      lastName: "Laurent"
+      role: "Viewer"
+      departmentIds: []
+
+  auth_me_admin:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 3
+      email: "admin@test.local"
+      firstName: "Ketsia"
+      lastName: "Pierre"
+      role: "Admin"
+      departmentIds: [1, 2, 3]
+
+  nextActivity:
+    endpoint: "/api/public/next-activity"
+    response:
+      id: 101
+      title: "Culte du Sabbat"
+      date: "2026-03-28"
+      startTime: "11:00:00"
+      endTime: "13:00:00"
+      departmentName: "Culte"
+      departmentAbbreviation: "CU"
+      departmentColor: "#F43F5E"
+      predicateurName: "Pasteur Vicuna"
+      predicateurAvatarUrl: null
+      specialType: null
+
+  upcomingActivities:
+    endpoint: "/api/public/upcoming-activities"
+    response:
+      - id: 101
+        title: "Culte du Sabbat"
+        date: "2026-03-28"
+        startTime: "11:00:00"
+        endTime: "13:00:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 102
+        title: "École du Sabbat"
+        date: "2026-03-28"
+        startTime: "09:30:00"
+        endTime: "10:45:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 301
+        title: "Programme JA"
+        date: "2026-03-28"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 103
+        title: "Réunion de prière"
+        date: "2026-04-02"
+        startTime: "19:00:00"
+        endTime: "20:30:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+
+  programSchedules:
+    endpoint: "/api/public/program-schedules"
+    response:
+      - id: 1
+        name: "Culte du Sabbat"
+        dayOfWeek: "Saturday"
+        startTime: "11:00:00"
+        endTime: "13:00:00"
+      - id: 2
+        name: "École du Sabbat"
+        dayOfWeek: "Saturday"
+        startTime: "09:30:00"
+        endTime: "10:45:00"
+
+  publicDepartments:
+    endpoint: "/api/public/departments"
+    response:
+      - id: 1
+        name: "Culte"
+        abbreviation: "CU"
+        color: "#F43F5E"
+        description: "Organisation des cultes et services religieux."
+      - id: 2
+        name: "Jeunesse Adventiste"
+        abbreviation: "JA"
+        color: "#14B8A6"
+        description: "Activités pour les jeunes et les Explorateurs."
+
+  dashboardActivities:
+    endpoint: "/api/activities/dashboard"
+    response:
+      - id: 101
+        title: "Culte du Sabbat"
+        date: "2026-03-28"
+        startTime: "11:00:00"
+        endTime: "13:00:00"
+        departmentId: 1
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        visibility: "public"
+        specialType: null
+        isMeeting: false
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        roleCount: 3
+        totalHeadcount: 6
+        assignedCount: 6
+        staffingStatus: "FullyStaffed"
+      - id: 102
+        title: "École du Sabbat"
+        date: "2026-03-28"
+        startTime: "09:30:00"
+        endTime: "10:45:00"
+        departmentId: 1
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        visibility: "public"
+        specialType: null
+        isMeeting: false
+        predicateurName: null
+        predicateurAvatarUrl: null
+        roleCount: 2
+        totalHeadcount: 4
+        assignedCount: 4
+        staffingStatus: "FullyStaffed"
+      - id: 301
+        title: "Programme JA"
+        date: "2026-03-28"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentId: 2
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        visibility: "public"
+        specialType: null
+        isMeeting: false
+        predicateurName: null
+        predicateurAvatarUrl: null
+        roleCount: 2
+        totalHeadcount: 4
+        assignedCount: 4
+        staffingStatus: "FullyStaffed"
+
+  allActivities:
+    endpoint: "/api/activities"
+    response:
+      - id: 101
+        title: "Culte du Sabbat"
+        date: "2026-03-28"
+        startTime: "11:00:00"
+        endTime: "13:00:00"
+        departmentId: 1
+        departmentName: "Culte"
+        departmentColor: "#F43F5E"
+        visibility: "public"
+        specialType: null
+        isMeeting: false
+        meetingType: null
+        locationName: null
+        roleCount: 3
+        totalHeadcount: 6
+        assignedCount: 6
+        staffingStatus: "FullyStaffed"
+        createdAt: "2026-03-01T00:00:00Z"
+      - id: 102
+        title: "École du Sabbat"
+        date: "2026-03-28"
+        startTime: "09:30:00"
+        endTime: "10:45:00"
+        departmentId: 1
+        departmentName: "Culte"
+        departmentColor: "#F43F5E"
+        visibility: "public"
+        specialType: null
+        isMeeting: false
+        meetingType: null
+        locationName: null
+        roleCount: 2
+        totalHeadcount: 4
+        assignedCount: 4
+        staffingStatus: "FullyStaffed"
+        createdAt: "2026-03-01T00:00:00Z"
+      - id: 301
+        title: "Programme JA"
+        date: "2026-03-28"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentId: 2
+        departmentName: "Jeunesse Adventiste"
+        departmentColor: "#14B8A6"
+        visibility: "public"
+        specialType: null
+        isMeeting: false
+        meetingType: null
+        locationName: null
+        roleCount: 2
+        totalHeadcount: 4
+        assignedCount: 4
+        staffingStatus: "FullyStaffed"
+        createdAt: "2026-03-01T00:00:00Z"
+      - id: 103
+        title: "Réunion de prière"
+        date: "2026-04-02"
+        startTime: "19:00:00"
+        endTime: "20:30:00"
+        departmentId: 1
+        departmentName: "Culte"
+        departmentColor: "#F43F5E"
+        visibility: "authenticated"
+        specialType: null
+        isMeeting: true
+        meetingType: "physical"
+        locationName: "Salle de prière"
+        roleCount: 1
+        totalHeadcount: 1
+        assignedCount: 1
+        staffingStatus: "FullyStaffed"
+        createdAt: "2026-03-01T00:00:00Z"
+
+  calendarActivities:
+    endpoint: "/api/calendar"
+    note: "Responds to GET /api/calendar?start=...&end=... with same data as upcoming"
+    response:
+      - id: 101
+        title: "Culte du Sabbat"
+        date: "2026-03-28"
+        startTime: "11:00:00"
+        endTime: "13:00:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        predicateurName: "Pasteur Vicuna"
+        predicateurAvatarUrl: null
+        specialType: null
+      - id: 301
+        title: "Programme JA"
+        date: "2026-03-28"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        predicateurName: null
+        predicateurAvatarUrl: null
+        specialType: null
+
+  departmentsWithStaffing:
+    endpoint: "/api/departments/with-staffing"
+    response:
+      - id: 1
+        name: "Culte"
+        abbreviation: "CU"
+        color: "#F43F5E"
+        description: "Organisation des cultes et services religieux."
+        subMinistryCount: 0
+        aggregateStaffingStatus: "FullyStaffed"
+        upcomingActivityCount: 3
+      - id: 2
+        name: "Jeunesse Adventiste"
+        abbreviation: "JA"
+        color: "#14B8A6"
+        description: "Activités pour les jeunes et les Explorateurs."
+        subMinistryCount: 3
+        aggregateStaffingStatus: "PartiallyStaffed"
+        upcomingActivityCount: 2
+
+  departmentDetail_CU:
+    endpoint: "/api/departments/1"
+    response:
+      id: 1
+      name: "Culte"
+      abbreviation: "CU"
+      color: "#F43F5E"
+      description: "Organisation des cultes et services religieux chaque sabbat."
+      subMinistries: []
+      createdAt: "2026-01-15T00:00:00Z"
+      updatedAt: "2026-03-10T00:00:00Z"
+
+  activitiesByDept_CU:
+    endpoint: "/api/activities?departmentId=1"
+    response:
+      - id: 101
+        title: "Culte du Sabbat"
+        date: "2026-03-28"
+        startTime: "11:00:00"
+        endTime: "13:00:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        staffingStatus: "FullyStaffed"
+        assignedCount: 6
+        totalHeadcount: 6
+        specialType: null
+      - id: 102
+        title: "École du Sabbat"
+        date: "2026-03-28"
+        startTime: "09:30:00"
+        endTime: "10:45:00"
+        departmentName: "Culte"
+        departmentAbbreviation: "CU"
+        departmentColor: "#F43F5E"
+        staffingStatus: "FullyStaffed"
+        assignedCount: 4
+        totalHeadcount: 4
+        specialType: null
+
+  activityDetail_101:
+    endpoint: "/api/activities/101"
+    response:
+      id: 101
+      title: "Culte du Sabbat"
+      description: "Service de culte hebdomadaire"
+      date: "2026-03-28"
+      startTime: "11:00:00"
+      endTime: "13:00:00"
+      departmentId: 1
+      departmentName: "Culte"
+      departmentAbbreviation: "CU"
+      departmentColor: "#F43F5E"
+      visibility: "public"
+      specialType: null
+      isMeeting: false
+      meetingType: null
+      zoomLink: null
+      locationName: null
+      locationAddress: null
+      roles:
+        - id: 1
+          name: "Prédicateur"
+          headcount: 1
+          sortOrder: 0
+          assignments:
+            - userId: 10
+              firstName: "Pasteur"
+              lastName: "Vicuna"
+              avatarUrl: null
+        - id: 2
+          name: "Ancien de service"
+          headcount: 1
+          sortOrder: 1
+          assignments:
+            - userId: 11
+              firstName: "Jean"
+              lastName: "Noël"
+              avatarUrl: null
+        - id: 3
+          name: "Diacre"
+          headcount: 4
+          sortOrder: 2
+          assignments:
+            - userId: 12
+              firstName: "Marie"
+              lastName: "Laurent"
+              avatarUrl: null
+            - userId: 13
+              firstName: "Pierre"
+              lastName: "Duval"
+              avatarUrl: null
+            - userId: 14
+              firstName: "Sophie"
+              lastName: "Martin"
+              avatarUrl: null
+            - userId: 15
+              firstName: "Luc"
+              lastName: "Bernard"
+              avatarUrl: null
+      staffingStatus: "FullyStaffed"
+      concurrencyToken: 3
+      createdAt: "2026-03-01T00:00:00Z"
+      updatedAt: "2026-03-22T09:30:00Z"
+
+stories:
+  # Stories 9-1 and 9-2: No frontend screens (backend/infrastructure)
+  # 9-1-signalr-hub-and-connection-lifecycle: no UI
+  # 9-2-real-time-activity-update-broadcasting: no UI (hooks only)
+
+  9-3-modifie-badge-for-recent-changes:
+    description: "Amber-500 'Modifié' badge on recently updated activities across 6 views"
+    role: anonymous+viewer+admin
+    note: "Badge state injected via localStorage (sdac-modified-badges). Route interception for API mocks. Activity IDs 101 and 301 marked as modified."
+    screens:
+      # --- PUBLIC DASHBOARD: Mobile — ActivityCard with badge ---
+      - id: 01-public-upcoming-badge-mobile
+        url: /
+        viewport: [375, 812]
+        desc: "Public homepage upcoming activities — ActivityCard showing amber 'Modifié' badge on activities 101 and 301"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config/public": "publicChurchInfo"
+              "/api/config": "publicConfig"
+              "/api/public/live-status": "liveStatus"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/upcoming-activities": "upcomingActivities"
+              "/api/public/program-schedules": "programSchedules"
+              "/api/public/departments": "publicDepartments"
+              "/api/auth/me": 401
+          - scroll_to: "upcoming-activities section"
+        ux_checks:
+          - "Amber-500 pill badge showing 'Modifié' text on activity 101 (Culte du Sabbat)"
+          - "Amber-500 pill badge showing 'Modifié' text on activity 301 (Programme JA)"
+          - "Activity 102 (École du Sabbat) has NO badge — not marked as modified"
+          - "Badge uses text-xs (12px) font-medium — caption typography per UX spec"
+          - "Badge appears in flex-wrap row alongside department abbreviation badge"
+          - "Badge has white text on amber-500 background"
+          - "Badge shape is pill (rounded-full from Badge component)"
+          - "Badge does not break card layout — wraps naturally with gap-2"
+
+      # --- PUBLIC DASHBOARD: Desktop — ActivityCard with badge ---
+      - id: 02-public-upcoming-badge-desktop
+        url: /
+        viewport: [1280, 800]
+        desc: "Public homepage desktop — ActivityCards in grid with 'Modifié' badges visible alongside department badges"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config/public": "publicChurchInfo"
+              "/api/config": "publicConfig"
+              "/api/public/live-status": "liveStatus"
+              "/api/public/next-activity": "nextActivity"
+              "/api/public/upcoming-activities": "upcomingActivities"
+              "/api/public/program-schedules": "programSchedules"
+              "/api/public/departments": "publicDepartments"
+              "/api/auth/me": 401
+          - scroll_to: "upcoming-activities section"
+        ux_checks:
+          - "'Modifié' badge on activity 101 and 301"
+          - "No badge on activity 102 (not modified)"
+          - "Badge coexists with department abbreviation badge in flex-wrap row"
+          - "Cards in responsive grid layout"
+          - "Badge color amber-500 distinct from department colors (rose/teal)"
+
+      # --- AUTH DASHBOARD: Desktop — DashboardActivityCard with badge ---
+      - id: 03-auth-dashboard-badge-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "Authenticated dashboard — DashboardActivityCard showing 'Modifié' badge in title row (Row 2) between title and specialType"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/dashboard": "dashboardActivities"
+        ux_checks:
+          - "'Modifié' badge on activity 101 (Culte du Sabbat) in title row"
+          - "'Modifié' badge on activity 301 (Programme JA) in title row"
+          - "No badge on activity 102 (École du Sabbat)"
+          - "Badge right-aligned in flex row with shrink-0"
+          - "Badge does not push title off-screen — title truncates if needed"
+          - "Department color left-border accent (4px) visible on each card"
+          - "Sidebar visible (authenticated desktop layout)"
+
+      # --- AUTH DASHBOARD: Mobile — DashboardActivityCard with badge ---
+      - id: 04-auth-dashboard-badge-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Authenticated dashboard mobile — DashboardActivityCard with 'Modifié' badge in compact layout"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/dashboard": "dashboardActivities"
+        ux_checks:
+          - "'Modifié' badge visible on mobile card layout"
+          - "Badge does not cause horizontal overflow"
+          - "Bottom nav visible"
+          - "Cards stack vertically"
+
+      # --- CALENDAR DAY DETAIL: Desktop — Badge next to title ---
+      - id: 05-calendar-day-detail-badge-desktop
+        url: /my-calendar
+        viewport: [1280, 800]
+        desc: "Auth calendar — click on March 28 to open day detail dialog/sheet showing 'Modifié' badge next to activity title"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/auth/me": "auth_me_viewer"
+              "/api/calendar*": "calendarActivities"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+          - click: "March 28 day cell in calendar"
+        ux_checks:
+          - "Day detail dialog/sheet open for March 28"
+          - "'Modifié' badge inline with 'Culte du Sabbat' title (gap-1.5)"
+          - "'Modifié' badge inline with 'Programme JA' title"
+          - "Badge uses text-xs — appropriate for compact list items"
+          - "Badge does not break truncation of long titles"
+          - "Time range visible below title"
+
+      # --- ADMIN ACTIVITIES TABLE: Desktop — Badge in title cell ---
+      - id: 06-admin-activities-badge-desktop
+        url: /admin/activities
+        viewport: [1280, 800]
+        desc: "Admin activities table — 'Modifié' badge inline with title text in table cell, between title and specialType badge"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z","301":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/auth/me": "auth_me_admin"
+              "/api/activities": "allActivities"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+        ux_checks:
+          - "'Modifié' badge inline after 'Culte du Sabbat' title in table cell"
+          - "'Modifié' badge inline after 'Programme JA' title in table cell"
+          - "No badge on 'École du Sabbat' and 'Réunion de prière' rows"
+          - "Badge inline-flex keeps alignment with text baseline"
+          - "Badge amber-500 color distinct from table row hover"
+          - "Admin sidebar visible"
+
+      # --- DEPARTMENT DETAIL: Desktop — Badge in activity list ---
+      - id: 07-department-detail-badge-desktop
+        url: /my-departments/1
+        viewport: [1280, 800]
+        desc: "Department detail (Culte) — activity list item with 'Modifié' badge between title and staffing indicator"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/auth/me": "auth_me_viewer"
+              "/api/departments/with-staffing": "departmentsWithStaffing"
+              "/api/departments/1": "departmentDetail_CU"
+              "/api/activities?departmentId=1": "activitiesByDept_CU"
+        ux_checks:
+          - "'Modifié' badge on 'Culte du Sabbat' activity row"
+          - "No badge on 'École du Sabbat' row"
+          - "Badge positioned in flex row between title (flex-1 truncate) and staffing indicator"
+          - "Badge does not overlap or push staffing indicator off-screen"
+          - "Rose left-border accent for Culte department"
+          - "2-column layout: pipeline left, sidebar right"
+
+      # --- ACTIVITY DETAIL: Desktop — Badge in header (dismiss on view) ---
+      - id: 08-activity-detail-badge-desktop
+        url: /activities/101
+        viewport: [1280, 800]
+        desc: "Activity detail page — 'Modifié' badge in header (will auto-dismiss via useEffect, capture immediately)"
+        actions:
+          - localStorage_set:
+              key: "sdac-modified-badges"
+              value: '{"state":{"modifiedActivities":{"101":"2026-03-22T10:00:00.000Z"}},"version":0}'
+          - route_mock:
+              "/api/config": "publicConfig"
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/101": "activityDetail_101"
+        note: "Badge auto-dismisses via useEffect after first render. The badge should flash briefly then disappear. Playwright screenshot captures the DOM state — badge may or may not be visible depending on timing. This is an edge case screen."
+        ux_checks:
+          - "Activity detail header with title 'Culte du Sabbat'"
+          - "'Modifié' badge may be visible briefly in header (auto-dismiss on view — AC 2)"
+          - "Full roster visible with role assignments"
+          - "Activity metadata (date, time, department) visible"

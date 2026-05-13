@@ -1,0 +1,725 @@
+# Capture Plan — Epic 6: Authenticated Dashboard & Personal Views
+# Used ONLY during screenshot capture sessions (not loaded during dev-story)
+
+epic: 6
+name: "Authenticated Dashboard & Personal Views"
+
+prerequisites:
+  app_running: true
+  base_url: "http://localhost:5173"
+  auth_roles_needed: [viewer]
+  seed_data: "Authenticated user with role assignments on upcoming activities"
+  note: "Backend down — all API responses mocked via Playwright route interception"
+
+ux_spec_sections:
+  - "§6 Visual Design Foundation — Color System, Typography, Spacing"
+  - "§8 User Journey Flows — Journey 2: Check and Confirm"
+  - "§9 Component Strategy — ActivityCard list variant, Avatar 28px"
+  - "§10 UX Consistency Patterns — Authenticated Register rules"
+  - "§11 Responsive Design & Accessibility"
+
+route_mocks:
+  auth_me_viewer:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 1
+      email: "viewer@test.local"
+      firstName: "Marie"
+      lastName: "Laurent"
+      role: "Viewer"
+      departmentIds: [1, 2]
+
+  auth_me_admin:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 3
+      email: "admin@test.local"
+      firstName: "Test"
+      lastName: "Admin"
+      role: "Admin"
+      departmentIds: [1]
+
+  activity_detail_data:
+    endpoint: "/api/activities/1"
+    response:
+      id: 1
+      title: "Culte Divin"
+      description: "Service principal du samedi matin"
+      date: "2026-03-21"
+      startTime: "10:00:00"
+      endTime: "12:00:00"
+      departmentId: 1
+      departmentName: "Jeunesse Adventiste"
+      departmentAbbreviation: "JA"
+      departmentColor: "#14B8A6"
+      visibility: "public"
+      specialType: "Journée de la Femme"
+      roles:
+        - id: 1
+          roleName: "Prédicateur"
+          headcount: 1
+          sortOrder: 0
+          assignments:
+            - id: 10
+              userId: 5
+              firstName: "Mario"
+              lastName: "Vicuna"
+              avatarUrl: null
+              isGuest: false
+        - id: 2
+          roleName: "Ancien de Service"
+          headcount: 1
+          sortOrder: 1
+          assignments:
+            - id: 11
+              userId: 6
+              firstName: "Jean"
+              lastName: "Dupont"
+              avatarUrl: null
+              isGuest: false
+        - id: 3
+          roleName: "Diacres"
+          headcount: 3
+          sortOrder: 2
+          assignments:
+            - id: 12
+              userId: 7
+              firstName: "Pierre"
+              lastName: "Martin"
+              avatarUrl: null
+              isGuest: false
+            - id: 13
+              userId: 8
+              firstName: "Paul"
+              lastName: "Lefebvre"
+              avatarUrl: null
+              isGuest: false
+        - id: 4
+          roleName: "Diaconesses"
+          headcount: 2
+          sortOrder: 3
+          assignments:
+            - id: 14
+              userId: 9
+              firstName: "Pasteur"
+              lastName: "Invité"
+              avatarUrl: null
+              isGuest: true
+      staffingStatus: "PartiallyStaffed"
+      concurrencyToken: 42
+      createdAt: "2026-03-01T00:00:00Z"
+      updatedAt: "2026-03-01T00:00:00Z"
+
+  activity_detail_404:
+    endpoint: "/api/activities/999"
+    status: 404
+    response: null
+
+  assignments_data:
+    endpoint: "/api/activities/my-assignments"
+    response:
+      - activityId: 1
+        activityTitle: "Culte du Sabbat"
+        date: "2026-03-21"
+        startTime: "10:00:00"
+        endTime: "12:00:00"
+        departmentName: "Ministère des Femmes"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        specialType: null
+        roleName: "Diacre"
+        coAssignees:
+          - userId: 2
+            firstName: "Jean"
+            lastName: "Dupont"
+            avatarUrl: null
+            isGuest: false
+          - userId: 3
+            firstName: "Sophie"
+            lastName: "Martin"
+            avatarUrl: null
+            isGuest: false
+      - activityId: 2
+        activityTitle: "Programme JA"
+        date: "2026-04-04"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#10B981"
+        specialType: "youth-day"
+        roleName: "Annonces"
+        coAssignees: []
+      - activityId: 3
+        activityTitle: "Sainte-Cène"
+        date: "2026-04-18"
+        startTime: "10:00:00"
+        endTime: "12:00:00"
+        departmentName: "Ministère des Femmes"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        specialType: "sainte-cene"
+        roleName: "Prédicateur"
+        coAssignees:
+          - userId: 4
+            firstName: "Pasteur"
+            lastName: "Invité"
+            avatarUrl: null
+            isGuest: true
+
+  assignments_empty:
+    endpoint: "/api/activities/my-assignments"
+    response: []
+
+  assignments_error:
+    endpoint: "/api/activities/my-assignments"
+    status: 500
+    response:
+      message: "Internal Server Error"
+
+  auth_me_owner:
+    endpoint: "/api/auth/me"
+    response:
+      userId: 99
+      email: "owner@test.local"
+      firstName: "Elisha"
+      lastName: "Dev"
+      role: "Owner"
+      departmentIds: []
+
+  dashboard_data_viewer:
+    endpoint: "/api/activities/dashboard"
+    response:
+      - id: 10
+        title: "Culte du Sabbat"
+        date: "2026-03-21"
+        startTime: "10:00:00"
+        endTime: "12:00:00"
+        departmentId: 1
+        departmentName: "Ministère des Femmes"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        visibility: "public"
+        specialType: null
+        predicateurName: "Mario Vicuna"
+        predicateurAvatarUrl: null
+        roleCount: 4
+        totalHeadcount: 7
+        assignedCount: 5
+        staffingStatus: "PartiallyStaffed"
+      - id: 11
+        title: "Programme JA"
+        date: "2026-03-28"
+        startTime: "14:00:00"
+        endTime: "16:00:00"
+        departmentId: 2
+        departmentName: "Jeunesse Adventiste"
+        departmentAbbreviation: "JA"
+        departmentColor: "#14B8A6"
+        visibility: "public"
+        specialType: "youth-day"
+        predicateurName: "Jean Dupont"
+        predicateurAvatarUrl: null
+        roleCount: 3
+        totalHeadcount: 5
+        assignedCount: 5
+        staffingStatus: "FullyStaffed"
+      - id: 12
+        title: "Sainte-Cène"
+        date: "2026-04-04"
+        startTime: "10:00:00"
+        endTime: "12:00:00"
+        departmentId: 1
+        departmentName: "Ministère des Femmes"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        visibility: "public"
+        specialType: "sainte-cene"
+        predicateurName: "Pasteur Invité"
+        predicateurAvatarUrl: null
+        roleCount: 4
+        totalHeadcount: 7
+        assignedCount: 7
+        staffingStatus: "FullyStaffed"
+      - id: 13
+        title: "Réunion de Prière"
+        date: "2026-04-11"
+        startTime: "19:00:00"
+        endTime: "20:30:00"
+        departmentId: 3
+        departmentName: "Diaconat"
+        departmentAbbreviation: "DIAC"
+        departmentColor: "#0EA5E9"
+        visibility: "authenticated"
+        specialType: null
+        predicateurName: null
+        predicateurAvatarUrl: null
+        roleCount: 2
+        totalHeadcount: 3
+        assignedCount: 1
+        staffingStatus: "Critical"
+
+  dashboard_data_admin:
+    endpoint: "/api/activities/dashboard"
+    response:
+      - id: 10
+        title: "Culte du Sabbat"
+        date: "2026-03-21"
+        startTime: "10:00:00"
+        endTime: "12:00:00"
+        departmentId: 1
+        departmentName: "Ministère des Femmes"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        visibility: "public"
+        specialType: null
+        predicateurName: "Mario Vicuna"
+        predicateurAvatarUrl: null
+        roleCount: 4
+        totalHeadcount: 7
+        assignedCount: 5
+        staffingStatus: "PartiallyStaffed"
+      - id: 14
+        title: "Soirée Diaconat"
+        date: "2026-03-25"
+        startTime: "18:00:00"
+        endTime: "20:00:00"
+        departmentId: 3
+        departmentName: "Diaconat"
+        departmentAbbreviation: "DIAC"
+        departmentColor: "#0EA5E9"
+        visibility: "authenticated"
+        specialType: null
+        predicateurName: null
+        predicateurAvatarUrl: null
+        roleCount: 2
+        totalHeadcount: 4
+        assignedCount: 4
+        staffingStatus: "FullyStaffed"
+      - id: 12
+        title: "Sainte-Cène"
+        date: "2026-04-04"
+        startTime: "10:00:00"
+        endTime: "12:00:00"
+        departmentId: 1
+        departmentName: "Ministère des Femmes"
+        departmentAbbreviation: "MIFEM"
+        departmentColor: "#8B5CF6"
+        visibility: "public"
+        specialType: "sainte-cene"
+        predicateurName: "Pasteur Invité"
+        predicateurAvatarUrl: null
+        roleCount: 4
+        totalHeadcount: 7
+        assignedCount: 7
+        staffingStatus: "FullyStaffed"
+
+  dashboard_empty:
+    endpoint: "/api/activities/dashboard"
+    response: []
+
+  dashboard_error:
+    endpoint: "/api/activities/dashboard"
+    status: 500
+    response:
+      message: "Internal Server Error"
+
+stories:
+  6-1-personal-assignments-view-my-assignments:
+    description: "Personal assignments view on authenticated dashboard — My Assignments section"
+    role: viewer
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- Mobile (375px) — Data State ---
+      - id: 01-assignments-data-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "My Assignments section on mobile — 3 assignment cards stacked"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_data"
+        ux_checks:
+          - "Section heading 'Mes Affectations' in text-xl font-bold text-foreground"
+          - "H2 heading level (proper hierarchy under dashboard h1)"
+          - "Welcome message 'Bienvenue, Marie' visible above section"
+          - "Assignment cards stacked vertically (single column)"
+          - "Each card has rounded-2xl border with 4px left border in department color"
+          - "First card has bg-primary/5 emphasis (indigo-50 tint)"
+          - "Department badge: colored chip with abbreviation text (MIFEM, JA)"
+          - "Date line: formatted date (Samedi 21 mars) + relative distance (dans X jours)"
+          - "Activity title in text-base font-bold text-foreground"
+          - "Role name in text-sm font-semibold text-primary (indigo-600)"
+          - "Time range in text-xs text-muted-foreground (10h00–12h00)"
+          - "Co-assignee avatars: 28px InitialsAvatar circles"
+          - "Co-assignee names listed next to avatars"
+          - "Guest co-assignee shows '(Invité)' label"
+          - "Special type badge on Programme JA and Sainte-Cène"
+          - "Cards use semantic tokens (bg-background, text-foreground, border-border)"
+          - "space-y-3 gap between cards"
+          - "Minimum 11px text allowed (authenticated register)"
+          - "Cards are focusable (tabIndex=0)"
+
+      # --- Desktop (1280px) — Data State ---
+      - id: 02-assignments-data-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "My Assignments section on desktop with sidebar layout"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_data"
+        ux_checks:
+          - "Dashboard layout with authenticated sidebar visible"
+          - "Welcome message + section heading visible"
+          - "Assignment cards with sm:p-5 padding"
+          - "Department badges with colored backgrounds"
+          - "First card emphasis (bg-primary/5)"
+          - "Co-assignee avatar row with -space-x-1 overlap"
+          - "Cards constrained within content area (not full bleed)"
+          - "Proper spacing between section title and cards (mt-4)"
+
+      # --- Mobile (375px) — Empty State ---
+      - id: 03-assignments-empty-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "My Assignments empty state — no upcoming assignments"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_empty"
+        ux_checks:
+          - "Section heading 'Mes Affectations' still visible"
+          - "Empty message: 'Aucune affectation à venir'"
+          - "Hint text below: 'Les affectations apparaissent ici...'"
+          - "Empty container with rounded-2xl border border-border bg-background"
+          - "Text centered, text-sm font-medium text-muted-foreground"
+          - "role=status on empty container for screen readers"
+          - "No broken layout or missing sections"
+
+      # --- Desktop (1280px) — Empty State ---
+      - id: 04-assignments-empty-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "My Assignments empty state on desktop"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_empty"
+        ux_checks:
+          - "Empty state centered in content area"
+          - "Sidebar visible alongside empty dashboard"
+          - "p-8 padding on empty container"
+          - "Hint text visible below main message"
+
+      # --- Mobile (375px) — Error State ---
+      - id: 05-assignments-error-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "My Assignments error state with retry button"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_error"
+        ux_checks:
+          - "Section heading 'Mes Affectations' still visible"
+          - "Error message: 'Impossible de charger vos affectations'"
+          - "Retry button: 'Réessayer' in text-sm font-medium text-primary"
+          - "Error container with border-destructive/20 bg-destructive/10"
+          - "role=alert on error container for screen reader announcement"
+          - "rounded-2xl border on error container"
+
+      # --- Desktop (1280px) — Error State ---
+      - id: 06-assignments-error-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "My Assignments error state on desktop"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_error"
+        ux_checks:
+          - "Error container centered in content area"
+          - "Retry button visible and clickable"
+          - "Sidebar visible alongside error state"
+          - "Error text in text-sm text-destructive"
+
+  6-2-full-activity-roster-view:
+    description: "Full activity detail page with roster — accessible at /activities/:id for VIEWER+"
+    role: viewer
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- Mobile (375px) — Data State (VIEWER) ---
+      - id: 01-detail-data-mobile
+        url: /activities/1
+        viewport: [375, 812]
+        desc: "Activity detail page with full roster on mobile — VIEWER role, no edit button"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/1": "activity_detail_data"
+        ux_checks:
+          - "Back button '← Retour' links to /dashboard"
+          - "Department badge: colored chip with 'JA' abbreviation (teal-ish #14B8A6 background)"
+          - "Formatted date (Samedi 21 mars 2026) + relative distance"
+          - "Activity title 'Culte Divin' as h1, text-2xl font-black"
+          - "Time range displayed (10h00 – 12h00)"
+          - "Special type badge 'Journée de la Femme' visible"
+          - "StaffingIndicator: shape-based icon + fraction (5/7) with partial status color"
+          - "Description text 'Service principal du samedi matin' visible"
+          - "Department color left-border accent (4px) on header card"
+          - "Section heading h2 'Composition de l'activité'"
+          - "PRÉDICATEUR role: uppercase micro-label text-[11px] font-black tracking-wider"
+          - "Headcount fraction '1/1' in emerald-600 (complete)"
+          - "48px avatar (InitialsAvatar size=lg) for Mario Vicuna"
+          - "ANCIEN DE SERVICE role: '1/1' in emerald-600"
+          - "DIACRES role: '2/3' in amber-600 (partial)"
+          - "Two assigned avatars + one dashed-border empty slot 'Non assigné'"
+          - "DIACONESSES role: '1/2' in amber-600 (partial)"
+          - "Guest assignee shows '(Invité)' micro-label in muted text"
+          - "Dashed-border 48px circle placeholder for unfilled slot"
+          - "NO 'Modifier' edit button visible (VIEWER role)"
+          - "Role slots stacked in single column (mobile)"
+          - "Semantic tokens throughout (bg-background, text-foreground, border-border)"
+          - "Minimum 11px text (authenticated register)"
+
+      # --- Desktop (1280px) — Data State (VIEWER) ---
+      - id: 02-detail-data-desktop
+        url: /activities/1
+        viewport: [1280, 800]
+        desc: "Activity detail page with full roster on desktop — VIEWER role, sidebar visible"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/1": "activity_detail_data"
+        ux_checks:
+          - "Authenticated sidebar visible on left"
+          - "Content area constrained (max-w-3xl mx-auto or similar)"
+          - "Back button and header visible"
+          - "Department badge + date + title + time + special type + staffing indicator"
+          - "Description text visible"
+          - "Role slots in grid layout (lg:grid-cols-2 per UX spec)"
+          - "48px avatars with full names below"
+          - "Empty slots with dashed borders + 'Non assigné'"
+          - "Guest label '(Invité)' visible"
+          - "No edit button (VIEWER)"
+          - "Proper spacing between header and roster sections"
+
+      # --- Desktop (1280px) — ADMIN with Edit Button ---
+      - id: 03-detail-admin-desktop
+        url: /activities/1
+        viewport: [1280, 800]
+        desc: "Activity detail page as ADMIN — Edit button visible (matching department)"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_admin"
+              "/api/activities/1": "activity_detail_data"
+        ux_checks:
+          - "'Modifier' edit button/link visible in header area"
+          - "Edit link navigates to /admin/activities"
+          - "Same roster display as VIEWER (read-only view with edit access)"
+          - "Sidebar shows admin navigation context"
+
+      # --- Mobile (375px) — Skeleton Loading ---
+      - id: 04-detail-skeleton-mobile
+        url: /activities/1
+        viewport: [375, 812]
+        desc: "Activity detail loading state with skeleton placeholders"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+          - route_mock_delay:
+              "/api/activities/1": 30000
+        ux_checks:
+          - "Skeleton placeholders matching final layout structure"
+          - "Header skeleton (title, date, badge areas)"
+          - "3-4 role slot skeletons below header"
+          - "Back button still visible during loading"
+          - "No broken layout or flash of error state"
+
+      # --- Mobile (375px) — 404 Not Found ---
+      - id: 05-detail-404-mobile
+        url: /activities/999
+        viewport: [375, 812]
+        desc: "Activity not found state with link back to dashboard"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/999": "activity_detail_404"
+        ux_checks:
+          - "'Activité non trouvée' message displayed"
+          - "Hint text: 'Cette activité n'existe pas ou a été supprimée'"
+          - "Link 'Retour au tableau de bord' navigates to /dashboard"
+          - "Clean layout without broken components"
+
+      # --- Mobile (375px) — AssignmentCard Navigation ---
+      - id: 06-assignment-card-link-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Dashboard with AssignmentCards wrapped in <Link> for navigation to activity detail"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_data"
+        ux_checks:
+          - "Assignment cards are rendered as clickable links"
+          - "Cards have proper <a> tag wrapping (Link component)"
+          - "href attributes point to /activities/{activityId}"
+          - "Cards maintain existing visual styling (rounded-2xl, department color border)"
+          - "Cursor-pointer on hover"
+
+  6-3-authenticated-dashboard:
+    description: "Authenticated dashboard with greeting, My Assignments, and Upcoming Activities sections"
+    role: viewer
+    note: "Backend down — all API responses mocked via Playwright route interception"
+    screens:
+      # --- Mobile (375px) — VIEWER Full Dashboard ---
+      - id: 01-dashboard-viewer-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Full authenticated dashboard as VIEWER — greeting + My Assignments + Upcoming Activities"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_data"
+              "/api/activities/dashboard": "dashboard_data_viewer"
+        ux_checks:
+          - "'CENTRE DE COMMANDE' micro-label: text-xs font-black uppercase tracking-widest text-primary"
+          - "Greeting 'Bonjour, Marie' as h1, text-2xl font-black text-foreground"
+          - "Current date formatted with locale (e.g., 'lundi 16 mars 2026')"
+          - "Role badge 'Membre' in outline Badge component"
+          - "My Assignments section visible with assignment cards"
+          - "'Activités à Venir' section heading: h2, text-xl font-bold text-foreground"
+          - "No subtitle for VIEWER (not scoped to departments)"
+          - "Activity cards stacked single column on mobile"
+          - "Each card: rounded-2xl border-l-4 with department color"
+          - "Department abbreviation badge (MIFEM, JA, DIAC) with colored background"
+          - "Formatted date + relative distance on each card"
+          - "Activity title in text-base font-bold text-foreground"
+          - "Predicateur name + 28px InitialsAvatar (xs) where present"
+          - "Time range in text-xs text-muted-foreground tabular-nums"
+          - "Special type badge (youth-day, sainte-cene) on applicable cards"
+          - "No StaffingIndicator visible (VIEWER role)"
+          - "Cards are clickable links to /activities/:id"
+          - "Minimum 11px text (authenticated register)"
+          - "Sections stack vertically: greeting → My Assignments → Upcoming Activities"
+
+      # --- Desktop (1280px) — VIEWER Full Dashboard ---
+      - id: 02-dashboard-viewer-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "Full authenticated dashboard as VIEWER on desktop with sidebar and 2-col grid"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_data"
+              "/api/activities/dashboard": "dashboard_data_viewer"
+        ux_checks:
+          - "Authenticated sidebar visible on left"
+          - "Greeting section with 'CENTRE DE COMMANDE' micro-label"
+          - "Role badge 'Membre' right-aligned from greeting"
+          - "My Assignments section visible"
+          - "Upcoming Activities section with 2-column grid (sm:grid-cols-2)"
+          - "Activity cards with department color left border"
+          - "Department badges with colored backgrounds"
+          - "Predicateur avatars visible"
+          - "Cards maintain proper spacing (gap-4)"
+          - "No StaffingIndicator (VIEWER)"
+          - "No 'Voir tout' link (VIEWER)"
+
+      # --- Mobile (375px) — ADMIN Scoped Dashboard ---
+      - id: 03-dashboard-admin-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Dashboard as ADMIN with scoped departments — staffing indicators and dept subtitle"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_admin"
+              "/api/activities/my-assignments": "assignments_data"
+              "/api/activities/dashboard": "dashboard_data_admin"
+        ux_checks:
+          - "Greeting 'Bonjour, Test' as h1"
+          - "Role badge 'Directeur' in outline Badge"
+          - "Upcoming Activities section with department scope subtitle"
+          - "Subtitle shows department badges: MIFEM (purple) + DIAC (blue) as colored chips"
+          - "Each card shows StaffingIndicator with status icon + fraction"
+          - "Partially staffed activity shows amber triangle + fraction (5/7)"
+          - "Fully staffed activity shows green circle + fraction (4/4)"
+          - "'Voir tout' link visible at bottom linking to /admin/activities"
+          - "Cards stacked single column on mobile"
+
+      # --- Desktop (1280px) — ADMIN Scoped Dashboard ---
+      - id: 04-dashboard-admin-desktop
+        url: /dashboard
+        viewport: [1280, 800]
+        desc: "Dashboard as ADMIN on desktop — 2-col grid with staffing indicators"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_admin"
+              "/api/activities/my-assignments": "assignments_data"
+              "/api/activities/dashboard": "dashboard_data_admin"
+        ux_checks:
+          - "Sidebar visible with admin navigation"
+          - "Department scope subtitle with colored badge chips"
+          - "2-column grid for upcoming activity cards"
+          - "StaffingIndicator visible on each card"
+          - "'Voir tout' link visible"
+          - "Cards constrained within content area"
+
+      # --- Mobile (375px) — OWNER Dashboard ---
+      - id: 05-dashboard-owner-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Dashboard as OWNER — all departments, 'Vue d'ensemble' subtitle, SetupChecklist"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_owner"
+              "/api/activities/my-assignments": "assignments_empty"
+              "/api/activities/dashboard": "dashboard_data_viewer"
+              "/api/config": { "churchName": "Église Adventiste de Saint-Hubert", "youTubeChannelUrl": null }
+              "/api/setup-status": { "churchSettingsConfigured": true, "departmentsCreated": true, "activityTemplatesCreated": true, "programSchedulesConfigured": true, "usersCreated": true, "firstActivityCreated": true }
+        ux_checks:
+          - "Greeting 'Bonjour, Elisha' as h1"
+          - "Role badge 'Propriétaire' in outline Badge"
+          - "SetupChecklist visible between greeting and sections (OWNER only)"
+          - "'Vue d'ensemble' subtitle text for OWNER"
+          - "StaffingIndicator visible on all cards"
+          - "Activities from all departments shown"
+
+      # --- Mobile (375px) — Empty Upcoming Activities ---
+      - id: 06-dashboard-upcoming-empty-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Dashboard with no upcoming activities — empty state"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_admin"
+              "/api/activities/my-assignments": "assignments_data"
+              "/api/activities/dashboard": "dashboard_empty"
+        ux_checks:
+          - "Greeting and My Assignments still visible"
+          - "'Activités à Venir' section heading visible"
+          - "Empty state: 'Aucune activité à venir'"
+          - "Admin hint: 'Créez une activité depuis la page d'administration.'"
+          - "Empty container with rounded-2xl border border-border bg-background"
+          - "Text centered, text-sm font-medium text-muted-foreground"
+          - "role=status on empty container"
+
+      # --- Mobile (375px) — Error State Upcoming ---
+      - id: 07-dashboard-upcoming-error-mobile
+        url: /dashboard
+        viewport: [375, 812]
+        desc: "Dashboard with upcoming activities API error — retry button"
+        actions:
+          - route_mock:
+              "/api/auth/me": "auth_me_viewer"
+              "/api/activities/my-assignments": "assignments_data"
+              "/api/activities/dashboard": "dashboard_error"
+        ux_checks:
+          - "Greeting visible (no API dependency)"
+          - "My Assignments section visible (separate API)"
+          - "'Activités à Venir' heading visible"
+          - "Error message: 'Impossible de charger les activités'"
+          - "Retry button: 'Réessayer' in text-sm font-medium text-primary"
+          - "Error container with border-destructive/20 bg-destructive/10"
+          - "role=alert on error container"
