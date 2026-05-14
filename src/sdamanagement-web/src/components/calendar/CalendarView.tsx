@@ -4,7 +4,6 @@ import { useCalendarApp, ScheduleXCalendar } from "@schedule-x/react";
 import {
   createViewDay,
   createViewWeek,
-  createViewMonthGrid,
 } from "@schedule-x/calendar";
 import { createEventsServicePlugin } from "@schedule-x/events-service";
 import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
@@ -12,6 +11,7 @@ import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
 import ViewSwitcher from "./ViewSwitcher";
 import YearGrid from "./YearGrid";
+import MonthGrid from "./MonthGrid";
 import {
   mapToCalendarEvents,
   buildCalendarsFromDepartments,
@@ -36,12 +36,22 @@ interface CalendarViewProps {
   onYearRetry?: () => void;
   /** Optional slot rendered between the heading row and the calendar body. */
   filterSlot?: React.ReactNode;
-  /** Called when user clicks/taps a day. Passes ISO date string "YYYY-MM-DD". When provided, replaces day-view navigation on month-grid click. */
+  /** Called when user clicks/taps a day. Passes ISO date string "YYYY-MM-DD". */
   onDayAction?: (date: string) => void;
   /** When set, CalendarView navigates to the specified view and date programmatically. */
   navigateTo?: { view: CalendarViewType; date: string } | null;
   /** Called after programmatic navigation completes so parent can clear navigateTo. */
   onNavigateComplete?: () => void;
+  /** When true, suppresses the built-in "Calendrier" h1 so the parent page can render its own. */
+  hidePageTitle?: boolean;
+}
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function toIso(d: Date) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
 export default function CalendarView({
@@ -60,6 +70,7 @@ export default function CalendarView({
   onDayAction,
   navigateTo,
   onNavigateComplete,
+  hidePageTitle = false,
 }: CalendarViewProps) {
   const { t, i18n } = useTranslation();
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
@@ -68,8 +79,8 @@ export default function CalendarView({
   const [calendarControls] = useState(() => createCalendarControlsPlugin());
 
   const calendar = useCalendarApp({
-    views: [createViewMonthGrid(), createViewWeek(), createViewDay()],
-    defaultView: createViewMonthGrid().name,
+    views: [createViewWeek(), createViewDay()],
+    defaultView: createViewWeek().name,
     firstDayOfWeek: 7,
     timezone: "America/Toronto",
     locale: i18n.language === "fr" ? "fr-FR" : "en-US",
@@ -79,9 +90,6 @@ export default function CalendarView({
       gridHeight: 1800,
       nDays: 7,
       eventWidth: 95,
-    },
-    monthGridOptions: {
-      nEventsPerDay: 4,
     },
     calendars: buildCalendarsFromDepartments(departments),
     events: [],
@@ -94,7 +102,7 @@ export default function CalendarView({
         );
       },
       onClickDate(date: Temporal.PlainDate) {
-        const isoDate = `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}`;
+        const isoDate = `${date.year}-${pad2(date.month)}-${pad2(date.day)}`;
         if (onDayAction) {
           onDayAction(isoDate);
         } else {
@@ -114,21 +122,37 @@ export default function CalendarView({
     },
   });
 
+  // Sync events into Schedule-X when in day/week view
   useEffect(() => {
-    if (activities && activeView !== "year") {
+    if (activities && (activeView === "day" || activeView === "week")) {
       eventsService.set(mapToCalendarEvents(activities));
     }
   }, [activities, eventsService, activeView]);
+
+  // Push range change for the custom MonthGrid view
+  useEffect(() => {
+    if (activeView === "month-grid") {
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      // Include leading/trailing weeks so events from prev/next month are loaded
+      const firstWeekday = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+      const start = new Date(year, month, 1 - firstWeekday);
+      const end = new Date(year, month, lastDate + (6 - new Date(year, month, lastDate).getDay()));
+      onRangeChange(toIso(start), toIso(end));
+    }
+  }, [activeView, selectedDate, onRangeChange]);
 
   useEffect(() => {
     if (navigateTo) {
       const { view, date } = navigateTo;
       setActiveView(view);
-      if (view !== "year") {
+      const parsed = new Date(date + "T00:00:00");
+      setSelectedDate(parsed);
+      if (view === "day" || view === "week") {
         calendarControls.setView(view);
         calendarControls.setDate(Temporal.PlainDate.from(date));
       }
-      setSelectedDate(new Date(date + "T00:00:00"));
       onViewChange(view);
       onNavigateComplete?.();
     }
@@ -139,16 +163,36 @@ export default function CalendarView({
       setActiveView(view);
       onViewChange(view);
 
-      if (view !== "year") {
+      if (view === "day" || view === "week") {
         calendarControls.setView(view);
       }
     },
     [calendarControls, onViewChange],
   );
 
+  const handleMonthDayClick = useCallback(
+    (iso: string) => {
+      if (onDayAction) {
+        onDayAction(iso);
+      } else {
+        const parsed = new Date(iso + "T00:00:00");
+        setSelectedDate(parsed);
+        setActiveView("day");
+        calendarControls.setView("day");
+        calendarControls.setDate(Temporal.PlainDate.from(iso));
+        onViewChange("day");
+      }
+    },
+    [calendarControls, onViewChange, onDayAction],
+  );
+
+  const handleMonthNavigate = useCallback((next: Date) => {
+    setSelectedDate(new Date(next.getFullYear(), next.getMonth(), 1));
+  }, []);
+
   const handleYearDayClick = useCallback(
     (date: Date) => {
-      const isoDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const isoDate = toIso(date);
       if (onDayAction) {
         onDayAction(isoDate);
       } else {
@@ -165,16 +209,11 @@ export default function CalendarView({
 
   const handleYearMonthClick = useCallback(
     (date: Date) => {
-      setSelectedDate(date);
+      setSelectedDate(new Date(date.getFullYear(), date.getMonth(), 1));
       setActiveView("month-grid");
-      const plainDate = Temporal.PlainDate.from(
-        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`,
-      );
-      calendarControls.setView("month-grid");
-      calendarControls.setDate(plainDate);
       onViewChange("month-grid");
     },
-    [calendarControls, onViewChange],
+    [onViewChange],
   );
 
   const handleYearNavigate = useCallback(
@@ -187,24 +226,29 @@ export default function CalendarView({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">
-          {t("pages.calendar.title")}
-        </h1>
-        <ViewSwitcher activeView={activeView} onViewChange={handleViewChange} />
+      <div className="flex items-center justify-between gap-4">
+        {!hidePageTitle && (
+          <h1 className="font-display text-3xl leading-tight text-[var(--ink)] lg:text-4xl">
+            {t("pages.calendar.title")}
+            <span className="text-[var(--gilt-2)]">.</span>
+          </h1>
+        )}
+        <div className={hidePageTitle ? "ml-auto" : ""}>
+          <ViewSwitcher activeView={activeView} onViewChange={handleViewChange} />
+        </div>
       </div>
 
       {filterSlot}
 
       {isError && (
         <div className="mt-4 flex items-center gap-3">
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-[var(--rose)]">
             {t("pages.calendar.loadError")}
           </p>
           <button
             type="button"
             onClick={onRetry}
-            className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+            className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
           >
             {t("pages.calendar.retry")}
           </button>
@@ -215,14 +259,14 @@ export default function CalendarView({
         <div className="mt-6" role="region" aria-label={t("pages.calendar.title")}>
           {yearIsError && (
             <div className="mb-4 flex items-center gap-3">
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-[var(--rose)]">
                 {t("pages.calendar.loadError")}
               </p>
               {onYearRetry && (
                 <button
                   type="button"
                   onClick={onYearRetry}
-                  className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
                 >
                   {t("pages.calendar.retry")}
                 </button>
@@ -230,8 +274,8 @@ export default function CalendarView({
             </div>
           )}
           {yearIsPending && (
-            <div className="mb-4 flex items-center gap-2 text-sm text-slate-500">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600" />
+            <div className="mb-4 flex items-center gap-2 text-sm text-[var(--ink-3)]">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--hairline-2)] border-t-[var(--gilt)]" />
               {t("layout.loading")}
             </div>
           )}
@@ -242,6 +286,15 @@ export default function CalendarView({
             onDayClick={handleYearDayClick}
             onMonthClick={handleYearMonthClick}
             onYearChange={handleYearNavigate}
+          />
+        </div>
+      ) : activeView === "month-grid" ? (
+        <div className="mt-6" role="region" aria-label={t("pages.calendar.title")}>
+          <MonthGrid
+            viewDate={selectedDate}
+            activities={activities}
+            onDayClick={handleMonthDayClick}
+            onNavigate={handleMonthNavigate}
           />
         </div>
       ) : (

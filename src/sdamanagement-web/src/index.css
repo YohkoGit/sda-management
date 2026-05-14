@@ -4,130 +4,381 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   SDAC ST-HUBERT — Reverent & Timeless
+   Tokens for parchment/ink/gilt typography-led design system.
+   ============================================================ */
+
 @theme inline {
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-    --radius-2xl: calc(var(--radius) + 8px);
-    --radius-3xl: calc(var(--radius) + 12px);
-    --radius-4xl: calc(var(--radius) + 16px);
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-destructive: var(--destructive);
-    --color-warning: var(--warning);
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
+  /* Spacing/radius — keep shadcn's existing token system */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  /* Surfaces */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Brand */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Custom semantic tokens (new) */
+  --color-parchment: var(--parchment);
+  --color-parchment-2: var(--parchment-2);
+  --color-parchment-3: var(--parchment-3);
+  --color-hairline: var(--hairline);
+  --color-hairline-2: var(--hairline-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-gilt: var(--gilt);
+  --color-gilt-2: var(--gilt-2);
+  --color-gilt-soft: var(--gilt-soft);
+  --color-gilt-wash: var(--gilt-wash);
+  --color-rose: var(--rose);
+  --color-staffed: var(--staffed);
+  --color-gaps: var(--gaps);
+
+  --color-dept-diaconnat: var(--moss);
+  --color-dept-ja:        var(--bordeaux);
+  --color-dept-music:     var(--azure);
+  --color-dept-mifem:     var(--umber);
+  --color-dept-mf:        var(--plum);
+
+  /* Chart palette — recolored in our tones */
+  --color-chart-1: var(--gilt);
+  --color-chart-2: var(--moss);
+  --color-chart-3: var(--azure);
+  --color-chart-4: var(--umber);
+  --color-chart-5: var(--plum);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Type families */
+  --font-display: "Spectral", "Cormorant Garamond", Georgia, serif;
+  --font-sans:    "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:    "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
 :root {
-    --radius: 0.625rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.511 0.262 276.966);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --warning: oklch(0.769 0.188 70.08);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.585 0.233 277.117);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.511 0.262 276.966);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.585 0.233 277.117);
+  /* Radius — small. No more rounded-[2rem] */
+  --radius: 4px;
+
+  /* Parchment (warm whites) */
+  --parchment:   #FAF8F2;
+  --parchment-2: #F4EFE2;
+  --parchment-3: #ECE5D3;
+  --hairline:    #E2D9C2;
+  --hairline-2:  #D4C8AB;
+
+  /* Ink (deep navy-charcoal) */
+  --ink:    #1B2530;
+  --ink-2:  #2F3D4A;
+  --ink-3:  #5A6976;
+  --ink-4:  #8A95A1;
+
+  /* Gilt (candlelight gold) */
+  --gilt:      #B89146;
+  --gilt-2:    #9C7A32;
+  --gilt-soft: #E8D9B0;
+  --gilt-wash: #F5EBCF;
+
+  /* Accents */
+  --rose:     #8B3A3A;
+  --moss:     #4A6B5C;
+  --bordeaux: #6B2F35;
+  --azure:    #2A5673;
+  --umber:    #7A5A3C;
+  --plum:     #5A3F5C;
+
+  /* Status */
+  --staffed: #4A6B5C;
+  --gaps:    #B58527;
+
+  /* Motion — reverent never bounces */
+  --ease:        cubic-bezier(0.4, 0.2, 0.2, 1);
+  --ease-out:    cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-in:     cubic-bezier(0.4, 0.0, 1, 1);
+  --dur-instant: 80ms;
+  --dur-fast:    150ms;
+  --dur:         240ms;
+  --dur-slow:    360ms;
+
+  /* shadcn semantic mapping */
+  --background:           var(--parchment);
+  --foreground:           var(--ink);
+  --card:                 var(--parchment);
+  --card-foreground:      var(--ink);
+  --popover:              var(--parchment);
+  --popover-foreground:   var(--ink);
+
+  --primary:              var(--ink);
+  --primary-foreground:   var(--parchment);
+  --secondary:            var(--parchment-2);
+  --secondary-foreground: var(--ink);
+  --muted:                var(--parchment-2);
+  --muted-foreground:     var(--ink-3);
+  --accent:               var(--gilt-wash);
+  --accent-foreground:    var(--ink);
+
+  --destructive:          var(--rose);
+  --warning:              var(--gaps);
+  --border:               var(--hairline);
+  --input:                var(--hairline-2);
+  --ring:                 var(--gilt);
+
+  /* Sidebar */
+  --sidebar:                       var(--parchment);
+  --sidebar-foreground:            var(--ink);
+  --sidebar-primary:               var(--ink);
+  --sidebar-primary-foreground:    var(--parchment);
+  --sidebar-accent:                var(--parchment-2);
+  --sidebar-accent-foreground:     var(--ink);
+  --sidebar-border:                var(--hairline);
+  --sidebar-ring:                  var(--gilt);
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --warning: oklch(0.828 0.189 84.429);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-}
+/* No dark mode — light-only parchment palette */
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-    }
+  * { @apply border-border outline-ring/50; }
+
   body {
     @apply bg-background text-foreground;
-    }
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
 }
 
-/* Schedule-X calendar wrapper — ensure it fills parent container */
+@layer utilities {
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .eyebrow-gilt { color: var(--gilt-2); }
+
+  .numerator {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-variant-numeric: lining-nums;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+  }
+
+  .rule { @apply h-px bg-[var(--hairline)] border-0; }
+  .rule-thick { @apply h-px bg-[var(--ink)]; }
+}
+
+/* Form-field shell — used by Input wrappers */
+.field-shell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--parchment-2);
+  border: 1px solid var(--hairline-2);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 46px;
+}
+.field-shell:focus-within {
+  border-color: var(--ink);
+  background: var(--parchment);
+}
+.field-shell input,
+.field-shell textarea {
+  background: transparent;
+  border: 0;
+  outline: none;
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink);
+}
+.field-shell .leading {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-right: 12px;
+  border-right: 1px solid var(--hairline-2);
+}
+
+/* Live indicator (pulsing rose dot) */
+@keyframes sdac-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.85); }
+}
+.live {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rose);
+}
+.live::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--rose);
+  animation: sdac-pulse 1.8s infinite;
+}
+
+/* Schedule-X calendar wrapper + theme retone */
 .sx-react-calendar-wrapper {
   width: 100%;
   height: 100%;
+}
+
+.sx-react-calendar-wrapper,
+.sx__calendar {
+  --sx-color-primary: var(--gilt-2);
+  --sx-color-on-primary: var(--parchment);
+  --sx-color-primary-container: var(--gilt-wash);
+  --sx-color-on-primary-container: var(--ink);
+  --sx-color-surface: var(--parchment);
+  --sx-color-on-surface: var(--ink);
+  --sx-color-surface-container: var(--parchment-2);
+  --sx-color-surface-container-high: var(--parchment-3);
+  --sx-color-outline: var(--hairline);
+  --sx-color-outline-variant: var(--hairline-2);
+  --sx-color-background: var(--parchment);
+  --sx-internal-color-text: var(--ink);
+  --sx-internal-color-text-muted: var(--ink-3);
+  --sx-internal-color-border: var(--hairline);
+  --sx-internal-color-text-on-primary: var(--parchment);
+  font-family: var(--font-sans);
+  background: var(--parchment);
+  color: var(--ink);
+  border-top: 1px solid var(--hairline);
+}
+
+.sx__calendar .sx__date-grid,
+.sx__calendar .sx__month-grid-day,
+.sx__calendar .sx__week-grid__day,
+.sx__calendar .sx__day-view-header {
+  border-color: var(--hairline) !important;
+  background: var(--parchment);
+}
+
+.sx__calendar .sx__month-grid-day__header-day-name,
+.sx__calendar .sx__week-grid__day-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.sx__calendar .sx__month-grid-day__header-date-number,
+.sx__calendar .sx__week-grid__date-number {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--ink);
+}
+
+.sx__calendar .sx__month-grid-day.is-today,
+.sx__calendar .sx__week-grid__day.is-today {
+  background: var(--gilt-wash);
+}
+
+.sx__calendar .sx__event {
+  border-radius: 2px;
+  border: 1px solid var(--hairline-2);
+  background: var(--parchment-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.sx__calendar button {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  color: var(--ink-2);
+}
+
+/* ============================================================
+   Motion — animation library
+   ============================================================ */
+
+@keyframes sdac-drawer-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes sdac-drawer-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+@keyframes sdac-fade-in  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes sdac-fade-out { from { opacity: 1 } to { opacity: 0 } }
+@keyframes sdac-popover-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes sdac-toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sdac-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-drawer-in  { animation: sdac-drawer-in  var(--dur) var(--ease-out) both; }
+.anim-drawer-out { animation: sdac-drawer-out var(--dur) var(--ease-in)  both; }
+.anim-fade-in    { animation: sdac-fade-in    var(--dur) var(--ease-out) both; }
+.anim-fade-out   { animation: sdac-fade-out   var(--dur) var(--ease-in)  both; }
+.anim-popover-in { animation: sdac-popover-in var(--dur-fast) var(--ease-out) both; transform-origin: top center; }
+.anim-toast-in   { animation: sdac-toast-in   var(--dur) var(--ease-out) both; }
+.anim-rise       { animation: sdac-rise       var(--dur-slow) var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

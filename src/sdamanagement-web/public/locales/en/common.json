@@ -1,7 +1,9 @@
 {
   "app": {
-    "title": "SDAC ST-HUBERT — Operations Command",
+    "title": "SDAC Saint-Hubert",
     "churchName": "Seventh-day Adventist Church of Saint-Hubert",
+    "churchSubtitle": "Adventist Church · 2026",
+    "tagline": "A house of prayer, song and service since the founding.",
     "churchInitials": "SD"
   },
   "nav": {
@@ -10,29 +12,29 @@
       "calendar": "Calendar",
       "departments": "Departments",
       "live": "Live",
-      "signIn": "Sign In",
+      "signIn": "Sign in",
       "menu": "Menu",
       "openDashboard": "Dashboard"
     },
     "auth": {
-      "navigation": "Navigation",
+      "navigation": "Browse",
       "dashboard": "Dashboard",
       "calendar": "Calendar",
       "departments": "Departments",
       "admin": "Administration",
       "settings": "Settings",
-      "signOut": "Sign Out",
-      "adminDepartments": "Department Management",
-      "adminActivityTemplates": "Activity Templates",
-      "adminProgramSchedules": "Program Schedules",
-      "adminSystemHealth": "System Health",
+      "signOut": "Sign out",
+      "adminDepartments": "Department management",
+      "adminActivityTemplates": "Activity templates",
+      "adminProgramSchedules": "Program schedules",
+      "adminSystemHealth": "System health",
       "adminUsers": "Members",
       "adminActivities": "Activities"
     },
     "language": {
       "switchTo": "Switch to {{lang}}",
       "currentLang": "Current language",
-      "fr": "Fran\u00e7ais",
+      "fr": "Français",
       "en": "English"
     }
   },
@@ -40,19 +42,27 @@
     "home": {
       "title": "Home",
       "subtitle": "Welcome to the Seventh-day Adventist Church of Saint-Hubert",
-      "thisSabbath": "This Sabbath",
-      "noActivities": "No upcoming activities \u2014 check back soon!",
+      "thisSabbath": "This sabbath",
+      "noActivities": "No upcoming activities — check back soon.",
       "predicateur": "Speaker",
-      "loadingActivity": "Loading\u2026",
+      "loadingActivity": "Loading…",
       "loadError": "Unable to load activities",
       "welcomeDefault": "Welcome",
-      "liveStreamTitle": "Watch the service live",
-      "liveNow": "LIVE NOW",
+      "metaDate": "Date",
+      "metaTime": "Time",
+      "metaPlace": "Place",
+      "upcomingCount_one": "{{count}} upcoming",
+      "upcomingCount_other": "{{count}} upcoming",
+      "thisSeason": "Season 2026",
+      "ministries": "Ministries",
+      "weeklyRhythm": "Weekly rhythm",
+      "liveStreamTitle": "Live service",
+      "liveNow": "Live",
       "watchOnYouTube": "Watch on YouTube",
-      "liveStreamDescription": "Join us live every Sabbath",
-      "upcomingActivitiesTitle": "Upcoming Activities",
-      "programSchedulesTitle": "Program Schedule",
-      "departmentsTitle": "Our Departments",
+      "liveStreamDescription": "Join us live every Sabbath or revisit the most recent sermon.",
+      "upcomingActivitiesTitle": "Upcoming activities",
+      "programSchedulesTitle": "Program schedule",
+      "departmentsTitle": "Our departments",
       "noPlannedActivity": "No planned activities",
       "specialType": {
         "sainte-cene": "Communion",
@@ -67,16 +77,14 @@
     "dashboard": {
       "title": "Dashboard",
       "welcome": "Welcome, {{name}}",
-      "commandCenter": "COMMAND CENTER",
       "greeting": "Hello, {{name}}",
-      "personalRegister": "PERSONAL REGISTER",
       "role": {
         "viewer": "Member",
         "admin": "Director",
         "owner": "Owner"
       },
       "upcoming": {
-        "title": "Upcoming Activities",
+        "title": "Upcoming activities",
         "overview": "Overview",
         "empty": "No upcoming activities",
         "emptyHintAdmin": "Create an activity from the admin page.",
@@ -85,17 +93,20 @@
         "viewAll": "View all"
       },
       "myAssignments": {
-        "title": "My Assignments",
+        "title": "My assignments",
+        "count_one": "{{count}} assignment",
+        "count_other": "{{count}} assignments",
         "empty": "No upcoming assignments",
         "emptyHint": "Assignments appear here when an administrator assigns you a role in an activity.",
         "loadError": "Failed to load your assignments",
         "retry": "Retry",
-        "coAssignees": "Also assigned",
+        "coAssignees": "With you",
         "guest": "Guest"
       }
     },
     "calendar": {
       "title": "Calendar",
+      "kicker": "Liturgical calendar",
       "loadError": "Unable to load calendar",
       "retry": "Retry",
       "views": {
@@ -127,23 +138,31 @@
       "title": "Departments"
     },
     "authDepartments": {
-      "title": "Ministry Units",
+      "title": "Ministry units",
+      "subtitle": "Ministry",
+      "entries": "entries",
+      "stats": {
+        "upcoming": "Upcoming activities",
+        "staffed": "Fully staffed",
+        "gaps": "Roles to fill",
+        "subMinistries": "Sub-ministries"
+      },
       "subMinistries": "Sub-ministries",
       "noSubMinistries": "No sub-ministries",
-      "upcomingActivities": "Upcoming Activities",
+      "upcomingActivities": "Upcoming activities",
       "noActivitiesAdmin": "Ready to plan. Create your first activity.",
       "noActivitiesViewer": "No activities planned",
       "departmentNotFound": "Department not found",
-      "backToList": "Ministry Units",
+      "backToList": "Ministry units",
       "subMinistryCount": "{{count}} sub-ministry(ies)",
       "loadError": "Loading error",
       "retry": "Retry",
       "noDepartments": "No departments configured",
-      "newActivity": "New Activity",
-      "newMeeting": "New Meeting",
-      "editActivity": "Edit Activity",
-      "editMeeting": "Edit Meeting",
-      "deleteConfirmTitle": "Confirm Deletion",
+      "newActivity": "New activity",
+      "newMeeting": "New meeting",
+      "editActivity": "Edit activity",
+      "editMeeting": "Edit meeting",
+      "deleteConfirmTitle": "Confirm deletion",
       "deleteConfirmMessage": "Delete \"{{title}}\"? This action cannot be undone.",
       "toast": {
         "created": "Activity created",
@@ -168,7 +187,7 @@
     "settings": {
       "title": "Settings",
       "churchIdentity": {
-        "title": "Church Identity",
+        "title": "Church identity",
         "emptyState": "Configure your church's identity",
         "emptyStateHelper": "This information will appear on your church's public page.",
         "churchName": "Church Name",
@@ -177,11 +196,11 @@
         "addressPlaceholder": "1234 Church Street, Saint-Hubert, QC",
         "youtubeChannelUrl": "YouTube Channel URL",
         "youtubeChannelUrlPlaceholder": "https://www.youtube.com/@your-channel",
-        "phoneNumber": "Phone Number",
+        "phoneNumber": "Phone number",
         "phoneNumberPlaceholder": "+1 (450) 555-0100",
-        "welcomeMessage": "Welcome Message",
+        "welcomeMessage": "Welcome message",
         "welcomeMessagePlaceholder": "Welcome to the Adventist Church of Saint-Hubert...",
-        "defaultLocale": "Default Language",
+        "defaultLocale": "Default language",
         "localeFr": "French",
         "localeEn": "English",
         "save": "Save",
@@ -191,14 +210,14 @@
       "noSettingsForRole": "No settings available for your role."
     },
     "adminDepartments": {
-      "title": "Department Management",
-      "emptyState": "Create your departments \u2014 they structure the entire application",
+      "title": "Department management",
+      "emptyState": "Create your departments — they structure the entire application",
       "emptyStateHelper": "Departments organize activities, members, and responsibilities.",
       "createButton": "Create a department",
       "form": {
-        "createTitle": "New Department",
-        "editTitle": "Edit Department",
-        "name": "Department Name",
+        "createTitle": "New department",
+        "editTitle": "Edit department",
+        "name": "Department name",
         "namePlaceholder": "Adventist Youth",
         "abbreviation": "Abbreviation",
         "abbreviationPlaceholder": "AY",
@@ -207,7 +226,7 @@
         "colorPlaceholder": "#4F46E5",
         "description": "Description",
         "descriptionPlaceholder": "Youth activities and programs...",
-        "subMinistries": "Sub-Ministries",
+        "subMinistries": "Sub-ministries",
         "addSubMinistry": "Add a sub-ministry",
         "subMinistryPlaceholder": "Pathfinders",
         "save": "Save",
@@ -218,7 +237,7 @@
       "updateSuccess": "Department updated successfully",
       "deleteSuccess": "Department deleted",
       "deleteError": "Failed to delete department.",
-      "deleteConfirmTitle": "Delete Department",
+      "deleteConfirmTitle": "Delete department",
       "deleteConfirmMessage": "This action is irreversible. Associated sub-ministries will also be deleted.",
       "deleteConfirmAction": "Delete",
       "conflictError": "A department with this abbreviation or color already exists.",
@@ -236,20 +255,20 @@
       "noAccess": "Access reserved for the system owner."
     },
     "adminActivityTemplates": {
-      "title": "Activity Templates",
-      "emptyState": "Define your activity templates \u2014 Sabbath, Communion, Meeting...",
+      "title": "Activity templates",
+      "emptyState": "Define your activity templates — Sabbath, Communion, Meeting...",
       "emptyStateHelper": "Templates allow you to quickly create activities with predefined roles.",
       "createButton": "Create a template",
       "form": {
-        "createTitle": "New Activity Template",
-        "editTitle": "Edit Template",
-        "name": "Template Name",
+        "createTitle": "New activity template",
+        "editTitle": "Edit template",
+        "name": "Template name",
         "namePlaceholder": "Sabbath Service",
         "description": "Description",
         "descriptionPlaceholder": "Main Saturday service...",
-        "roles": "Default Roles",
+        "roles": "Default roles",
         "addRole": "Add a role",
-        "roleName": "Role Name",
+        "roleName": "Role name",
         "roleNamePlaceholder": "Preacher",
         "headcount": "Headcount",
         "save": "Save",
@@ -261,7 +280,7 @@
       "deleteSuccess": "Template deleted",
       "deleteError": "Failed to delete template.",
       "conflictError": "A template with this name already exists.",
-      "deleteConfirmTitle": "Delete Template",
+      "deleteConfirmTitle": "Delete template",
       "deleteConfirmMessage": "This action is irreversible. Associated roles will also be deleted.",
       "deleteConfirmAction": "Delete",
       "card": {
@@ -272,18 +291,18 @@
       "noAccess": "Access reserved for the system owner."
     },
     "adminProgramSchedules": {
-      "title": "Program Schedules",
-      "emptyState": "Set up your recurring schedules \u2014 Sabbath School, Divine Service, AY...",
+      "title": "Program schedules",
+      "emptyState": "Set up your recurring schedules — Sabbath School, Divine Service, AY...",
       "emptyStateHelper": "Recurring schedules define your church's weekly programs.",
       "createButton": "Create a schedule",
       "form": {
-        "createTitle": "New Program Schedule",
-        "editTitle": "Edit Schedule",
+        "createTitle": "New program schedule",
+        "editTitle": "Edit schedule",
         "title": "Title",
         "titlePlaceholder": "Divine Service",
-        "dayOfWeek": "Day of the Week",
-        "startTime": "Start Time",
-        "endTime": "End Time",
+        "dayOfWeek": "Day of the week",
+        "startTime": "Start time",
+        "endTime": "End time",
         "hostName": "Host",
         "hostNamePlaceholder": "Pastor Smith",
         "department": "Department",
@@ -297,7 +316,7 @@
       "deleteSuccess": "Schedule deleted",
       "deleteError": "Failed to delete schedule.",
       "conflictError": "A schedule with this title and day already exists.",
-      "deleteConfirmTitle": "Delete Schedule",
+      "deleteConfirmTitle": "Delete schedule",
       "deleteConfirmMessage": "This action is irreversible.",
       "deleteConfirmAction": "Delete",
       "card": {
@@ -307,7 +326,7 @@
       "noAccess": "Access reserved for the system owner."
     },
     "adminSystemHealth": {
-      "title": "System Health",
+      "title": "System health",
       "refreshButton": "Refresh",
       "refreshing": "Refreshing...",
       "noAccess": "Access reserved for the system owner.",
@@ -319,20 +338,20 @@
         "duration": "Duration"
       },
       "system": {
-        "title": "System Information",
+        "title": "System information",
         "version": "Version",
         "uptime": "Uptime",
         "environment": "Environment"
       },
       "setup": {
-        "title": "Setup Status",
-        "churchConfig": "Church Configuration",
+        "title": "Setup status",
+        "churchConfig": "Church configuration",
         "departments": "Departments",
-        "templates": "Activity Templates",
-        "schedules": "Program Schedules",
+        "templates": "Activity templates",
+        "schedules": "Program schedules",
         "users": "Users",
         "configured": "Configured",
-        "notConfigured": "Not Configured"
+        "notConfigured": "Not configured"
       },
       "uptime": {
         "days": "{{count}} day",
@@ -345,14 +364,14 @@
       }
     },
     "adminUsers": {
-      "title": "Member Management",
-      "createButton": "Add User",
+      "title": "Member management",
+      "createButton": "Add user",
       "emptyState": "No members yet. Add your first member.",
-      "loadMore": "Load More",
+      "loadMore": "Load more",
       "form": {
-        "title": "New User",
-        "firstName": "First Name",
-        "lastName": "Last Name",
+        "title": "New user",
+        "firstName": "First name",
+        "lastName": "Last name",
         "email": "Email",
         "role": "Role",
         "departments": "Departments",
@@ -360,23 +379,23 @@
         "submit": "Create",
         "cancel": "Cancel"
       },
-      "bulkCreateButton": "Bulk Create",
+      "bulkCreateButton": "Bulk create",
       "bulkForm": {
-        "title": "Bulk User Creation",
-        "addRow": "Add Row",
-        "removeRow": "Remove Row",
+        "title": "Bulk user creation",
+        "addRow": "Add row",
+        "removeRow": "Remove row",
         "rowCount": "{{current}} / {{max}} rows",
-        "submit": "Create All",
+        "submit": "Create all",
         "cancel": "Cancel"
       },
       "editButton": "Edit",
       "deleteDialog": {
-        "title": "Delete User",
+        "title": "Delete user",
         "description": "This action is irreversible. {{name}} will no longer be able to sign in.",
         "confirm": "Delete"
       },
       "editForm": {
-        "title": "Edit User",
+        "title": "Edit user",
         "submit": "Save",
         "emailReadonly": "Email cannot be changed",
         "selfRoleDisabled": "Your role can only be changed by another administrator",
@@ -405,41 +424,50 @@
     },
     "adminActivities": {
       "title": "Activities",
-      "createButton": "New Activity",
+      "createButton": "New activity",
       "emptyState": "No activities. Create your first activity.",
       "emptyStateHelper": "Activities organize your department's events: worship services, meetings, special programs.",
       "form": {
-        "createTitle": "New Activity",
-        "editTitle": "Edit Activity",
+        "createTitle": "New activity",
+        "editTitle": "Edit activity",
         "title": "Title",
         "titlePlaceholder": "Sabbath Service",
         "description": "Description",
         "descriptionPlaceholder": "Main Saturday service...",
         "date": "Date",
-        "startTime": "Start Time",
-        "endTime": "End Time",
+        "startTime": "Start time",
+        "endTime": "End time",
         "department": "Department",
         "visibility": "Visibility",
         "visibilityPublic": "Public",
         "visibilityAuthenticated": "Authenticated only",
-        "specialType": "Special Type",
+        "specialType": "Special type",
         "specialTypeNone": "None",
         "save": "Save",
         "saving": "Saving...",
         "cancel": "Cancel"
+      },
+      "specialType": {
+        "sainte-cene": "Communion",
+        "week-of-prayer": "Week of Prayer",
+        "camp-meeting": "Camp Meeting",
+        "youth-day": "Youth Day",
+        "family-day": "Family Day",
+        "womens-day": "Women's Day",
+        "evangelism": "Evangelism"
       },
       "toast": {
         "created": "Activity published",
         "updated": "Activity updated",
         "deleted": "Activity deleted"
       },
-      "deleteConfirmTitle": "Delete Activity",
+      "deleteConfirmTitle": "Delete activity",
       "deleteConfirmMessage": "Are you sure you want to delete this activity?",
       "deleteConfirmWarning": "This will also delete all associated roles and assignments.",
       "deleteConfirmAction": "Delete",
       "conflictError": "This activity was modified by another user. Reload and try again.",
       "conflict": {
-        "title": "Edit Conflict",
+        "title": "Edit conflict",
         "description": "This activity was modified by another administrator during your session. You can reload the current data or overwrite with your changes.",
         "reload": "Reload data",
         "overwrite": "Overwrite with my changes",
@@ -452,8 +480,9 @@
         "authenticated": "Authenticated"
       },
       "roleRoster": {
-        "title": "Activity Roles",
-        "addRole": "Add Role",
+        "kicker": "Roles",
+        "title": "Activity roles",
+        "addRole": "Add role",
         "roleNamePlaceholder": "Role name",
         "headcountLabel": "Count",
         "decreaseHeadcount": "Decrease count",
@@ -469,7 +498,7 @@
         "unassigned": "Unassigned",
         "tapToAssign": "Tap to assign",
         "editAssignment": "Edit assignment for {{role}}",
-        "removeAssignment": "{{name}} \u2014 tap to remove",
+        "removeAssignment": "{{name}} — tap to remove",
         "duplicateRoleName": "Role names must be unique.",
         "roleNameRequired": "Role name is required.",
         "roleNameTooLong": "Role name must not exceed 100 characters.",
@@ -495,11 +524,11 @@
         "guestBack": "Back to search"
       },
       "templateSelector": {
-        "title": "Choose a Template",
+        "title": "Choose a template",
         "subtitle": "Select a template to pre-fill roles, or create a custom activity.",
         "customCard": "Activity without template",
         "customDescription": "Start with an empty activity, no predefined roles.",
-        "rolesLabel": "Template Roles",
+        "rolesLabel": "Template roles",
         "rolesCaption": "These roles will be created automatically with the activity.",
         "backToTemplates": "Back to templates",
         "emptyState": "No templates available.",
@@ -524,7 +553,7 @@
         "partialLabel": "Partially staffed"
       },
       "roster": {
-        "title": "Activity Roster",
+        "title": "Activity roster",
         "unassigned": "Unassigned",
         "guest": "(Guest)",
         "noRoles": "No roles",
@@ -540,13 +569,13 @@
       "loadError": "Failed to load activity",
       "retry": "Retry",
       "description": "Description",
-      "meetingInfo": "Meeting Information",
+      "meetingInfo": "Meeting information",
       "physical": "Physical",
-      "zoomLink": "Zoom Link",
+      "zoomLink": "Zoom link",
       "location": "Location",
       "address": "Address",
       "roster": {
-        "title": "Activity Roster",
+        "title": "Activity roster",
         "noRoles": "No roles defined for this activity",
         "unassigned": "Unassigned",
         "unassignedPosition": "Unassigned position",
@@ -556,15 +585,19 @@
       }
     },
     "notFound": {
-      "title": "Page Not Found",
+      "title": "Page not found",
       "message": "The page you are looking for does not exist.",
-      "backHome": "Back to Home"
+      "backHome": "Back to home"
     }
   },
   "layout": {
     "skipToContent": "Skip to main content",
     "loading": "Loading...",
-    "churchName": "SDAC Saint-Hubert"
+    "churchName": "SDAC Saint-Hubert",
+    "footer": {
+      "contact": "Direction",
+      "navigate": "Browse"
+    }
   },
   "roles": {
     "owner": "Owner",
@@ -573,13 +606,13 @@
   },
   "auth": {
     "login": {
-      "title": "Sign In",
-      "email": "Email Address",
+      "title": "Sign in",
+      "email": "Email address",
       "password": "Password",
       "continue": "Continue",
-      "submit": "Sign In",
+      "submit": "Sign in",
       "back": "Back",
-      "or": "Or",
+      "or": "or",
       "googleButton": "Continue with Google",
       "forgotPassword": "Forgot password?",
       "error": {
@@ -587,11 +620,11 @@
       }
     },
     "setPassword": {
-      "title": "Set Your Password",
-      "helper": "This is your first login. Please set a secure password.",
-      "newPassword": "New Password",
-      "confirmPassword": "Confirm Password",
-      "submit": "Set Password",
+      "title": "Set your password",
+      "helper": "This is your first sign in. Please set a secure password.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "submit": "Set password",
       "success": "Password set successfully. Welcome!",
       "strength": {
         "label": "Password requirements",
@@ -602,13 +635,13 @@
       }
     },
     "resetPassword": {
-      "title": "Forgot Password",
+      "title": "Forgot password",
       "helper": "Enter your email address to reset your password.",
-      "request": "Reset Password",
+      "request": "Reset password",
       "requestSuccess": "If the email exists, a reset link has been sent.",
-      "confirmTitle": "New Password",
+      "confirmTitle": "New password",
       "confirmHelper": "Enter your new password.",
-      "confirm": "Confirm New Password",
+      "confirm": "Confirm new password",
       "confirmSuccess": "Password reset successfully. Please sign in.",
       "error": {
         "invalidToken": "The reset link is invalid, expired, or has already been used.",
@@ -625,29 +658,29 @@
     }
   },
   "setup": {
-    "title": "Initial Setup",
+    "title": "Initial setup",
     "ariaLabel": "Initial setup navigation",
     "startHere": "Start here",
     "steps": {
-      "churchSettings": "Church Settings",
+      "churchSettings": "Church settings",
       "departments": "Departments",
-      "templates": "Activity Templates",
-      "schedules": "Program Schedules",
+      "templates": "Activity templates",
+      "schedules": "Program schedules",
       "members": "Members"
     },
-    "complete": "Setup complete \u2014 your system is ready!"
+    "complete": "Setup complete — your system is ready!"
   },
   "meetingForm": {
     "title": "Title",
     "description": "Description (optional)",
     "date": "Date",
-    "startTime": "Start Time",
-    "endTime": "End Time",
-    "meetingType": "Meeting Type",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "meetingType": "Meeting type",
     "zoom": "Zoom",
     "physical": "Physical",
-    "zoomLink": "Zoom Link",
-    "locationName": "Location Name",
+    "zoomLink": "Zoom link",
+    "locationName": "Location name",
     "locationAddress": "Address",
     "submit": "Save",
     "submitting": "Saving...",

@@ -1,32 +1,14 @@
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  LayoutDashboard,
-  Calendar,
-  CalendarDays,
-  Building2,
-  FolderTree,
-  FileText,
-  Clock,
-  Shield,
-  Users,
-  Settings,
-  HeartPulse,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { Eyebrow, Wordmark } from "@/components/ui/typography";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasRole } from "@/components/ProtectedRoute";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
@@ -34,90 +16,135 @@ import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 interface NavItem {
   to: string;
   labelKey: string;
-  icon: React.ComponentType<{ className?: string }>;
   minRole?: string;
+  end?: boolean;
 }
 
-const navItems: NavItem[] = [
-  { to: "/dashboard", labelKey: "nav.auth.dashboard", icon: LayoutDashboard },
-  { to: "/my-calendar", labelKey: "nav.auth.calendar", icon: Calendar },
-  { to: "/my-departments", labelKey: "nav.auth.departments", icon: Building2 },
-  { to: "/admin", labelKey: "nav.auth.admin", icon: Shield, minRole: "ADMIN" },
-  { to: "/admin/users", labelKey: "nav.auth.adminUsers", icon: Users, minRole: "VIEWER" },
-  { to: "/admin/activities", labelKey: "nav.auth.adminActivities", icon: CalendarDays, minRole: "ADMIN" },
-  { to: "/admin/departments", labelKey: "nav.auth.adminDepartments", icon: FolderTree, minRole: "OWNER" },
-  { to: "/admin/activity-templates", labelKey: "nav.auth.adminActivityTemplates", icon: FileText, minRole: "OWNER" },
-  { to: "/admin/program-schedules", labelKey: "nav.auth.adminProgramSchedules", icon: Clock, minRole: "OWNER" },
-  { to: "/admin/system-health", labelKey: "nav.auth.adminSystemHealth", icon: HeartPulse, minRole: "OWNER" },
-  { to: "/admin/settings", labelKey: "nav.auth.settings", icon: Settings, minRole: "OWNER" },
+const primaryNav: NavItem[] = [
+  { to: "/dashboard", labelKey: "nav.auth.dashboard" },
+  { to: "/my-calendar", labelKey: "nav.auth.calendar" },
+  { to: "/my-departments", labelKey: "nav.auth.departments" },
+  { to: "/admin/users", labelKey: "nav.auth.adminUsers", minRole: "VIEWER" },
 ];
+
+const adminNav: NavItem[] = [
+  { to: "/admin", labelKey: "nav.auth.admin", minRole: "ADMIN", end: true },
+  { to: "/admin/activities", labelKey: "nav.auth.adminActivities", minRole: "ADMIN" },
+  { to: "/admin/departments", labelKey: "nav.auth.adminDepartments", minRole: "OWNER" },
+  { to: "/admin/activity-templates", labelKey: "nav.auth.adminActivityTemplates", minRole: "OWNER" },
+  { to: "/admin/program-schedules", labelKey: "nav.auth.adminProgramSchedules", minRole: "OWNER" },
+  { to: "/admin/system-health", labelKey: "nav.auth.adminSystemHealth", minRole: "OWNER" },
+  { to: "/admin/settings", labelKey: "nav.auth.settings", minRole: "OWNER" },
+];
+
+function NavListItem({
+  item,
+  index,
+  label,
+}: {
+  item: NavItem;
+  index: number;
+  label: string;
+}) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.end ?? item.to === "/dashboard"}
+      className={({ isActive }) =>
+        [
+          "group relative flex items-baseline gap-3 border-l-2 px-5 py-2.5 transition-colors",
+          isActive
+            ? "border-[var(--gilt)] bg-[var(--parchment-2)] text-[var(--ink)]"
+            : "border-transparent text-[var(--ink-2)] hover:bg-[var(--parchment-2)] hover:text-[var(--ink)]",
+        ].join(" ")
+      }
+    >
+      <span className="w-6 shrink-0 font-mono text-[10px] tabular-nums text-[var(--ink-4)] group-hover:text-[var(--ink-3)]">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <span className="font-display text-base leading-tight">{label}</span>
+    </NavLink>
+  );
+}
 
 export default function AppSidebar() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const userRole = user?.role ?? "VIEWER";
 
-  const visibleItems = navItems.filter(
-    (item) => !item.minRole || hasRole(userRole, item.minRole)
+  const visiblePrimary = primaryNav.filter(
+    (item) => !item.minRole || hasRole(userRole, item.minRole),
   );
+  const visibleAdmin = adminNav.filter(
+    (item) => !item.minRole || hasRole(userRole, item.minRole),
+  );
+
+  const firstName = user?.firstName ?? "";
+  const lastName = user?.lastName ?? "";
+  const departmentName = user?.departments?.[0]?.name ?? null;
+  const roleLabel = t(`pages.dashboard.role.${userRole.toLowerCase()}`);
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-black">
-            {t("app.churchInitials")}
-          </div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="truncate text-sm font-semibold">
-              {user?.firstName} {user?.lastName}
+      <SidebarHeader className="gap-6 px-6 pt-7 pb-4">
+        <Wordmark size="sm" subtitle={t("app.churchSubtitle", "Église Adventiste · 2026")} />
+        <div className="flex items-center gap-3 border-t border-[var(--hairline)] pt-5">
+          <InitialsAvatar firstName={firstName} lastName={lastName} size="md" avatarUrl={user?.avatarUrl ?? undefined} />
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate font-display text-base text-[var(--ink)]">
+              {firstName} {lastName}
             </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {t(`roles.${userRole.toLowerCase()}`)}
+            <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
+              {roleLabel}
+              {departmentName ? ` · ${departmentName}` : ""}
             </span>
           </div>
         </div>
       </SidebarHeader>
 
-      <Separator />
+      <SidebarContent className="px-0 py-6">
+        <div className="space-y-2">
+          <Eyebrow className="px-6">{t("nav.auth.navigation", "Naviguer")}</Eyebrow>
+          <nav className="flex flex-col">
+            {visiblePrimary.map((item, idx) => (
+              <NavListItem
+                key={item.to}
+                item={item}
+                index={idx}
+                label={t(item.labelKey)}
+              />
+            ))}
+          </nav>
+        </div>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>{t("nav.auth.navigation", "Navigation")}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.to}
-                      end={item.to === "/admin"}
-                      className={({ isActive }) =>
-                        isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""
-                      }
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{t(item.labelKey)}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+        {visibleAdmin.length > 0 && (
+          <div className="mt-10 space-y-2">
+            <Eyebrow gilt className="px-6">{t("nav.auth.admin", "Administration")}</Eyebrow>
+            <nav className="flex flex-col">
+              {visibleAdmin.map((item, idx) => (
+                <NavListItem
+                  key={item.to}
+                  item={item}
+                  index={visiblePrimary.length + idx}
+                  label={t(item.labelKey)}
+                />
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            </nav>
+          </div>
+        )}
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <div className="flex flex-col gap-2">
+      <SidebarFooter className="gap-3 border-t border-[var(--hairline)] px-6 py-5">
+        <div className="flex items-center justify-between">
           <LanguageSwitcher />
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => logout()}>
-                <LogOut className="h-4 w-4" />
-                <span>{t("nav.auth.signOut")}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="inline-flex items-center gap-2 rounded-[var(--radius)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] transition-colors hover:bg-[var(--parchment-2)] hover:text-[var(--ink)]"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            {t("nav.auth.signOut")}
+          </button>
         </div>
       </SidebarFooter>
     </Sidebar>

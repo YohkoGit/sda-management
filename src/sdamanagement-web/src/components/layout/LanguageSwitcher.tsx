@@ -1,6 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { Globe } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { changeAppLanguage } from "@/stores/uiStore";
 
 export default function LanguageSwitcher() {
@@ -13,15 +11,15 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
+    <button
+      type="button"
       onClick={handleToggle}
       aria-label={t("nav.language.switchTo", { lang: nextLang.toUpperCase() })}
-      className="gap-1.5"
+      className="inline-flex items-center gap-2 rounded-[var(--radius)] border border-transparent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] transition-colors hover:border-[var(--hairline-2)] hover:bg-[var(--parchment-2)] hover:text-[var(--ink)]"
     >
-      <Globe className="h-4 w-4" />
-      <span className="text-xs font-medium uppercase">{currentLang}</span>
-    </Button>
+      <span className={currentLang === "fr" ? "text-[var(--ink)]" : ""}>FR</span>
+      <span aria-hidden className="text-[var(--ink-4)]">/</span>
+      <span className={currentLang === "en" ? "text-[var(--ink)]" : ""}>EN</span>
+    </button>
   );
 }

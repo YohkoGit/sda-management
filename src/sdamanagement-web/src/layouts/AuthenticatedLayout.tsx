@@ -12,17 +12,19 @@ export default function AuthenticatedLayout() {
     <SidebarProvider>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg focus:ring-2 focus:ring-ring"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-[var(--radius)] focus:bg-[var(--parchment)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg focus:ring-2 focus:ring-[var(--gilt)]"
       >
         {t("layout.skipToContent")}
       </a>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 items-center gap-2 border-b px-4">
+      <SidebarInset className="bg-[var(--parchment)]">
+        <header className="flex h-14 items-center gap-3 border-b border-[var(--hairline)] bg-[var(--parchment)] px-5 md:hidden">
           <SidebarTrigger className="-ml-1" />
-          <span className="text-sm font-semibold">{t("layout.churchName")}</span>
+          <span className="font-display text-base text-[var(--ink)]">
+            {t("layout.churchName")}
+          </span>
         </header>
-        <main id="main-content" className="flex-1 p-4 lg:p-6">
+        <main id="main-content" className="flex-1 px-6 py-8 lg:px-10 lg:py-12">
           <Suspense fallback={<LoadingSpinner />}>
             <Outlet />
           </Suspense>

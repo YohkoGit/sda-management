@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
 import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { Eyebrow, Numerator } from "@/components/ui/typography";
 import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
-import { formatActivityDate, formatRelativeDate, formatTime } from "@/lib/dateFormatting";
+import { formatRelativeDate, formatTime } from "@/lib/dateFormatting";
+import { deptSwatchColor } from "@/lib/dept-color";
 import type { DashboardActivityItem } from "@/services/activityService";
 
 interface DashboardActivityCardProps {
@@ -27,9 +28,16 @@ export function DashboardActivityCard({
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
 
-  const dateLabel = formatActivityDate(activity.date, t, lang);
+  const date = new Date(activity.date + "T00:00:00");
+  const day = date.getDate();
+  const weekday = date.toLocaleDateString(lang, { weekday: "short" });
+  const monthLabel = date.toLocaleDateString(lang, { month: "short" });
   const relativeDate = formatRelativeDate(activity.date, lang);
   const timeRange = `${formatTime(activity.startTime, lang)}–${formatTime(activity.endTime, lang)}`;
+  const swatch = deptSwatchColor({
+    abbreviation: activity.departmentAbbreviation ?? undefined,
+    color: activity.departmentColor ?? undefined,
+  });
 
   const predicateur = activity.predicateurName?.trim()
     ? parsePredicateurName(activity.predicateurName)
@@ -39,80 +47,85 @@ export function DashboardActivityCard({
     <Link
       to={`/activities/${activity.id}`}
       className="block no-underline text-inherit"
-      aria-label={`${activity.title} — ${dateLabel}`}
+      aria-label={`${activity.title} — ${weekday} ${day}`}
     >
       <article
-        className={`rounded-2xl border border-l-4 border-border p-4 transition-colors cursor-pointer hover:bg-accent/50 ${
-          isToday ? "bg-primary/5" : "bg-background"
-        }`}
-        style={{ borderLeftColor: activity.departmentColor || undefined }}
+        className={[
+          "grid grid-cols-[auto_1fr] gap-5 border-t border-[var(--hairline)] py-5 transition-colors",
+          "hover:bg-[var(--parchment-2)]",
+          isToday ? "bg-[var(--gilt-wash)]" : "",
+        ].join(" ")}
       >
-        {/* Row 1: Department badge + date + relative distance */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {activity.departmentAbbreviation && (
-            <span
-              className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold text-white"
-              style={{ backgroundColor: activity.departmentColor || undefined }}
-              aria-label={activity.departmentName}
+        <div className="flex flex-col items-start leading-none">
+          <Numerator className="text-3xl text-[var(--ink)] sm:text-4xl">{day}</Numerator>
+          <Eyebrow className="mt-1 capitalize">{weekday} · {monthLabel}</Eyebrow>
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3
+              className="truncate font-display text-lg leading-tight text-[var(--ink)] sm:text-xl"
+              title={activity.title}
             >
-              {activity.departmentAbbreviation}
+              {activity.title}
+            </h3>
+            <span className="shrink-0 font-mono text-sm tabular-nums text-[var(--ink-2)]">
+              {timeRange}
             </span>
-          )}
-          <span className="text-sm font-semibold text-foreground">{dateLabel}</span>
-          <span className="text-xs text-muted-foreground">{relativeDate}</span>
-        </div>
-
-        {/* Row 2: Activity title + badges */}
-        <div className="mt-1.5 flex items-start justify-between gap-2">
-          <h3
-            className="truncate text-base font-bold text-foreground"
-            title={activity.title}
-          >
-            {activity.title}
-          </h3>
-          <div className="flex items-center gap-1 shrink-0">
-            <ModifiedBadge activityId={activity.id} />
-            {activity.specialType && (
-              <Badge variant="outline" className="shrink-0 text-[11px]">
-                {t(`pages.home.specialType.${activity.specialType}`)}
-              </Badge>
-            )}
           </div>
-        </div>
 
-        {/* Row 3: Predicateur + time range */}
-        <div className="mt-1 flex items-center justify-between gap-2">
-          {predicateur ? (
-            <div className="flex items-center gap-1.5">
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <ModifiedBadge activityId={activity.id} />
+            {activity.departmentAbbreviation && (
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  aria-hidden
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: swatch }}
+                />
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]"
+                  title={activity.departmentName}
+                >
+                  {activity.departmentAbbreviation}
+                </span>
+              </span>
+            )}
+            {activity.specialType && (
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--gilt-2)]">
+                ✣ {t(`pages.home.specialType.${activity.specialType}`)}
+              </span>
+            )}
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-4)]">
+              {relativeDate}
+            </span>
+          </div>
+
+          {predicateur && (
+            <div className="mt-3 flex items-center gap-2">
               <InitialsAvatar
                 size="xs"
                 firstName={predicateur.firstName}
                 lastName={predicateur.lastName}
                 avatarUrl={activity.predicateurAvatarUrl ?? undefined}
               />
-              <span className="text-sm text-muted-foreground">
-                {activity.predicateurName}
+              <span className="text-sm text-[var(--ink-2)]">
+                <span className="italic">avec</span> {activity.predicateurName}
               </span>
             </div>
-          ) : (
-            <span />
           )}
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {timeRange}
-          </span>
-        </div>
 
-        {/* Row 4 (conditional): Staffing indicator */}
-        {showStaffing && (
-          <div className="mt-2">
-            <StaffingIndicator
-              staffingStatus={activity.staffingStatus}
-              assigned={activity.assignedCount}
-              total={activity.totalHeadcount}
-              size="sm"
-            />
-          </div>
-        )}
+          {showStaffing && (
+            <div className="mt-3">
+              <StaffingIndicator
+                staffingStatus={activity.staffingStatus}
+                assigned={activity.assignedCount}
+                total={activity.totalHeadcount}
+                size="sm"
+              />
+            </div>
+          )}
+        </div>
       </article>
     </Link>
   );

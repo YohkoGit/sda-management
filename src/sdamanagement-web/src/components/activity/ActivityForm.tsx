@@ -18,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/typography";
+import { deptSwatchColor } from "@/lib/dept-color";
 import type { DepartmentListItem } from "@/services/departmentService";
 import type { AssignableOfficer } from "@/services/userService";
 import RoleRosterEditor from "./RoleRosterEditor";
@@ -77,179 +78,211 @@ export function ActivityForm({
   const departmentId = watch("departmentId");
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label htmlFor="title">{t("pages.adminActivities.form.title")}</Label>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <div className="space-y-2">
+        <Label htmlFor="title" className="eyebrow">
+          {t("pages.adminActivities.form.title")}
+        </Label>
         <Input
           id="title"
           placeholder={t("pages.adminActivities.form.titlePlaceholder")}
-          className={`min-h-[44px] ${errors.title ? "border-red-500" : ""}`}
+          aria-invalid={!!errors.title}
           {...register("title")}
         />
         {errors.title && (
-          <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>
+          <p className="text-sm text-[var(--rose)]">{errors.title.message}</p>
         )}
       </div>
 
-      <div>
-        <Label htmlFor="description">{t("pages.adminActivities.form.description")}</Label>
+      <div className="space-y-2">
+        <Label htmlFor="description" className="eyebrow">
+          {t("pages.adminActivities.form.description")}
+        </Label>
         <Textarea
           id="description"
           placeholder={t("pages.adminActivities.form.descriptionPlaceholder")}
-          className={`min-h-[44px] ${errors.description ? "border-red-500" : ""}`}
+          aria-invalid={!!errors.description}
           {...register("description")}
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
+          <p className="text-sm text-[var(--rose)]">{errors.description.message}</p>
         )}
       </div>
 
-      <div>
-        <Label htmlFor="date">{t("pages.adminActivities.form.date")}</Label>
-        <Input
-          id="date"
-          type="date"
-          className={`min-h-[44px] ${errors.date ? "border-red-500" : ""}`}
-          {...register("date")}
-        />
-        {errors.date && (
-          <p className="mt-1 text-sm text-red-500">{errors.date.message}</p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="startTime">{t("pages.adminActivities.form.startTime")}</Label>
+      <div className="grid gap-5 sm:grid-cols-3">
+        <div className="space-y-2">
+          <Label htmlFor="date" className="eyebrow">
+            {t("pages.adminActivities.form.date")}
+          </Label>
+          <Input
+            id="date"
+            type="date"
+            aria-invalid={!!errors.date}
+            {...register("date")}
+          />
+          {errors.date && (
+            <p className="text-sm text-[var(--rose)]">{errors.date.message}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="startTime" className="eyebrow">
+            {t("pages.adminActivities.form.startTime")}
+          </Label>
           <Input
             id="startTime"
             type="time"
-            className={`min-h-[44px] ${errors.startTime ? "border-red-500" : ""}`}
+            aria-invalid={!!errors.startTime}
             {...register("startTime")}
           />
           {errors.startTime && (
-            <p className="mt-1 text-sm text-red-500">{errors.startTime.message}</p>
+            <p className="text-sm text-[var(--rose)]">{errors.startTime.message}</p>
           )}
         </div>
-        <div>
-          <Label htmlFor="endTime">{t("pages.adminActivities.form.endTime")}</Label>
+        <div className="space-y-2">
+          <Label htmlFor="endTime" className="eyebrow">
+            {t("pages.adminActivities.form.endTime")}
+          </Label>
           <Input
             id="endTime"
             type="time"
-            className={`min-h-[44px] ${errors.endTime ? "border-red-500" : ""}`}
+            aria-invalid={!!errors.endTime}
             {...register("endTime")}
           />
           {errors.endTime && (
-            <p className="mt-1 text-sm text-red-500">{errors.endTime.message}</p>
+            <p className="text-sm text-[var(--rose)]">{errors.endTime.message}</p>
           )}
         </div>
       </div>
 
-      <div>
-        <Label>{t("pages.adminActivities.form.department")}</Label>
-        <Select
-          value={departmentId ? String(departmentId) : ""}
-          onValueChange={(val) => setValue("departmentId", Number(val), { shouldValidate: true })}
-          disabled={lockDepartment}
-        >
-          <SelectTrigger className={`min-h-[44px] ${errors.departmentId ? "border-red-500" : ""} ${lockDepartment ? "opacity-70" : ""}`}>
-            <SelectValue placeholder={t("pages.adminActivities.form.department")} />
-          </SelectTrigger>
-          <SelectContent>
-            {departments.map((dept) => (
-              <SelectItem key={dept.id} value={String(dept.id)}>
-                <span className="flex items-center gap-2">
-                  <span
-                    className="inline-block h-3 w-3 rounded-full"
-                    style={{ backgroundColor: dept.color }}
-                  />
-                  {dept.name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.departmentId && (
-          <p className="mt-1 text-sm text-red-500">{errors.departmentId.message}</p>
-        )}
-      </div>
-
-      <div>
-        <Label>{t("pages.adminActivities.form.visibility")}</Label>
-        <div className="mt-2 flex gap-4">
-          <label className="flex min-h-[44px] cursor-pointer items-center gap-2">
-            <input
-              type="radio"
-              value="public"
-              checked={visibility === "public"}
-              onChange={() => setValue("visibility", "public")}
-              className="h-4 w-4"
-            />
-            {t("pages.adminActivities.form.visibilityPublic")}
-          </label>
-          <label className="flex min-h-[44px] cursor-pointer items-center gap-2">
-            <input
-              type="radio"
-              value="authenticated"
-              checked={visibility === "authenticated"}
-              onChange={() => setValue("visibility", "authenticated")}
-              className="h-4 w-4"
-            />
-            {t("pages.adminActivities.form.visibilityAuthenticated")}
-          </label>
-        </div>
-      </div>
-
-      <div>
-        <Label>{t("pages.adminActivities.form.specialType")}</Label>
-        <Controller
-          name="specialType"
-          control={control}
-          render={({ field, fieldState }) => (
-            <Select
-              value={field.value ?? "none"}
-              onValueChange={(val) => field.onChange(val === "none" ? null : val)}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label className="eyebrow">{t("pages.adminActivities.form.department")}</Label>
+          <Select
+            value={departmentId ? String(departmentId) : ""}
+            onValueChange={(val) =>
+              setValue("departmentId", Number(val), { shouldValidate: true })
+            }
+            disabled={lockDepartment}
+          >
+            <SelectTrigger
+              className={[
+                "w-full",
+                errors.departmentId ? "border-[var(--rose)]" : "",
+                lockDepartment ? "opacity-70" : "",
+              ].join(" ")}
             >
-              <SelectTrigger
-                className={`min-h-[44px] ${fieldState.invalid ? "border-red-500" : ""}`}
-                aria-label={t("pages.adminActivities.form.specialType")}
-                aria-invalid={fieldState.invalid}
-              >
-                <SelectValue placeholder={t("pages.adminActivities.form.specialTypeNone")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t("pages.adminActivities.form.specialTypeNone")}</SelectItem>
-                {SPECIAL_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {t(`pages.adminActivities.specialType.${type}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <SelectValue placeholder={t("pages.adminActivities.form.department")} />
+            </SelectTrigger>
+            <SelectContent>
+              {departments.map((dept) => (
+                <SelectItem key={dept.id} value={String(dept.id)}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{
+                        backgroundColor: deptSwatchColor({
+                          abbreviation: dept.abbreviation ?? undefined,
+                          color: dept.color ?? undefined,
+                        }),
+                      }}
+                    />
+                    {dept.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.departmentId && (
+            <p className="text-sm text-[var(--rose)]">{errors.departmentId.message}</p>
           )}
-        />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="eyebrow">{t("pages.adminActivities.form.specialType")}</Label>
+          <Controller
+            name="specialType"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Select
+                value={field.value ?? "none"}
+                onValueChange={(val) => field.onChange(val === "none" ? null : val)}
+              >
+                <SelectTrigger
+                  className={[
+                    "w-full",
+                    fieldState.invalid ? "border-[var(--rose)]" : "",
+                  ].join(" ")}
+                  aria-label={t("pages.adminActivities.form.specialType")}
+                  aria-invalid={fieldState.invalid}
+                >
+                  <SelectValue placeholder={t("pages.adminActivities.form.specialTypeNone")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("pages.adminActivities.form.specialTypeNone")}</SelectItem>
+                  {SPECIAL_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {t(`pages.adminActivities.specialType.${type}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
       </div>
 
-      <Separator className="my-4" />
-      <div>
-        <h3 className="text-lg font-semibold mb-3">
+      <div className="space-y-2">
+        <Label className="eyebrow">{t("pages.adminActivities.form.visibility")}</Label>
+        <div className="inline-flex overflow-hidden rounded-[var(--radius)] border border-[var(--hairline-2)]">
+          {(["public", "authenticated"] as const).map((option) => {
+            const active = visibility === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setValue("visibility", option, { shouldDirty: true })}
+                className={[
+                  "px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors",
+                  active
+                    ? "bg-[var(--ink)] text-[var(--parchment)]"
+                    : "bg-[var(--parchment-2)] text-[var(--ink-2)] hover:bg-[var(--parchment-3)]",
+                ].join(" ")}
+                aria-pressed={active}
+              >
+                {option === "public"
+                  ? t("pages.adminActivities.form.visibilityPublic")
+                  : t("pages.adminActivities.form.visibilityAuthenticated")}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-t border-[var(--hairline)] pt-7">
+        <Eyebrow gilt>{t("pages.adminActivities.roleRoster.kicker", "Rôles")}</Eyebrow>
+        <h3 className="mt-2 font-display text-2xl leading-tight text-[var(--ink)]">
           {t("pages.adminActivities.roleRoster.title")}
         </h3>
-        <RoleRosterEditor
-          control={control}
-          register={register}
-          setValue={setValue}
-          getValues={getValues}
-          errors={errors}
-          existingAssignments={existingAssignments}
-          initialGuestOfficers={initialGuestOfficers}
-        />
+        <div className="mt-5">
+          <RoleRosterEditor
+            control={control}
+            register={register}
+            setValue={setValue}
+            getValues={getValues}
+            errors={errors}
+            existingAssignments={existingAssignments}
+            initialGuestOfficers={initialGuestOfficers}
+          />
+        </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-2">
-        <Button type="submit" disabled={isPending} className="min-h-[44px]">
+      <div className="flex justify-end gap-3 border-t border-[var(--hairline)] pt-6">
+        <Button type="submit" disabled={isPending}>
           {isPending
             ? t("pages.adminActivities.form.saving")
-            : t("pages.adminActivities.form.save")}
+            : <>
+                {t("pages.adminActivities.form.save")} →
+              </>}
         </Button>
       </div>
     </form>

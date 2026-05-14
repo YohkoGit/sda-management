@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDateLocale } from "@/lib/dateFormatting";
+import { Eyebrow } from "@/components/ui/typography";
 
 function getRoleLabelKey(role: string): string {
   switch (role?.toUpperCase()) {
@@ -19,28 +19,22 @@ export function DashboardGreeting() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const locale = getDateLocale(i18n.language);
-  const formattedDate = format(new Date(), "EEEE d MMMM yyyy", { locale });
+  const formattedDate = format(new Date(), "EEEE d MMMM · yyyy", { locale });
+  const firstName = user?.firstName ?? "";
+  const roleLabel = t(getRoleLabelKey(user?.role ?? ""));
 
   return (
-    <section className="flex items-start justify-between gap-4">
+    <section className="flex flex-col gap-4 border-b border-[var(--hairline)] pb-8 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <p className="text-xs font-black uppercase tracking-widest text-primary">
-          {t("pages.dashboard.commandCenter")}
-        </p>
-        <h1 className="mt-1 text-2xl font-black text-foreground sm:text-3xl">
-          {t("pages.dashboard.greeting", { name: user?.firstName })}
+        <Eyebrow className="capitalize">{formattedDate}</Eyebrow>
+        <h1 className="mt-3 font-display text-4xl leading-[1.05] text-[var(--ink)] sm:text-5xl">
+          {t("pages.dashboard.greeting", { name: firstName })}
+          <span className="italic font-normal text-[var(--ink-2)]">.</span>
         </h1>
-        <p className="mt-0.5 text-sm text-muted-foreground capitalize">
-          {formattedDate}
-        </p>
       </div>
-      <Badge
-        variant="outline"
-        className="shrink-0 mt-1"
-        aria-label={t(getRoleLabelKey(user?.role ?? ""))}
-      >
-        {t(getRoleLabelKey(user?.role ?? ""))}
-      </Badge>
+      <div className="text-right">
+        <Eyebrow gilt>{roleLabel}</Eyebrow>
+      </div>
     </section>
   );
 }

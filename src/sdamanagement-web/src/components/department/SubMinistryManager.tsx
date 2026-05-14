@@ -38,19 +38,20 @@ export function SubMinistryManager({
   const [editName, setEditName] = useState("");
   const [editLeadUserId, setEditLeadUserId] = useState<number | null>(null);
 
-  // Self-contained data fetching for department members
+  // Self-contained data fetching for department members.
+  // Use same queryKey + shape as useAssignableOfficers so the cache stays consistent.
   const { data: officersData } = useQuery({
     queryKey: ["assignable-officers"],
     queryFn: async () => {
       const res = await userService.getAssignableOfficers();
-      return res.data;
+      return res.data.items;
     },
     staleTime: 5 * 60 * 1000,
   });
 
   const departmentMembers = useMemo(() => {
-    if (!officersData?.items) return [];
-    return officersData.items.filter((o) =>
+    if (!officersData) return [];
+    return officersData.filter((o) =>
       o.departments.some((d) => d.id === departmentId)
     );
   }, [officersData, departmentId]);

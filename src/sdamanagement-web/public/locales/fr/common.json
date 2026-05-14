@@ -1,7 +1,9 @@
 {
   "app": {
-    "title": "SDAC ST-HUBERT — Commandement des Op\u00e9rations",
-    "churchName": "Eglise Adventiste du 7e Jour de Saint-Hubert",
+    "title": "SDAC Saint-Hubert",
+    "churchName": "Église Adventiste du 7e Jour de Saint-Hubert",
+    "churchSubtitle": "Église Adventiste · 2026",
+    "tagline": "Maison de prière, de chant et de service depuis la fondation.",
     "churchInitials": "SD"
   },
   "nav": {
@@ -15,13 +17,13 @@
       "openDashboard": "Tableau de bord"
     },
     "auth": {
-      "navigation": "Navigation",
-      "dashboard": "Tableau de Bord",
+      "navigation": "Naviguer",
+      "dashboard": "Tableau de bord",
       "calendar": "Calendrier",
       "departments": "D\u00e9partements",
       "admin": "Administration",
       "settings": "Param\u00e8tres",
-      "signOut": "Terminer la Session",
+      "signOut": "Se d\u00e9connecter",
       "adminDepartments": "Gestion des d\u00e9partements",
       "adminActivityTemplates": "Mod\u00e8les d\u2019activit\u00e9s",
       "adminProgramSchedules": "Horaires r\u00e9currents",
@@ -39,21 +41,29 @@
   "pages": {
     "home": {
       "title": "Accueil",
-      "subtitle": "Bienvenue \u00e0 l\u2019Eglise Adventiste du 7e Jour de Saint-Hubert",
-      "thisSabbath": "Ce Sabbat",
-      "noActivities": "Aucune activit\u00e9 \u00e0 venir \u2014 revenez bient\u00f4t!",
+      "subtitle": "Bienvenue \u00e0 l\u2019\u00c9glise Adventiste du 7e Jour de Saint-Hubert",
+      "thisSabbath": "Ce sabbat",
+      "noActivities": "Aucune activit\u00e9 \u00e0 venir \u2014 revenez bient\u00f4t.",
       "predicateur": "Pr\u00e9dicateur",
       "loadingActivity": "Chargement\u2026",
       "loadError": "Impossible de charger les activit\u00e9s",
       "welcomeDefault": "Bienvenue",
-      "liveStreamTitle": "Suivez le culte en direct",
-      "liveNow": "EN DIRECT",
+      "metaDate": "Date",
+      "metaTime": "Horaire",
+      "metaPlace": "Lieu",
+      "upcomingCount_one": "{{count}} \u00e0 venir",
+      "upcomingCount_other": "{{count}} \u00e0 venir",
+      "thisSeason": "Saison 2026",
+      "ministries": "Minist\u00e8res",
+      "weeklyRhythm": "Rythme hebdomadaire",
+      "liveStreamTitle": "Le culte en direct",
+      "liveNow": "En direct",
       "watchOnYouTube": "Regarder sur YouTube",
       "upcomingActivitiesTitle": "Activit\u00e9s \u00e0 venir",
       "programSchedulesTitle": "Horaire des programmes",
-      "departmentsTitle": "Nos D\u00e9partements",
+      "departmentsTitle": "Nos d\u00e9partements",
       "noPlannedActivity": "Aucune activit\u00e9 planifi\u00e9e",
-      "liveStreamDescription": "Rejoignez-nous en direct chaque sabbat",
+      "liveStreamDescription": "Rejoignez-nous en direct chaque sabbat, ou revoyez la derni\u00e8re pr\u00e9dication.",
       "specialType": {
         "sainte-cene": "Sainte-C\u00e8ne",
         "week-of-prayer": "Semaine de pri\u00e8re",
@@ -65,18 +75,16 @@
       }
     },
     "dashboard": {
-      "title": "Tableau de Bord",
+      "title": "Tableau de bord",
       "welcome": "Bienvenue, {{name}}",
-      "commandCenter": "CENTRE DE COMMANDE",
       "greeting": "Bonjour, {{name}}",
-      "personalRegister": "REGISTRE PERSONNEL",
       "role": {
         "viewer": "Membre",
         "admin": "Directeur",
         "owner": "Propri\u00e9taire"
       },
       "upcoming": {
-        "title": "Activit\u00e9s \u00e0 Venir",
+        "title": "Activit\u00e9s \u00e0 venir",
         "overview": "Vue d\u2019ensemble",
         "empty": "Aucune activit\u00e9 \u00e0 venir",
         "emptyHintAdmin": "Cr\u00e9ez une activit\u00e9 depuis la page d\u2019administration.",
@@ -85,17 +93,20 @@
         "viewAll": "Voir tout"
       },
       "myAssignments": {
-        "title": "Mes Affectations",
+        "title": "Mes affectations",
+        "count_one": "{{count}} affectation",
+        "count_other": "{{count}} affectations",
         "empty": "Aucune affectation \u00e0 venir",
         "emptyHint": "Les affectations apparaissent ici lorsqu\u2019un administrateur vous assigne un r\u00f4le dans une activit\u00e9.",
         "loadError": "Impossible de charger vos affectations",
         "retry": "R\u00e9essayer",
-        "coAssignees": "Aussi assign\u00e9(s)",
+        "coAssignees": "Avec vous",
         "guest": "Invit\u00e9"
       }
     },
     "calendar": {
       "title": "Calendrier",
+      "kicker": "Calendrier liturgique",
       "loadError": "Impossible de charger le calendrier",
       "retry": "R\u00e9essayer",
       "views": {
@@ -127,7 +138,15 @@
       "title": "D\u00e9partements"
     },
     "authDepartments": {
-      "title": "Unit\u00e9s Minist\u00e9rielles",
+      "title": "Unit\u00e9s minist\u00e9rielles",
+      "subtitle": "Minist\u00e8re",
+      "entries": "entr\u00e9es",
+      "stats": {
+        "upcoming": "Activit\u00e9s \u00e0 venir",
+        "staffed": "Pleinement servies",
+        "gaps": "Postes \u00e0 pourvoir",
+        "subMinistries": "Sous-minist\u00e8res"
+      },
       "subMinistries": "Sous-minist\u00e8res",
       "noSubMinistries": "Aucun sous-minist\u00e8re",
       "upcomingActivities": "Activit\u00e9s \u00e0 venir",
@@ -154,7 +173,7 @@
       },
       "noActivitiesAdminCta": "Pr\u00eat \u00e0 planifier? Cr\u00e9ez votre premi\u00e8re activit\u00e9 ou r\u00e9union.",
       "subMinistry": {
-        "noLead": "Aucun responsable",
+        "noLead": "Sans responsable",
         "selectLead": "S\u00e9lectionner un responsable",
         "leadValidationError": "L\u2019utilisateur s\u00e9lectionn\u00e9 n\u2019est pas membre de ce d\u00e9partement"
       }
@@ -461,6 +480,7 @@
         "authenticated": "Authentifi\u00e9"
       },
       "roleRoster": {
+        "kicker": "R\u00f4les",
         "title": "R\u00f4les de l\u2019activit\u00e9",
         "addRole": "Ajouter un r\u00f4le",
         "roleNamePlaceholder": "Nom du r\u00f4le",
@@ -573,7 +593,11 @@
   "layout": {
     "skipToContent": "Aller au contenu principal",
     "loading": "Chargement...",
-    "churchName": "SDAC Saint-Hubert"
+    "churchName": "SDAC Saint-Hubert",
+    "footer": {
+      "contact": "Direction",
+      "navigate": "Naviguer"
+    }
   },
   "roles": {
     "owner": "Propri\u00e9taire",
@@ -588,7 +612,7 @@
       "continue": "Continuer",
       "submit": "Se connecter",
       "back": "Retour",
-      "or": "Ou",
+      "or": "ou",
       "googleButton": "Continuer avec Google",
       "forgotPassword": "Mot de passe oubli\u00e9?",
       "error": {

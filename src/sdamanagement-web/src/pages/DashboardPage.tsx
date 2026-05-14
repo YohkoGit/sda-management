@@ -9,7 +9,7 @@ export default function DashboardPage() {
   const isOwner = user?.role?.toUpperCase() === "OWNER";
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-6xl space-y-14">
       <DashboardGreeting />
       {isOwner && <SetupChecklist />}
       <MyAssignmentsSection />

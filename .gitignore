@@ -67,6 +67,11 @@ desktop.ini
 data/avatars/
 
 # =========================
+# Playwright MCP session artifacts
+# =========================
+.playwright-mcp/
+
+# =========================
 # Misc
 # =========================
 *.tmp

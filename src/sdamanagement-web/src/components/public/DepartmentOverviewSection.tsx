@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { Eyebrow, Serial } from "@/components/ui/typography";
 import { useDepartments } from "@/hooks/usePublicDashboard";
 import { formatActivityDate, formatTime } from "@/lib/dateFormatting";
+import { deptSwatchColor } from "@/lib/dept-color";
 
 function formatDeptActivityDate(
   date: string | null,
@@ -13,7 +14,7 @@ function formatDeptActivityDate(
   if (!date) return "";
   const dateStr = formatActivityDate(date, t, lang);
   const timeStr = time ? formatTime(time, lang) : "";
-  return timeStr ? `${dateStr} ${timeStr}` : dateStr;
+  return timeStr ? `${dateStr} · ${timeStr}` : dateStr;
 }
 
 export default function DepartmentOverviewSection() {
@@ -27,77 +28,86 @@ export default function DepartmentOverviewSection() {
   }
 
   return (
-    <section className="bg-slate-50" aria-labelledby={headingId}>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
-        <h2
-          id={headingId}
-          className="text-2xl font-bold text-slate-900"
-        >
-          {t("pages.home.departmentsTitle")}
-        </h2>
+    <section className="bg-[var(--parchment)]" aria-labelledby={headingId}>
+      <div className="mx-auto max-w-7xl px-5 py-14 lg:px-8 lg:py-20">
+        <div className="flex items-baseline justify-between gap-6 border-b border-[var(--ink)] pb-4">
+          <h2
+            id={headingId}
+            className="font-display text-3xl leading-tight text-[var(--ink)] lg:text-4xl"
+          >
+            {t("pages.home.departmentsTitle")}
+          </h2>
+          <Eyebrow>{t("pages.home.ministries", "Ministères")}</Eyebrow>
+        </div>
 
         {isPending ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-2 grid gap-x-12 sm:grid-cols-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-l-4 border-slate-200 bg-white p-4 sm:p-5"
+                className="flex items-center gap-4 border-b border-[var(--hairline)] py-5"
               >
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-5 w-12 rounded-full" />
-                </div>
-                <Skeleton className="mt-2 h-4 w-full" />
-                <Skeleton className="mt-1 h-4 w-3/4" />
-                <div className="mt-3 border-t border-slate-100 pt-3">
-                  <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-6 w-6 bg-[var(--parchment-2)]" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-40 bg-[var(--parchment-2)]" />
+                  <Skeleton className="h-3 w-28 bg-[var(--parchment-2)]" />
                 </div>
               </div>
             ))}
           </div>
         ) : isError ? (
-          <p className="mt-6 text-base text-slate-500">
+          <p className="mt-6 text-base text-[var(--rose)]">
             {t("pages.home.loadError")}
           </p>
         ) : (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.map((dept) => (
-              <article
-                key={dept.id}
-                className="rounded-2xl border border-l-4 border-slate-200 bg-white p-4 sm:p-5"
-                style={{ borderLeftColor: dept.color || "#E2E8F0" }}
-                aria-label={dept.name}
-              >
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-slate-900">{dept.name}</h3>
-                  <Badge variant="secondary" title={dept.name}>
+          <ul className="mt-2 grid gap-x-12 sm:grid-cols-2">
+            {data!.map((dept, idx) => {
+              const swatch = deptSwatchColor({
+                abbreviation: dept.abbreviation ?? undefined,
+                color: dept.color ?? undefined,
+              });
+              const nextLabel = dept.nextActivityTitle
+                ? `${formatDeptActivityDate(dept.nextActivityDate, dept.nextActivityStartTime, t, i18n.language)} — ${dept.nextActivityTitle}`
+                : t("pages.home.noPlannedActivity");
+              return (
+                <li
+                  key={dept.id}
+                  className="grid grid-cols-[32px_16px_1fr_auto] items-center gap-4 border-b border-[var(--hairline)] py-5 transition-colors hover:bg-[var(--parchment-2)]"
+                >
+                  <Serial n={idx + 1} />
+                  <span
+                    aria-hidden
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: swatch }}
+                  />
+                  <div className="min-w-0">
+                    <h3 className="font-display text-lg leading-tight text-[var(--ink)]">
+                      {dept.name}
+                    </h3>
+                    {dept.description ? (
+                      <p
+                        className="mt-0.5 line-clamp-1 text-sm text-[var(--ink-3)]"
+                        title={dept.description}
+                      >
+                        {dept.description}
+                      </p>
+                    ) : dept.nextActivityTitle ? (
+                      <p className="mt-0.5 line-clamp-1 text-sm text-[var(--ink-3)]">
+                        {nextLabel}
+                      </p>
+                    ) : (
+                      <p className="mt-0.5 text-sm italic text-[var(--ink-4)]">
+                        {t("pages.home.noPlannedActivity")}
+                      </p>
+                    )}
+                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
                     {dept.abbreviation}
-                  </Badge>
-                </div>
-                {dept.description && (
-                  <p
-                    className="mt-1 line-clamp-2 text-sm text-slate-600"
-                    title={dept.description}
-                  >
-                    {dept.description}
-                  </p>
-                )}
-                <div className="mt-3 border-t border-slate-100 pt-3">
-                  {dept.nextActivityTitle ? (
-                    <p className="text-sm text-slate-500">
-                      {formatDeptActivityDate(dept.nextActivityDate, dept.nextActivityStartTime, t, i18n.language)}
-                      {" — "}
-                      {dept.nextActivityTitle}
-                    </p>
-                  ) : (
-                    <p className="text-sm italic text-slate-400">
-                      {t("pages.home.noPlannedActivity")}
-                    </p>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </section>

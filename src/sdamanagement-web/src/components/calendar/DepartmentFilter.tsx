@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { deptSwatchColor } from "@/lib/dept-color";
 import type { PublicDepartment } from "@/types/public";
 
 interface DepartmentFilterProps {
@@ -8,10 +9,8 @@ interface DepartmentFilterProps {
   onChange: (ids: number[]) => void;
 }
 
-/** Return the single tabIndex=0 target for roving tabindex (WAI-ARIA toolbar). */
 function getRovingTarget(selectedIds: number[], departments: PublicDepartment[]): number | "all" {
   if (selectedIds.length === 0) return "all";
-  // First selected department that still exists in the list
   const first = selectedIds.find((id) => departments.some((d) => d.id === id));
   return first ?? "all";
 }
@@ -63,33 +62,39 @@ export default function DepartmentFilter({
     []
   );
 
+  const chipBase =
+    "inline-flex shrink-0 items-center gap-1.5 rounded-[2px] border px-3 py-2 min-h-[2.5rem] font-mono text-[10px] uppercase tracking-[0.18em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gilt)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--parchment)]";
+
   return (
     <div
       ref={toolbarRef}
       role="toolbar"
       aria-label={t("pages.calendar.filter.label")}
       onKeyDown={handleKeyDown}
-      className="mb-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin"
+      className="mt-4 mb-2 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin"
     >
-      {/* "All" chip */}
       <button
         type="button"
         role="checkbox"
         aria-checked={isAllActive}
         onClick={handleAllClick}
         tabIndex={rovingTarget === "all" ? 0 : -1}
-        className={`inline-flex shrink-0 items-center rounded-md px-3 py-1.5 min-h-[2.75rem] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+        className={[
+          chipBase,
           isAllActive
-            ? "bg-indigo-600 text-white"
-            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-        }`}
+            ? "bg-[var(--ink)] text-[var(--parchment)] border-[var(--ink)]"
+            : "bg-transparent text-[var(--ink-2)] border-[var(--hairline-2)] hover:border-[var(--ink)] hover:bg-[var(--parchment-2)]",
+        ].join(" ")}
       >
         {t("pages.calendar.filter.all")}
       </button>
 
-      {/* Department chips */}
       {departments.map((dept) => {
         const isActive = selectedIds.includes(dept.id);
+        const swatch = deptSwatchColor({
+          abbreviation: dept.abbreviation ?? undefined,
+          color: dept.color ?? undefined,
+        });
         return (
           <button
             key={dept.id}
@@ -98,17 +103,17 @@ export default function DepartmentFilter({
             aria-checked={isActive}
             onClick={() => handleToggle(dept.id)}
             tabIndex={rovingTarget === dept.id ? 0 : -1}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 min-h-[2.75rem] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+            className={[
+              chipBase,
               isActive
-                ? "text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-            style={isActive ? { backgroundColor: dept.color } : undefined}
+                ? "bg-[var(--ink)] text-[var(--parchment)] border-[var(--ink)]"
+                : "bg-transparent text-[var(--ink-2)] border-[var(--hairline-2)] hover:border-[var(--ink)] hover:bg-[var(--parchment-2)]",
+            ].join(" ")}
           >
             <span
-              aria-hidden="true"
-              className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${isActive ? "bg-white/40" : ""}`}
-              style={!isActive ? { backgroundColor: dept.color } : undefined}
+              aria-hidden
+              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: swatch }}
             />
             {dept.abbreviation}
           </button>

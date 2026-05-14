@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { parseISO, isToday, isFuture } from "date-fns";
-import { Plus, CalendarDays, Pencil, Trash2, Video, MapPin } from "lucide-react";
+import { Plus, CalendarDays, Pencil, Trash2, Video, MapPin, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   departmentService,
@@ -27,10 +27,10 @@ import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
 import { ConflictAlertDialog } from "@/components/activity/ConflictAlertDialog";
 import { SubMinistryManager } from "@/components/department/SubMinistryManager";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
-import { Badge } from "@/components/ui/badge";
 import { ModifiedBadge } from "@/components/ui/ModifiedBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Eyebrow, Numerator, Serial } from "@/components/ui/typography";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +56,29 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatActivityDate, formatTime } from "@/lib/dateFormatting";
+import { deptSwatchColor } from "@/lib/dept-color";
 import type { AxiosError } from "axios";
+
+function FancyTitle({ text }: { text: string }) {
+  const words = text.split(" ");
+  if (words.length < 2) {
+    return (
+      <>
+        <span>{text}</span>
+        <span className="text-[var(--gilt-2)]">.</span>
+      </>
+    );
+  }
+  const head = words.slice(0, words.length - 1).join(" ");
+  const tail = words[words.length - 1];
+  return (
+    <>
+      <span>{head} </span>
+      <span className="italic font-normal">{tail}</span>
+      <span className="text-[var(--gilt-2)]">.</span>
+    </>
+  );
+}
 
 export default function DepartmentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -66,7 +88,6 @@ export default function DepartmentDetailPage() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
-  // State for modals
   const [showCreateActivity, setShowCreateActivity] = useState(false);
   const [showCreateMeeting, setShowCreateMeeting] = useState(false);
   const [createStep, setCreateStep] = useState<"template" | "form">("template");
@@ -103,7 +124,6 @@ export default function DepartmentDetailPage() {
     enabled: !!departmentId,
   });
 
-  // Departments list for ActivityForm department dropdown
   const { data: departments } = useQuery<DepartmentListItem[]>({
     queryKey: ["departments"],
     queryFn: async () => {
@@ -136,7 +156,6 @@ export default function DepartmentDetailPage() {
   const isOwner = user?.role === "OWNER";
   const canManage = isAdminWithScope || isOwner;
 
-  // Mutations
   const invalidateAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["activities", { departmentId }] });
     queryClient.invalidateQueries({ queryKey: ["activities"] });
@@ -239,16 +258,17 @@ export default function DepartmentDetailPage() {
     updateMutation.mutate({ id: activityId, data: formData, force: true });
   }, [conflictState, updateMutation]);
 
-  // 404 handling
   if (isDeptError) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-        <p className="text-lg font-semibold text-slate-700">{t("pages.authDepartments.departmentNotFound")}</p>
+      <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+        <p className="font-display text-2xl text-[var(--ink-2)]">
+          {t("pages.authDepartments.departmentNotFound")}
+        </p>
         <Link
           to="/my-departments"
-          className="mt-3 inline-block text-indigo-600 hover:underline"
+          className="mt-4 inline-block font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--gilt-2)] hover:underline"
         >
-          {t("pages.authDepartments.backToList")}
+          ← {t("pages.authDepartments.backToList")}
         </Link>
       </div>
     );
@@ -259,258 +279,287 @@ export default function DepartmentDetailPage() {
   const FormHeader = isMobile ? SheetHeader : DialogHeader;
   const FormTitle = isMobile ? SheetTitle : DialogTitle;
 
+  const swatch = deptSwatchColor({
+    abbreviation: department?.abbreviation ?? undefined,
+    color: department?.color ?? undefined,
+  });
+
+  const totalMembers = department?.subMinistries?.length ?? 0;
+  const totalUpcoming = upcomingActivities.length;
+  const staffedCount = upcomingActivities.filter((a) => a.staffingStatus === "FullyStaffed").length;
+  const gapCount = upcomingActivities.filter(
+    (a) => a.staffingStatus === "PartiallyStaffed" || a.staffingStatus === "CriticalGap",
+  ).length;
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
+    <div className="mx-auto max-w-7xl">
       {/* Breadcrumb */}
-      <nav className="mb-4 text-sm text-slate-500">
-        <Link to="/my-departments" className="hover:text-indigo-600 hover:underline">
+      <nav className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
+        <Link to="/my-departments" className="hover:text-[var(--ink)] hover:underline">
           {t("pages.authDepartments.backToList")}
         </Link>
         {department && (
           <>
-            <span className="mx-2" aria-hidden="true">/</span>
-            <span className="font-medium text-slate-700" aria-current="page">{department.abbreviation}</span>
+            <span className="mx-2 text-[var(--ink-4)]" aria-hidden>/</span>
+            <span className="text-[var(--ink)]" aria-current="page">{department.abbreviation}</span>
           </>
         )}
       </nav>
 
-      {/* Responsive layout: stacked on mobile, 2-col on sm+ */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-[1fr_320px]">
-        {/* Main content: Activity pipeline */}
+      {/* Header */}
+      <header className="mt-8 flex flex-col gap-6 border-b border-[var(--ink)] pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-bold text-slate-700">
+          {isDeptPending ? (
+            <Skeleton className="h-10 w-72 bg-[var(--parchment-2)]" />
+          ) : department ? (
+            <>
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: swatch }}
+                />
+                <Eyebrow gilt>
+                  {t("pages.authDepartments.subtitle", "Ministère")} ·{" "}
+                  {String((departmentId ?? 0)).padStart(2, "0")}
+                </Eyebrow>
+              </div>
+              <h1 className="mt-3 font-display text-4xl leading-tight text-[var(--ink)] lg:text-5xl">
+                <FancyTitle text={department.name} />
+              </h1>
+              {department.description && (
+                <p className="mt-3 max-w-xl text-base text-[var(--ink-2)]">
+                  {department.description}
+                </p>
+              )}
+            </>
+          ) : null}
+        </div>
+        {canManage && (
+          <div className="flex gap-2">
+            <Button onClick={() => setShowCreateActivity(true)}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t("pages.authDepartments.newActivity")}
+            </Button>
+            <Button variant="outline" onClick={() => setShowCreateMeeting(true)}>
+              <CalendarDays className="mr-1.5 h-4 w-4" />
+              {t("pages.authDepartments.newMeeting")}
+            </Button>
+          </div>
+        )}
+      </header>
+
+      {/* Stats strip */}
+      <section className="mt-8 grid grid-cols-2 gap-4 border-b border-[var(--hairline)] pb-8 sm:grid-cols-4 sm:divide-x sm:divide-[var(--hairline)]">
+        <Stat label={t("pages.authDepartments.stats.upcoming", "Activités à venir")} value={totalUpcoming} />
+        <Stat
+          label={t("pages.authDepartments.stats.staffed", "Pleinement servies")}
+          value={staffedCount}
+          tone={staffedCount > 0 ? "staffed" : "neutral"}
+        />
+        <Stat
+          label={t("pages.authDepartments.stats.gaps", "Postes à pourvoir")}
+          value={gapCount}
+          tone={gapCount > 0 ? "gaps" : "neutral"}
+        />
+        <Stat label={t("pages.authDepartments.stats.subMinistries", "Sous-ministères")} value={totalMembers} />
+      </section>
+
+      {/* Two-column body */}
+      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-14">
+        {/* Activities pipeline */}
+        <section>
+          <div className="flex items-baseline justify-between gap-4 border-b border-[var(--ink)] pb-4">
+            <h2 className="font-display text-2xl leading-tight text-[var(--ink)] sm:text-3xl">
               {t("pages.authDepartments.upcomingActivities")}
             </h2>
-            {canManage && (
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="min-h-[44px] flex-1 sm:flex-none"
-                  onClick={() => setShowCreateActivity(true)}
-                >
-                  <Plus className="mr-1 h-4 w-4" />
-                  {t("pages.authDepartments.newActivity")}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="min-h-[44px] flex-1 sm:flex-none"
-                  onClick={() => setShowCreateMeeting(true)}
-                >
-                  <CalendarDays className="mr-1 h-4 w-4" />
-                  {t("pages.authDepartments.newMeeting")}
-                </Button>
-              </div>
-            )}
+            <Eyebrow>{totalUpcoming} {t("pages.authDepartments.entries", "entrées")}</Eyebrow>
           </div>
 
           {isActivitiesPending ? (
-            <div className="mt-4 space-y-3">
+            <div className="space-y-2 pt-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-40 flex-1" />
-                  <Skeleton className="h-3 w-3 rounded-full" />
+                <div key={i} className="flex items-center gap-4 border-t border-[var(--hairline)] py-5">
+                  <Skeleton className="h-10 w-12 bg-[var(--parchment-2)]" />
+                  <Skeleton className="h-5 w-2/3 bg-[var(--parchment-2)]" />
                 </div>
               ))}
             </div>
           ) : upcomingActivities.length === 0 ? (
-            <div className="mt-4">
+            <div className="border-t border-[var(--hairline)] py-12 text-center" role="status">
               {canManage ? (
-                <div className="text-center py-8">
-                  <p className="text-sm italic text-slate-400 mb-4">
+                <>
+                  <p className="font-display text-xl italic text-[var(--ink-3)]">
                     {t("pages.authDepartments.noActivitiesAdminCta")}
                   </p>
-                  <div className="flex justify-center gap-2">
-                    <Button
-                      size="sm"
-                      className="min-h-[44px]"
-                      onClick={() => setShowCreateActivity(true)}
-                    >
-                      <Plus className="mr-1 h-4 w-4" />
+                  <div className="mt-6 flex justify-center gap-3">
+                    <Button onClick={() => setShowCreateActivity(true)}>
+                      <Plus className="mr-1.5 h-4 w-4" />
                       {t("pages.authDepartments.newActivity")}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="min-h-[44px]"
-                      onClick={() => setShowCreateMeeting(true)}
-                    >
-                      <CalendarDays className="mr-1 h-4 w-4" />
+                    <Button variant="outline" onClick={() => setShowCreateMeeting(true)}>
+                      <CalendarDays className="mr-1.5 h-4 w-4" />
                       {t("pages.authDepartments.newMeeting")}
                     </Button>
                   </div>
-                </div>
+                </>
               ) : (
-                <p className="text-sm italic text-slate-400">
+                <p className="font-display text-xl italic text-[var(--ink-3)]">
                   {t("pages.authDepartments.noActivitiesViewer")}
                 </p>
               )}
             </div>
           ) : (
-            <div className="mt-4 space-y-2">
-              {upcomingActivities.map((activity) => (
-                <Link
-                  key={activity.id}
-                  to={`/activities/${activity.id}`}
-                  className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 hover:bg-slate-50 transition-colors"
-                >
-                  <span className="min-w-[120px] text-sm text-slate-500">
-                    {formatActivityDate(activity.date, t, i18n.language)}
-                    {" "}
-                    {formatTime(activity.startTime, i18n.language)}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-slate-800 truncate">
-                    {activity.title}
-                  </span>
-                  <ModifiedBadge activityId={activity.id} />
-
-                  {/* Branch on isMeeting for indicator vs meeting info */}
-                  {activity.isMeeting ? (
-                    <span className="flex shrink-0 items-center gap-1 text-xs text-slate-500">
-                      {activity.meetingType === "zoom" ? (
-                        <Video className="h-3.5 w-3.5" />
-                      ) : (
-                        <MapPin className="h-3.5 w-3.5" />
-                      )}
-                      <span className="truncate max-w-[80px]">
-                        {activity.meetingType === "zoom"
-                          ? "Zoom"
-                          : activity.locationName ?? ""}
-                      </span>
-                    </span>
-                  ) : (
-                    <>
-                      <StaffingIndicator
-                        staffingStatus={activity.staffingStatus}
-                        assigned={activity.assignedCount}
-                        total={activity.totalHeadcount}
-                        size="sm"
-                        showLabel={false}
-                      />
-                      {activity.specialType && (
-                        <Badge variant="outline" className="text-xs">
-                          {t(`pages.home.specialType.${activity.specialType}`)}
-                        </Badge>
-                      )}
-                    </>
-                  )}
-
-                  {/* Admin controls */}
-                  {canManage && (
-                    <div
-                      className="flex shrink-0 gap-1"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        disabled={isEditLoading}
-                        onClick={() => handleEdit(activity)}
-                        aria-label="Edit"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-500 hover:text-red-700"
-                        onClick={() => setDeleteTarget(activity)}
-                        aria-label="Delete"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+            <ul>
+              {upcomingActivities.map((activity, idx) => {
+                const date = parseISO(activity.date);
+                const day = date.getDate();
+                const weekday = date.toLocaleDateString(i18n.language, { weekday: "short" });
+                return (
+                  <li
+                    key={activity.id}
+                    className="grid grid-cols-[32px_minmax(64px,80px)_1fr_auto_auto] items-center gap-4 border-t border-[var(--hairline)] py-5 transition-colors hover:bg-[var(--parchment-2)]"
+                  >
+                    <Serial n={idx + 1} />
+                    <div className="flex flex-col leading-none">
+                      <Numerator className="text-3xl text-[var(--ink)]">{day}</Numerator>
+                      <Eyebrow className="mt-1 capitalize">{weekday}</Eyebrow>
                     </div>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar: Department info + sub-ministries */}
-        <div className="order-first sm:order-last">
-          {isDeptPending ? (
-            <div className="space-y-4">
-              <div className="h-2 w-full rounded" />
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <div className="mt-4 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-7 w-24 rounded-full" />
-                <Skeleton className="h-7 w-28 rounded-full" />
-              </div>
-            </div>
-          ) : department ? (
-            <div>
-              {/* Color bar accent */}
-              <div
-                className="h-2 w-full rounded"
-                style={{ backgroundColor: department.color || "#E2E8F0" }}
-              />
-              <div className="mt-3 flex items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900">{department.name}</h1>
-                <Badge variant="secondary">{department.abbreviation}</Badge>
-              </div>
-              {department.description && (
-                <p className="mt-2 text-sm text-slate-600">{department.description}</p>
-              )}
-
-              {/* Sub-ministries section */}
-              <div className="mt-6">
-                <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                  {t("pages.authDepartments.subMinistries")}
-                </h3>
-                {isPlaceholderData ? (
-                  <div className="mt-2 space-y-2">
-                    <Skeleton className="h-7 w-24 rounded-full" />
-                    <Skeleton className="h-7 w-28 rounded-full" />
-                  </div>
-                ) : canManage && departmentId !== undefined ? (
-                  <div className="mt-2">
-                    <SubMinistryManager
-                      departmentId={departmentId}
-                      subMinistries={department.subMinistries}
-                    />
-                  </div>
-                ) : department.subMinistries.length === 0 ? (
-                  <p className="mt-2 text-sm italic text-slate-400">
-                    {t("pages.authDepartments.noSubMinistries")}
-                  </p>
-                ) : (
-                  <div className="mt-2 space-y-2">
-                    {department.subMinistries.map((sm) => (
-                      <div key={sm.id} className="flex items-center gap-2">
-                        <span className="flex-1 text-sm text-slate-700">{sm.name}</span>
-                        {sm.leadUserId && sm.leadFirstName && sm.leadLastName ? (
-                          <div className="flex items-center gap-1.5">
-                            <InitialsAvatar
-                              firstName={sm.leadFirstName}
-                              lastName={sm.leadLastName}
-                              avatarUrl={sm.leadAvatarUrl ?? undefined}
-                              size="xs"
-                            />
-                            <span className="text-xs text-muted-foreground">
-                              {sm.leadFirstName} {sm.leadLastName}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                    <Link
+                      to={`/activities/${activity.id}`}
+                      className="min-w-0 no-underline text-inherit"
+                    >
+                      <h3 className="truncate font-display text-lg text-[var(--ink)]">
+                        {activity.title}
+                      </h3>
+                      <div className="mt-1 flex flex-wrap items-center gap-3">
+                        <span className="font-mono text-sm tabular-nums text-[var(--ink-2)]">
+                          {formatTime(activity.startTime, i18n.language)}
+                          {activity.endTime && (
+                            <>–{formatTime(activity.endTime, i18n.language)}</>
+                          )}
+                        </span>
+                        <ModifiedBadge activityId={activity.id} />
+                        {activity.specialType && (
+                          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--gilt-2)]">
+                            ✣ {t(`pages.home.specialType.${activity.specialType}`)}
+                          </span>
                         )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </Link>
+                    <div className="shrink-0">
+                      {activity.isMeeting ? (
+                        <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
+                          {activity.meetingType === "zoom" ? (
+                            <Video className="h-3.5 w-3.5" />
+                          ) : (
+                            <MapPin className="h-3.5 w-3.5" />
+                          )}
+                          {activity.meetingType === "zoom"
+                            ? "Zoom"
+                            : activity.locationName ?? ""}
+                        </span>
+                      ) : (
+                        <StaffingIndicator
+                          staffingStatus={activity.staffingStatus}
+                          assigned={activity.assignedCount}
+                          total={activity.totalHeadcount}
+                          size="sm"
+                          showLabel={false}
+                        />
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      {canManage && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={isEditLoading}
+                            onClick={() => handleEdit(activity)}
+                            aria-label="Edit"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-[var(--rose)] hover:text-[var(--rose)]/90"
+                            onClick={() => setDeleteTarget(activity)}
+                            aria-label="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
+                      )}
+                      <ChevronRight className="h-4 w-4 text-[var(--ink-4)]" />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        {/* Sub-ministries */}
+        <aside>
+          <div className="flex items-baseline justify-between gap-4 border-b border-[var(--ink)] pb-4">
+            <h2 className="font-display text-2xl leading-tight text-[var(--ink)] sm:text-3xl">
+              {t("pages.authDepartments.subMinistries")}
+            </h2>
+            <Eyebrow>{totalMembers}</Eyebrow>
+          </div>
+          {isDeptPending || !department ? (
+            <div className="space-y-2 pt-4">
+              <Skeleton className="h-12 bg-[var(--parchment-2)]" />
+              <Skeleton className="h-12 bg-[var(--parchment-2)]" />
             </div>
-          ) : null}
-        </div>
+          ) : isPlaceholderData ? (
+            <p className="border-t border-[var(--hairline)] py-6 text-sm text-[var(--ink-3)]">
+              {t("layout.loading")}…
+            </p>
+          ) : canManage && departmentId !== undefined ? (
+            <div className="mt-4">
+              <SubMinistryManager
+                departmentId={departmentId}
+                subMinistries={department.subMinistries}
+              />
+            </div>
+          ) : department.subMinistries.length === 0 ? (
+            <p className="border-t border-[var(--hairline)] py-8 text-center font-display text-base italic text-[var(--ink-3)]">
+              {t("pages.authDepartments.noSubMinistries")}
+            </p>
+          ) : (
+            <ul>
+              {department.subMinistries.map((sm, idx) => (
+                <li
+                  key={sm.id}
+                  className="grid grid-cols-[28px_1fr_auto] items-center gap-3 border-t border-[var(--hairline)] py-4"
+                >
+                  <Serial n={idx + 1} />
+                  <span className="font-display text-lg text-[var(--ink)]">{sm.name}</span>
+                  {sm.leadUserId && sm.leadFirstName && sm.leadLastName ? (
+                    <div className="flex items-center gap-2">
+                      <InitialsAvatar
+                        firstName={sm.leadFirstName}
+                        lastName={sm.leadLastName}
+                        avatarUrl={sm.leadAvatarUrl ?? undefined}
+                        size="xs"
+                      />
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
+                        {sm.leadFirstName} {sm.leadLastName.charAt(0)}.
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-4)]">
+                      {t("pages.authDepartments.subMinistry.noLead", "Sans responsable")}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
       </div>
 
       {/* Create Activity Modal */}
@@ -524,7 +573,7 @@ export default function DepartmentDetailPage() {
           }
         }}
       >
-        <FormContent className={isMobile ? "overflow-y-auto" : "max-h-[90vh] overflow-y-auto sm:max-w-lg"}>
+        <FormContent className={isMobile ? "overflow-y-auto" : "max-h-[90vh] overflow-y-auto sm:max-w-2xl"}>
           <FormHeader>
             <FormTitle>{t("pages.authDepartments.newActivity")}</FormTitle>
           </FormHeader>
@@ -561,7 +610,7 @@ export default function DepartmentDetailPage() {
           if (!open) setShowCreateMeeting(false);
         }}
       >
-        <FormContent className={isMobile ? "overflow-y-auto" : "max-h-[90vh] overflow-y-auto sm:max-w-lg"}>
+        <FormContent className={isMobile ? "overflow-y-auto" : "max-h-[90vh] overflow-y-auto sm:max-w-2xl"}>
           <FormHeader>
             <FormTitle>{t("pages.authDepartments.newMeeting")}</FormTitle>
           </FormHeader>
@@ -584,7 +633,7 @@ export default function DepartmentDetailPage() {
           if (!open) setEditActivity(null);
         }}
       >
-        <FormContent className={isMobile ? "overflow-y-auto" : "max-h-[90vh] overflow-y-auto sm:max-w-lg"}>
+        <FormContent className={isMobile ? "overflow-y-auto" : "max-h-[90vh] overflow-y-auto sm:max-w-2xl"}>
           <FormHeader>
             <FormTitle>
               {editActivity?.isMeeting
@@ -669,7 +718,7 @@ export default function DepartmentDetailPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
+              variant="destructive"
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
               {t("common.delete")}
@@ -692,6 +741,29 @@ export default function DepartmentDetailPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: number;
+  tone?: "neutral" | "staffed" | "gaps";
+}) {
+  const color =
+    tone === "gaps"
+      ? "text-[var(--gaps)]"
+      : tone === "staffed"
+        ? "text-[var(--staffed)]"
+        : "text-[var(--ink)]";
+  return (
+    <div className="flex flex-col sm:px-6 first:sm:pl-0 last:sm:pr-0">
+      <Eyebrow>{label}</Eyebrow>
+      <span className={`numerator mt-3 text-5xl sm:text-6xl ${color}`}>{value}</span>
     </div>
   );
 }

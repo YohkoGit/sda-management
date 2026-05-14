@@ -1,28 +1,11 @@
 import { cn } from "@/lib/utils";
 
-const BG_COLORS = [
-  "bg-slate-200",
-  "bg-indigo-100",
-  "bg-emerald-100",
-  "bg-amber-100",
-  "bg-rose-100",
-];
-
 const SIZE_CLASSES = {
   xs: "h-7 w-7 text-[10px]",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-12 w-12 text-base",
 } as const;
-
-function hashName(firstName: string, lastName: string): number {
-  const str = `${firstName}${lastName}`;
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash);
-}
 
 interface InitialsAvatarProps {
   firstName: string;
@@ -45,7 +28,7 @@ export function InitialsAvatar({
         src={avatarUrl}
         alt={`${firstName} ${lastName}`}
         className={cn(
-          "rounded-full object-cover",
+          "rounded-full object-cover ring-1 ring-[var(--hairline)]",
           SIZE_CLASSES[size],
           className,
         )}
@@ -54,14 +37,12 @@ export function InitialsAvatar({
   }
 
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  const bgColor = BG_COLORS[hashName(firstName, lastName) % BG_COLORS.length];
 
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-full font-semibold text-slate-700",
+        "flex items-center justify-center rounded-full bg-[var(--parchment-3)] font-display text-[var(--ink-2)] ring-1 ring-[var(--hairline)]",
         SIZE_CLASSES[size],
-        bgColor,
         className,
       )}
       role="img"

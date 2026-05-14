@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Eyebrow } from "@/components/ui/typography";
 import CalendarView from "@/components/calendar/CalendarView";
 import DayDetailDialog from "@/components/calendar/DayDetailDialog";
 import { getInitialDateRange, type CalendarViewType } from "@/components/calendar/calendar-utils";
@@ -11,7 +12,7 @@ import {
 import { useYearActivities } from "@/hooks/useYearActivities";
 
 export default function PublicCalendarPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [dateRange, setDateRange] = useState(getInitialDateRange);
   const [activeView, setActiveView] = useState<CalendarViewType>("month-grid");
   const [yearForFetch, setYearForFetch] = useState(() => new Date().getFullYear());
@@ -66,27 +67,29 @@ export default function PublicCalendarPage() {
 
   if (deptPending) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="mt-6 h-[600px] w-full rounded-2xl" />
+      <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+        <Skeleton className="h-10 w-64 bg-[var(--parchment-2)]" />
+        <Skeleton className="mt-8 h-[600px] w-full bg-[var(--parchment-2)]" />
       </div>
     );
   }
 
   if (deptError) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-        <h1 className="text-2xl font-bold text-slate-900">
+      <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+        <Eyebrow gilt>{t("nav.public.calendar")}</Eyebrow>
+        <h1 className="mt-3 font-display text-4xl leading-tight text-[var(--ink)]">
           {t("pages.calendar.title")}
+          <span className="text-[var(--gilt-2)]">.</span>
         </h1>
-        <div className="mt-4 flex items-center gap-3">
-          <p className="text-sm text-red-600">
+        <div className="mt-6 flex items-center gap-3">
+          <p className="text-sm text-[var(--rose)]">
             {t("pages.calendar.loadError")}
           </p>
           <button
             type="button"
             onClick={() => refetchDepts()}
-            className="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+            className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
           >
             {t("pages.calendar.retry")}
           </button>
@@ -95,8 +98,25 @@ export default function PublicCalendarPage() {
     );
   }
 
+  // dateRange.start is the leading-week start (may fall in the prev month).
+  // Offset by ~12 days to land safely inside the displayed month.
+  const labelDate = new Date(dateRange.start + "T00:00:00");
+  labelDate.setDate(labelDate.getDate() + 12);
+  const monthLabel = labelDate.toLocaleDateString(i18n.language, {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
+    <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8 lg:py-16">
+      <header className="mb-8">
+        <Eyebrow gilt>{t("pages.calendar.kicker", "Calendrier liturgique")}</Eyebrow>
+        <h1 className="mt-3 font-display text-4xl leading-tight text-[var(--ink)] lg:text-5xl">
+          <span className="capitalize">{monthLabel}</span>
+          <span className="text-[var(--gilt-2)]">.</span>
+        </h1>
+      </header>
+
       <CalendarView
         activities={activities ?? []}
         yearActivities={yearActivities}
@@ -112,6 +132,7 @@ export default function PublicCalendarPage() {
         onDayAction={handleDayAction}
         navigateTo={navigateTo}
         onNavigateComplete={() => setNavigateTo(null)}
+        hidePageTitle
       />
 
       <DayDetailDialog

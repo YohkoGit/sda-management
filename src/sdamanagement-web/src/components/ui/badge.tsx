@@ -5,19 +5,20 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden font-mono text-[10px] uppercase tracking-[0.14em] whitespace-nowrap rounded-[2px] border px-2 py-1 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--gilt)] focus-visible:ring-offset-1 aria-invalid:border-[var(--rose)] [&>svg]:pointer-events-none [&>svg]:size-3",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+        default: "bg-[var(--parchment)] text-[var(--ink-2)] border-[var(--hairline-2)] [a&]:hover:bg-[var(--parchment-2)]",
         secondary:
-          "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+          "bg-[var(--parchment-2)] text-[var(--ink-2)] border-[var(--hairline)] [a&]:hover:bg-[var(--parchment-3)]",
         destructive:
-          "bg-destructive text-white focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40 [a&]:hover:bg-destructive/90",
+          "bg-[var(--rose)] text-[var(--parchment)] border-[var(--rose)]",
         outline:
-          "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-        ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 [a&]:hover:underline",
+          "border-[var(--hairline-2)] text-[var(--ink-2)] bg-transparent [a&]:hover:bg-[var(--parchment-2)]",
+        ghost: "border-transparent text-[var(--ink-2)] [a&]:hover:bg-[var(--parchment-2)]",
+        link: "text-[var(--gilt-2)] border-transparent underline-offset-4 [a&]:hover:underline",
+        gilt: "bg-[var(--gilt-wash)] text-[var(--gilt-2)] border-[var(--gilt-soft)]",
       },
     },
     defaultVariants: {
