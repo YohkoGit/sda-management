@@ -11,19 +11,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/typography";
-import { deptSwatchColor } from "@/lib/dept-color";
 import type { DepartmentListItem } from "@/services/departmentService";
 import type { AssignableOfficer } from "@/services/userService";
 import RoleRosterEditor from "./RoleRosterEditor";
+import { DateField } from "./DateField";
+import { TimeField } from "./TimeField";
+import { TagPicker } from "./TagPicker";
+import { DeptField } from "./DeptField";
+import { ActivityFormStepper } from "./ActivityFormStepper";
+import { ActivityFormSidePanel } from "./ActivityFormSidePanel";
 
 export interface ActivityFormProps {
   onSubmit: (data: CreateActivityFormData) => void;
@@ -34,6 +32,10 @@ export interface ActivityFormProps {
   initialGuestOfficers?: AssignableOfficer[];
   lockDepartment?: boolean;
   isEditing?: boolean;
+  /** When true (create flow), shows stepper + side panel preview. */
+  showStepperAndPreview?: boolean;
+  /** True if the create flow came through a template. */
+  templateApplied?: boolean;
 }
 
 export function ActivityForm({
@@ -45,6 +47,8 @@ export function ActivityForm({
   initialGuestOfficers,
   lockDepartment,
   isEditing,
+  showStepperAndPreview,
+  templateApplied,
 }: ActivityFormProps) {
   const { t } = useTranslation();
 
@@ -75,10 +79,11 @@ export function ActivityForm({
   useUnsavedChangesGuard(isDirty);
 
   const visibility = watch("visibility");
-  const departmentId = watch("departmentId");
+  const roles = watch("roles");
+  const hasRoles = Array.isArray(roles) && roles.length > 0;
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+  const formNode = (
+    <form id="activity-form" onSubmit={handleSubmit(onSubmit)} className="space-y-7">
       <div className="space-y-2">
         <Label htmlFor="title" className="eyebrow">
           {t("pages.adminActivities.form.title")}
@@ -114,11 +119,18 @@ export function ActivityForm({
           <Label htmlFor="date" className="eyebrow">
             {t("pages.adminActivities.form.date")}
           </Label>
-          <Input
-            id="date"
-            type="date"
-            aria-invalid={!!errors.date}
-            {...register("date")}
+          <Controller
+            name="date"
+            control={control}
+            render={({ field, fieldState }) => (
+              <DateField
+                id="date"
+                value={field.value}
+                onChange={field.onChange}
+                ariaInvalid={fieldState.invalid}
+                ariaLabel={t("pages.adminActivities.form.date")}
+              />
+            )}
           />
           {errors.date && (
             <p className="text-sm text-[var(--rose)]">{errors.date.message}</p>
@@ -128,11 +140,19 @@ export function ActivityForm({
           <Label htmlFor="startTime" className="eyebrow">
             {t("pages.adminActivities.form.startTime")}
           </Label>
-          <Input
-            id="startTime"
-            type="time"
-            aria-invalid={!!errors.startTime}
-            {...register("startTime")}
+          <Controller
+            name="startTime"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TimeField
+                id="startTime"
+                value={field.value}
+                onChange={field.onChange}
+                ariaInvalid={fieldState.invalid}
+                ariaLabel={t("pages.adminActivities.form.startTime")}
+                label={t("pages.adminActivities.form.startTime")}
+              />
+            )}
           />
           {errors.startTime && (
             <p className="text-sm text-[var(--rose)]">{errors.startTime.message}</p>
@@ -142,11 +162,19 @@ export function ActivityForm({
           <Label htmlFor="endTime" className="eyebrow">
             {t("pages.adminActivities.form.endTime")}
           </Label>
-          <Input
-            id="endTime"
-            type="time"
-            aria-invalid={!!errors.endTime}
-            {...register("endTime")}
+          <Controller
+            name="endTime"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TimeField
+                id="endTime"
+                value={field.value}
+                onChange={field.onChange}
+                ariaInvalid={fieldState.invalid}
+                ariaLabel={t("pages.adminActivities.form.endTime")}
+                label={t("pages.adminActivities.form.endTime")}
+              />
+            )}
           />
           {errors.endTime && (
             <p className="text-sm text-[var(--rose)]">{errors.endTime.message}</p>
@@ -157,41 +185,21 @@ export function ActivityForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label className="eyebrow">{t("pages.adminActivities.form.department")}</Label>
-          <Select
-            value={departmentId ? String(departmentId) : ""}
-            onValueChange={(val) =>
-              setValue("departmentId", Number(val), { shouldValidate: true })
-            }
-            disabled={lockDepartment}
-          >
-            <SelectTrigger
-              className={[
-                "w-full",
-                errors.departmentId ? "border-[var(--rose)]" : "",
-                lockDepartment ? "opacity-70" : "",
-              ].join(" ")}
-            >
-              <SelectValue placeholder={t("pages.adminActivities.form.department")} />
-            </SelectTrigger>
-            <SelectContent>
-              {departments.map((dept) => (
-                <SelectItem key={dept.id} value={String(dept.id)}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="inline-block h-2 w-2 rounded-full"
-                      style={{
-                        backgroundColor: deptSwatchColor({
-                          abbreviation: dept.abbreviation ?? undefined,
-                          color: dept.color ?? undefined,
-                        }),
-                      }}
-                    />
-                    {dept.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Controller
+            name="departmentId"
+            control={control}
+            render={({ field, fieldState }) => (
+              <DeptField
+                value={field.value}
+                onChange={field.onChange}
+                departments={departments}
+                disabled={lockDepartment}
+                ariaInvalid={fieldState.invalid}
+                ariaLabel={t("pages.adminActivities.form.department")}
+                placeholder={t("pages.adminActivities.form.department")}
+              />
+            )}
+          />
           {errors.departmentId && (
             <p className="text-sm text-[var(--rose)]">{errors.departmentId.message}</p>
           )}
@@ -202,30 +210,17 @@ export function ActivityForm({
           <Controller
             name="specialType"
             control={control}
-            render={({ field, fieldState }) => (
-              <Select
-                value={field.value ?? "none"}
-                onValueChange={(val) => field.onChange(val === "none" ? null : val)}
-              >
-                <SelectTrigger
-                  className={[
-                    "w-full",
-                    fieldState.invalid ? "border-[var(--rose)]" : "",
-                  ].join(" ")}
-                  aria-label={t("pages.adminActivities.form.specialType")}
-                  aria-invalid={fieldState.invalid}
-                >
-                  <SelectValue placeholder={t("pages.adminActivities.form.specialTypeNone")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("pages.adminActivities.form.specialTypeNone")}</SelectItem>
-                  {SPECIAL_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(`pages.adminActivities.specialType.${type}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            render={({ field }) => (
+              <TagPicker
+                value={field.value ?? null}
+                onChange={field.onChange}
+                noneLabel={t("pages.adminActivities.form.specialTypeNone")}
+                options={SPECIAL_TYPES.map((type) => ({
+                  value: type,
+                  label: t(`pages.adminActivities.specialType.${type}`),
+                }))}
+                ariaLabel={t("pages.adminActivities.form.specialType")}
+              />
             )}
           />
         </div>
@@ -276,15 +271,47 @@ export function ActivityForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-[var(--hairline)] pt-6">
-        <Button type="submit" disabled={isPending}>
-          {isPending
-            ? t("pages.adminActivities.form.saving")
-            : <>
-                {t("pages.adminActivities.form.save")} →
-              </>}
-        </Button>
-      </div>
+      {!showStepperAndPreview && (
+        <div className="flex justify-end gap-3 border-t border-[var(--hairline)] pt-6">
+          <Button type="submit" disabled={isPending}>
+            {isPending
+              ? t("pages.adminActivities.form.saving")
+              : <>
+                  {t("pages.adminActivities.form.save")} →
+                </>}
+          </Button>
+        </div>
+      )}
     </form>
+  );
+
+  if (!showStepperAndPreview) {
+    return formNode;
+  }
+
+  return (
+    <div className="space-y-8">
+      <ActivityFormStepper templateApplied={!!templateApplied} hasRoles={hasRoles} />
+
+      <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-14">
+        <div>{formNode}</div>
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <ActivityFormSidePanel
+            control={control}
+            departments={departments}
+            templateApplied={!!templateApplied}
+          />
+          <div className="mt-8 border-t border-[var(--hairline)] pt-6">
+            <Button type="submit" form="activity-form" disabled={isPending} className="w-full">
+              {isPending
+                ? t("pages.adminActivities.form.saving")
+                : <>
+                    {t("pages.adminActivities.form.save")} →
+                  </>}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

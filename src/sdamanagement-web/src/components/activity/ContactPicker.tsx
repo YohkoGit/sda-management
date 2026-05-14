@@ -196,21 +196,26 @@ export default function ContactPicker({
     </Command>
   );
 
+  const pillBase =
+    "inline-flex items-center gap-1.5 rounded-full border border-dashed px-3 py-1.5 font-sans text-xs text-[var(--ink-3)] min-h-[34px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gilt)]";
+  const pillEnabled =
+    "border-[var(--hairline-2)] hover:border-[var(--ink)] hover:bg-[var(--parchment-2)] hover:text-[var(--ink)]";
+  const pillDisabled = "border-[var(--hairline)] opacity-60";
+
   const triggerButton = isFullyStaffed ? (
     <Tooltip>
       <TooltipTrigger asChild>
         <span className="inline-flex">
-          <Button
+          <button
             ref={triggerRef}
             type="button"
-            variant="outline"
-            size="icon"
-            className="h-11 w-11 sm:h-9 sm:w-9"
             disabled
+            className={[pillBase, pillDisabled].join(" ")}
             aria-label={t("pages.adminActivities.contactPicker.fullyStaffed")}
           >
             {trigger}
-          </Button>
+            <span>{t("pages.adminActivities.roleRoster.assignAction", "Attribuer")}</span>
+          </button>
         </span>
       </TooltipTrigger>
       <TooltipContent>
@@ -218,17 +223,16 @@ export default function ContactPicker({
       </TooltipContent>
     </Tooltip>
   ) : (
-    <Button
+    <button
       ref={triggerRef}
       type="button"
-      variant="outline"
-      size="icon"
-      className="h-11 w-11 sm:h-9 sm:w-9"
       onClick={() => updateOpen(true)}
+      className={[pillBase, pillEnabled].join(" ")}
       aria-label={t("pages.adminActivities.roleRoster.tapToAssign")}
     >
       {trigger}
-    </Button>
+      <span>{t("pages.adminActivities.roleRoster.assignAction", "Attribuer")}</span>
+    </button>
   );
 
   // Desktop: Popover

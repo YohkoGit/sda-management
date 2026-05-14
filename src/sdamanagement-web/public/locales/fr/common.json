@@ -6,6 +6,25 @@
     "tagline": "Maison de prière, de chant et de service depuis la fondation.",
     "churchInitials": "SD"
   },
+  "pickers": {
+    "date": {
+      "placeholder": "Choisir une date",
+      "prevMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "sabbathLegend": "Sabbat",
+      "today": "Aujourd'hui"
+    },
+    "time": {
+      "placeholder": "Choisir",
+      "label": "Heure",
+      "step": "Pas de 15 min",
+      "custom": "Heure précise",
+      "apply": "OK"
+    },
+    "dept": {
+      "placeholder": "Choisir un département"
+    }
+  },
   "nav": {
     "public": {
       "home": "Accueil",
@@ -479,6 +498,29 @@
         "public": "Publique",
         "authenticated": "Authentifi\u00e9"
       },
+      "stepper": {
+        "label": "Progression",
+        "template": "Mod\u00e8le",
+        "details": "D\u00e9tails",
+        "roles": "R\u00f4les",
+        "review": "R\u00e9vision"
+      },
+      "preview": {
+        "label": "Aper\u00e7u public",
+        "hint": "Ce que verra la cong\u00e9gation apr\u00e8s publication.",
+        "untitled": "Sans titre",
+        "activity": "Activit\u00e9"
+      },
+      "verify": {
+        "label": "V\u00e9rification",
+        "template": "Mod\u00e8le appliqu\u00e9",
+        "title": "Titre r\u00e9dig\u00e9",
+        "datetime": "Date et horaire d\u00e9finis",
+        "department": "D\u00e9partement choisi",
+        "rolesOk": "Tous les r\u00f4les pourvus",
+        "rolesGap_one": "{{count}} r\u00f4le \u00e0 pourvoir",
+        "rolesGap_other": "{{count}} r\u00f4les \u00e0 pourvoir"
+      },
       "roleRoster": {
         "kicker": "R\u00f4les",
         "title": "R\u00f4les de l\u2019activit\u00e9",
@@ -497,6 +539,7 @@
         "maxRolesReached": "Maximum 20 r\u00f4les atteint.",
         "unassigned": "Non assign\u00e9",
         "tapToAssign": "Appuyer pour assigner",
+        "assignAction": "Attribuer",
         "editAssignment": "Modifier l\u2019assignation pour {{role}}",
         "removeAssignment": "{{name}} \u2014 appuyer pour retirer",
         "duplicateRoleName": "Les noms de r\u00f4le doivent \u00eatre uniques.",

@@ -118,7 +118,15 @@ function App() {
             {/* 404 */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
-          <Toaster position="top-right" richColors />
+          <Toaster
+            theme="light"
+            position="bottom-right"
+            duration={4000}
+            toastOptions={{
+              duration: 4000,
+              className: "anim-toast-in",
+            }}
+          />
         </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>

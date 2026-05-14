@@ -5,7 +5,7 @@ export default function AdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-black">{t("pages.admin.title")}</h1>
+      <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.admin.title")}</h1>
     </div>
   );
 }

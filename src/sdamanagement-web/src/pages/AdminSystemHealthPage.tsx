@@ -35,7 +35,7 @@ export default function AdminSystemHealthPage() {
   if (isAuthLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-black">
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">
           {t("pages.adminSystemHealth.title")}
         </h1>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -54,7 +54,7 @@ export default function AdminSystemHealthPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-black">
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">
           {t("pages.adminSystemHealth.title")}
         </h1>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,7 +69,7 @@ export default function AdminSystemHealthPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black">
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">
           {t("pages.adminSystemHealth.title")}
         </h1>
         <Button variant="outline" size="sm" onClick={handleRefresh}>

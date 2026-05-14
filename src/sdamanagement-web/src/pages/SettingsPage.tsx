@@ -31,7 +31,7 @@ export default function SettingsPage() {
   if (isAuthLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-black">{t("pages.settings.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.settings.title")}</h1>
         <div className="mt-6 space-y-4">
           <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-10 w-full" />
@@ -43,7 +43,7 @@ export default function SettingsPage() {
   if (!isOwner) {
     return (
       <div>
-        <h1 className="text-2xl font-black">{t("pages.settings.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.settings.title")}</h1>
         <p className="mt-4 text-muted-foreground">
           {t("pages.settings.noSettingsForRole")}
         </p>
@@ -54,7 +54,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-black">{t("pages.settings.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.settings.title")}</h1>
         <div className="mt-6 space-y-4">
           <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-10 w-full" />
@@ -68,7 +68,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-black">{t("pages.settings.title")}</h1>
+      <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.settings.title")}</h1>
       <div className="mt-6 max-w-2xl">
         <ChurchIdentityForm existingConfig={configData} />
       </div>

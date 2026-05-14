@@ -1,0 +1,543 @@
+/* ============================================================
+   SDAC ST-HUBERT — Reverent & Timeless
+   Design tokens
+   ============================================================ */
+
+:root {
+  /* ---------- Palette ---------- */
+  /* Parchment (warm whites) */
+  --parchment:   #FAF8F2;
+  --parchment-2: #F4EFE2;
+  --parchment-3: #ECE5D3;
+  --hairline:    #E2D9C2;
+  --hairline-2:  #D4C8AB;
+
+  /* Ink (deep navy-charcoal) */
+  --ink:         #1B2530;
+  --ink-2:       #2F3D4A;
+  --ink-3:       #5A6976;
+  --ink-4:       #8A95A1;
+
+  /* Gilt (candlelight gold) — used sparingly */
+  --gilt:        #B89146;
+  --gilt-2:      #9C7A32;
+  --gilt-soft:   #E8D9B0;
+  --gilt-wash:   #F5EBCF;
+
+  /* Accents */
+  --rose:        #8B3A3A;   /* live indicator, never decoration */
+
+  /* ============================================================
+     Department palette — 24 spot colors, all at L 0.45 C 0.07
+     varying only in hue. Reference by index (--dept-01..24);
+     admin chooses a token when creating a department.
+     ============================================================ */
+  --dept-01: oklch(0.45 0.07   0);   /* rose   */
+  --dept-02: oklch(0.45 0.07  15);   /* terracotta */
+  --dept-03: oklch(0.45 0.07  30);   /* rust   */
+  --dept-04: oklch(0.45 0.07  45);   /* umber  */
+  --dept-05: oklch(0.45 0.07  60);   /* bronze */
+  --dept-06: oklch(0.45 0.07  75);   /* olive  */
+  --dept-07: oklch(0.45 0.07  95);   /* fern   */
+  --dept-08: oklch(0.45 0.07 115);   /* moss   */
+  --dept-09: oklch(0.45 0.07 135);   /* sage   */
+  --dept-10: oklch(0.45 0.07 155);   /* viridian */
+  --dept-11: oklch(0.45 0.07 175);   /* teal   */
+  --dept-12: oklch(0.45 0.07 195);   /* cerulean */
+  --dept-13: oklch(0.45 0.07 215);   /* azure  */
+  --dept-14: oklch(0.45 0.07 235);   /* slate  */
+  --dept-15: oklch(0.45 0.07 255);   /* indigo */
+  --dept-16: oklch(0.45 0.07 275);   /* violet */
+  --dept-17: oklch(0.45 0.07 295);   /* plum   */
+  --dept-18: oklch(0.45 0.07 315);   /* mauve  */
+  --dept-19: oklch(0.45 0.07 335);   /* mulberry */
+  --dept-20: oklch(0.45 0.07 350);   /* bordeaux */
+  --dept-21: oklch(0.40 0.05  60);   /* deep sand (alt L) */
+  --dept-22: oklch(0.40 0.05 150);   /* deep moss (alt L) */
+  --dept-23: oklch(0.40 0.05 250);   /* deep slate (alt L) */
+  --dept-24: oklch(0.40 0.05 340);   /* deep mulberry (alt L) */
+
+  /* Legacy named aliases — for the prototype's existing data */
+  --moss:     var(--dept-08);
+  --bordeaux: var(--dept-20);
+  --azure:    var(--dept-13);
+  --umber:    var(--dept-04);
+  --plum:     var(--dept-17);
+
+  /* Status */
+  --staffed:     #4A6B5C;
+  --gaps:        #B58527;
+
+  /* ---------- Type ---------- */
+  --font-display: "Spectral", "Cormorant Garamond", Georgia, serif;
+  --font-sans:    "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:    "IBM Plex Mono", "SF Mono", Menlo, monospace;
+
+  /* ---------- Geometry ---------- */
+  --radius-sm: 2px;
+  --radius:    4px;
+  --radius-lg: 8px;
+
+  --space: 24px;
+
+  /* ---------- Motion ---------- */
+  /* Reverent never bounces. Slow-out easing, measured durations. */
+  --ease:       cubic-bezier(0.4, 0.2, 0.2, 1);
+  --ease-out:   cubic-bezier(0.0, 0.0, 0.2, 1);   /* entries */
+  --ease-in:    cubic-bezier(0.4, 0.0, 1, 1);     /* exits */
+  --dur-instant: 80ms;    /* button color shift */
+  --dur-fast:    150ms;   /* hover, focus */
+  --dur:         240ms;   /* popover, drawer, toast */
+  --dur-slow:    360ms;   /* page transitions */
+}
+
+/* ============================================================
+   Reset / base
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: #2A2620;       /* warm dark workspace */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings default to display serif */
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; }
+
+/* ============================================================
+   Workspace shell (the prototype frame, not the app)
+   ============================================================ */
+
+.workspace {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.rail {
+  background: #1F1B16;
+  color: #C9C0AC;
+  border-right: 1px solid #3A332A;
+  padding: 28px 0 16px;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+
+.rail-brand {
+  padding: 0 24px 24px;
+  border-bottom: 1px solid #3A332A;
+  margin-bottom: 20px;
+}
+.rail-brand .word {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 500;
+  color: #F0E6CC;
+  letter-spacing: -0.01em;
+}
+.rail-brand .sub {
+  font-family: var(--font-mono);
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8E8267;
+  margin-top: 4px;
+}
+
+.rail-section {
+  font-family: var(--font-mono);
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #6E6450;
+  padding: 18px 24px 8px;
+}
+
+.rail-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 24px;
+  font-size: 13px;
+  color: #C9C0AC;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.rail-item:hover { color: #F0E6CC; background: #26221C; }
+.rail-item.active {
+  color: #F0E6CC;
+  background: #26221C;
+  border-left-color: var(--gilt);
+}
+.rail-item .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #5A5240;
+}
+.rail-item.active .dot { background: var(--gilt); }
+
+.stage {
+  background: #2A2620;
+  overflow: auto;
+  padding: 40px;
+}
+
+/* Frame containers (device mocks) */
+.frame {
+  background: var(--parchment);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 0 #3A332A,
+    0 30px 60px -30px rgba(0,0,0,0.6),
+    0 0 0 1px #3A332A;
+  overflow: hidden;
+  position: relative;
+}
+
+.frame-desktop {
+  width: 100%;
+  max-width: 1280px;
+  aspect-ratio: 16/10;
+  margin: 0 auto;
+}
+
+.frame-mobile {
+  width: 390px;
+  height: 780px;
+  border-radius: 36px;
+  flex-shrink: 0;
+}
+
+.frame-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8E8267;
+  margin-bottom: 10px;
+}
+
+.dual {
+  display: flex; gap: 40px; align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.dual-col { display: flex; flex-direction: column; align-items: center; }
+.dual-col.desktop { flex: 1 1 720px; min-width: 720px; align-items: stretch; }
+.dual-col.mobile { flex: 0 0 auto; }
+
+.stage-title {
+  color: #E8DFC9;
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.stage-sub {
+  color: #8E8267;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+/* ============================================================
+   Common app primitives (used inside the device frames)
+   ============================================================ */
+
+/* Micro-label (replaces the old uppercase indigo micro-labels) */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.eyebrow-gilt { color: var(--gilt-2); }
+.eyebrow-parch { color: var(--gilt-soft); }
+
+/* Hairline rule — our primary container */
+.rule { height: 1px; background: var(--hairline); border: 0; }
+.rule-dark { background: var(--ink); opacity: 0.18; }
+.rule-thick { height: 1px; background: var(--ink); }
+
+/* Small caps utility (Spectral has true small caps via OpenType) */
+.smallcaps {
+  font-family: var(--font-display);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+}
+
+/* Numerated display number — for dates etc */
+.numerator {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: lining-nums;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px; font-weight: 500;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--parchment);
+  border-color: var(--ink);
+}
+.btn-primary:hover { background: var(--ink-2); }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--hairline-2);
+}
+.btn-ghost:hover { border-color: var(--ink); }
+.btn-gilt {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--gilt);
+}
+.btn-gilt:hover { background: var(--gilt-wash); }
+.btn-sm { font-size: 12px; padding: 7px 12px; }
+
+/* Live badge */
+.live {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rose);
+}
+.live::before {
+  content: "";
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--rose);
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Tags / chips */
+.tag {
+  display: inline-flex; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--hairline-2);
+  color: var(--ink-2);
+  border-radius: 2px;
+  background: var(--parchment);
+}
+.tag-gilt { color: var(--gilt-2); border-color: var(--gilt-soft); background: var(--gilt-wash); }
+
+/* Department swatch */
+.dept-swatch {
+  width: 10px; height: 10px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+}
+
+/* Avatar */
+.avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--parchment-3);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  border: 1px solid var(--hairline-2);
+  overflow: hidden;
+}
+.avatar-lg { width: 56px; height: 56px; font-size: 20px; }
+.avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+
+/* image-slot styling inside our app — make sure they show parchment */
+image-slot {
+  background: var(--parchment-3);
+  color: var(--ink-3);
+}
+
+/* ============================================================
+   Form fields — boxed parchment wash + ruled label gutter
+   ============================================================ */
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.field-shell {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--parchment-2);
+  border: 1px solid var(--hairline-2);
+  border-radius: 4px;
+  padding: 12px 14px;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  min-height: 46px;
+}
+.field-shell:focus-within { border-color: var(--ink); background: var(--parchment); }
+.field-shell .leading {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-right: 12px;
+  border-right: 1px solid var(--hairline-2);
+}
+.field-shell .trailing {
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.field input,
+.field textarea {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  outline: none;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+.field input.display-input {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.field textarea { resize: none; line-height: 1.55; }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-4); }
+
+/* Custom select-like field — chevron */
+.field-select { cursor: pointer; }
+.field-select::after {
+  content: "";
+  width: 8px; height: 8px;
+  border-right: 1px solid var(--ink-3);
+  border-bottom: 1px solid var(--ink-3);
+  transform: rotate(45deg) translate(-2px, -2px);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Help text under field */
+.field-help {
+  font-family: var(--font-sans);
+  font-size: 12px; color: var(--ink-3);
+  padding-left: 2px;
+}
+
+/* Card-as-rules — no boxes */
+.entry {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.entry:last-child { border-bottom: 0; }
+
+/* Helper for nicely numerated lists */
+.serial {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+
+/* Decorative ornament — used in 2-3 places, no more */
+.ornament {
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: var(--gilt);
+  vertical-align: middle;
+}
+
+/* Cross ornament — tiny, used at section ends sparingly */
+.cross-orn::before {
+  content: "✣";
+  display: inline-block;
+  color: var(--gilt);
+  font-family: var(--font-display);
+}
+
+/* Scroll discipline inside frames */
+.frame > .app { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; }
+
+/* ============================================================
+   Motion — animation library
+   ============================================================ */
+
+/* Drawer slide-in from left (mobile menu) */
+@keyframes sdac-drawer-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes sdac-drawer-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+.anim-drawer-in  { animation: sdac-drawer-in  var(--dur) var(--ease-out) both; }
+.anim-drawer-out { animation: sdac-drawer-out var(--dur) var(--ease-in)  both; }
+
+/* Backdrop fade */
+@keyframes sdac-fade-in  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes sdac-fade-out { from { opacity: 1 } to { opacity: 0 } }
+.anim-fade-in  { animation: sdac-fade-in  var(--dur) var(--ease-out) both; }
+.anim-fade-out { animation: sdac-fade-out var(--dur) var(--ease-in)  both; }
+
+/* Popover lift (date picker, contact picker, select) */
+@keyframes sdac-popover-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.anim-popover-in {
+  animation: sdac-popover-in var(--dur-fast) var(--ease-out) both;
+  transform-origin: top center;
+}
+
+/* Toast slide-up */
+@keyframes sdac-toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-toast-in { animation: sdac-toast-in var(--dur) var(--ease-out) both; }
+
+/* Entry fade-up for content blocks (used sparingly — hero on first paint) */
+@keyframes sdac-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-rise { animation: sdac-rise var(--dur-slow) var(--ease-out) both; }
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -263,7 +263,7 @@ export default function AdminActivitiesPage() {
   if (isAuthLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-black">{t("pages.adminActivities.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.adminActivities.title")}</h1>
         <div className="mt-6 space-y-3">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
@@ -276,7 +276,7 @@ export default function AdminActivitiesPage() {
   if (!canAccess) {
     return (
       <div>
-        <h1 className="text-2xl font-black">{t("pages.adminActivities.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.adminActivities.title")}</h1>
         <p className="mt-4 text-muted-foreground">
           {t("pages.adminActivityTemplates.noAccess")}
         </p>
@@ -287,7 +287,7 @@ export default function AdminActivitiesPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-black">{t("pages.adminActivities.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.adminActivities.title")}</h1>
         <div className="mt-6 space-y-3">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
@@ -307,7 +307,7 @@ export default function AdminActivitiesPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black">{t("pages.adminActivities.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.adminActivities.title")}</h1>
         {!isEmpty && (
           <Button onClick={() => setShowCreateForm(true)} className="min-h-[44px]">
             <Plus className="mr-1 h-4 w-4" />
@@ -440,7 +440,10 @@ export default function AdminActivitiesPage() {
           }
         }}
       >
-        <FormContent side={isMobile ? "bottom" : undefined} className={isMobile ? "h-[90vh]" : ""}>
+        <FormContent
+          side={isMobile ? "bottom" : undefined}
+          className={isMobile ? "h-[90vh]" : "sm:max-w-5xl max-h-[92vh] overflow-y-auto"}
+        >
           <FormHeader>
             <FormTitle>
               {createStep === "template"
@@ -475,6 +478,8 @@ export default function AdminActivitiesPage() {
                   onSubmit={(data) => createMutation.mutate(data)}
                   isPending={createMutation.isPending}
                   departments={availableDepartments}
+                  showStepperAndPreview
+                  templateApplied={!!selectedTemplate}
                   defaultValues={{
                     roles: selectedTemplate?.roles.map((r) => ({
                       roleName: r.roleName,

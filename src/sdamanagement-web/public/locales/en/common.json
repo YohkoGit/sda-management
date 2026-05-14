@@ -6,6 +6,25 @@
     "tagline": "A house of prayer, song and service since the founding.",
     "churchInitials": "SD"
   },
+  "pickers": {
+    "date": {
+      "placeholder": "Pick a date",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "sabbathLegend": "Sabbath",
+      "today": "Today"
+    },
+    "time": {
+      "placeholder": "Pick",
+      "label": "Time",
+      "step": "15-min step",
+      "custom": "Custom time",
+      "apply": "OK"
+    },
+    "dept": {
+      "placeholder": "Pick a department"
+    }
+  },
   "nav": {
     "public": {
       "home": "Home",
@@ -479,6 +498,29 @@
         "public": "Public",
         "authenticated": "Authenticated"
       },
+      "stepper": {
+        "label": "Progress",
+        "template": "Template",
+        "details": "Details",
+        "roles": "Roles",
+        "review": "Review"
+      },
+      "preview": {
+        "label": "Public preview",
+        "hint": "What the congregation will see after publication.",
+        "untitled": "Untitled",
+        "activity": "Activity"
+      },
+      "verify": {
+        "label": "Verification",
+        "template": "Template applied",
+        "title": "Title written",
+        "datetime": "Date and time set",
+        "department": "Department picked",
+        "rolesOk": "All roles staffed",
+        "rolesGap_one": "{{count}} role to fill",
+        "rolesGap_other": "{{count}} roles to fill"
+      },
       "roleRoster": {
         "kicker": "Roles",
         "title": "Activity roles",
@@ -497,6 +539,7 @@
         "maxRolesReached": "Maximum 20 roles reached.",
         "unassigned": "Unassigned",
         "tapToAssign": "Tap to assign",
+        "assignAction": "Assign",
         "editAssignment": "Edit assignment for {{role}}",
         "removeAssignment": "{{name}} — tap to remove",
         "duplicateRoleName": "Role names must be unique.",

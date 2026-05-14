@@ -5,7 +5,7 @@ export default function PublicDepartmentsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      <h1 className="text-2xl font-black">{t("pages.departments.title")}</h1>
+      <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.departments.title")}</h1>
     </div>
   );
 }

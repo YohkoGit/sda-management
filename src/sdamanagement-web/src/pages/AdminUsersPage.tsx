@@ -16,9 +16,9 @@ import { userService } from "@/services/userService";
 import type { UserListItem } from "@/services/userService";
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
-  OWNER: "bg-amber-100 text-amber-800 border-amber-200",
-  ADMIN: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  VIEWER: "bg-slate-100 text-slate-700 border-slate-200",
+  OWNER: "bg-[var(--gilt-wash)] text-[var(--gilt-2)] border-[var(--gilt-soft)]",
+  ADMIN: "bg-[var(--parchment-3)] text-[var(--ink)] border-[var(--hairline-2)]",
+  VIEWER: "bg-[var(--parchment-2)] text-[var(--ink-2)] border-[var(--hairline)]",
 };
 
 export default function AdminUsersPage() {
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("pages.adminUsers.title")}</h1>
+        <h1 className="font-display text-4xl font-normal text-[var(--ink)] leading-tight tracking-tight">{t("pages.adminUsers.title")}</h1>
         {isAdminOrOwner && (
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setBulkDialogOpen(true)}>
@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
       )}
 
       {!isLoading && !isError && users.length === 0 && (
-        <div className="py-12 text-center text-slate-500">
+        <div className="py-12 text-center text-[var(--ink-3)]">
           <p>{t("pages.adminUsers.emptyState")}</p>
           {isAdminOrOwner && (
             <Button className="mt-4" onClick={() => setDialogOpen(true)}>
@@ -214,7 +214,7 @@ export default function AdminUsersPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-slate-400 hover:text-indigo-600"
+                    className="text-[var(--ink-4)] hover:text-[var(--ink)]"
                     onClick={() => setEditingUser(user)}
                   >
                     <Pencil className="h-4 w-4 mr-1" />

@@ -133,7 +133,7 @@ export default function ActivityDetailPage() {
 
         {/* Title + badges */}
         <div className="flex items-start justify-between gap-2 mt-2">
-          <h1 className="text-2xl font-black text-foreground">{activity.title}</h1>
+          <h1 className="font-display text-3xl font-normal text-[var(--ink)] leading-tight tracking-tight">{activity.title}</h1>
           <div className="flex items-center gap-1 shrink-0">
             <ModifiedBadge activityId={activity.id} />
             {activity.specialType && (

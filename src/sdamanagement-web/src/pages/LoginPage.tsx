@@ -136,8 +136,15 @@ export default function LoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Left: ink panel with wordmark + tagline (hidden on mobile) */}
-      <aside className="relative hidden flex-col justify-between bg-[var(--ink)] p-12 text-[var(--parchment)] lg:flex">
+      {/* Left: ink panel with sanctuary cover + wordmark (hidden on mobile) */}
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-[var(--ink)] p-12 text-[var(--parchment)] lg:flex">
+        <img
+          src="/img/sanctuary-cover.svg"
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-55"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
+        />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
@@ -146,6 +153,7 @@ export default function LoginPage() {
           }}
           aria-hidden
         />
+        <div className="pointer-events-none absolute inset-0 bg-[var(--ink)]/35" aria-hidden />
         <div className="relative">
           <div className="flex flex-col">
             <span className="font-display text-3xl italic tracking-tight">Saint-Hubert</span>

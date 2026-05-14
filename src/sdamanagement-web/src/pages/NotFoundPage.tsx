@@ -7,7 +7,7 @@ export default function NotFoundPage() {
 
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-      <h1 className="text-4xl font-black">404</h1>
+      <h1 className="font-display text-4xl font-normal text-[var(--ink)] tracking-tight">404</h1>
       <p className="text-lg text-muted-foreground">{t("pages.notFound.message")}</p>
       <Button asChild>
         <Link to="/">{t("pages.notFound.backHome")}</Link>

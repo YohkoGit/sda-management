@@ -332,12 +332,33 @@
   font-size: 12px;
 }
 
-.sx__calendar button {
+/* Scoped to text-only buttons (e.g. "Today"). Excludes nav chevron wrappers
+   and view-selection items, which rely on font-size:0 to hide their a11y
+   labels while CSS-border rotations render the chevron shape itself. */
+.sx__calendar button:not(.sx__chevron-wrapper):not(.sx__view-selection-selected-item):not(.sx__view-selection-item):not([class*="chevron"]) {
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 10px;
   color: var(--ink-2);
+}
+
+/* Ensure chevron wrappers keep their accessible-label hiding intact and
+   inherit the system font, so any visible glyph remains the CSS-border
+   rotation rather than a misrendered character from the mono fallback. */
+.sx__calendar .sx__chevron-wrapper,
+.sx__calendar [class*="forward-backward"] button,
+.sx__calendar .sx__view-selection-selected-item,
+.sx__calendar .sx__view-selection-item {
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.sx__calendar .sx__chevron-wrapper {
+  font-size: 0;
+}
+.sx__calendar .sx__chevron {
+  border-color: var(--ink-2);
 }
 
 /* ============================================================
@@ -374,6 +395,82 @@
 .anim-popover-in { animation: sdac-popover-in var(--dur-fast) var(--ease-out) both; transform-origin: top center; }
 .anim-toast-in   { animation: sdac-toast-in   var(--dur) var(--ease-out) both; }
 .anim-rise       { animation: sdac-rise       var(--dur-slow) var(--ease-out) both; }
+
+/* ============================================================
+   Sonner toasts — parchment palette overrides
+   ============================================================ */
+
+[data-sonner-toaster] {
+  --normal-bg: var(--parchment-2);
+  --normal-text: var(--ink);
+  --normal-border: var(--hairline-2);
+  --success-bg: var(--parchment-2);
+  --success-text: var(--ink);
+  --success-border: var(--hairline-2);
+  --error-bg: var(--parchment-2);
+  --error-text: var(--ink);
+  --error-border: var(--hairline-2);
+}
+
+[data-sonner-toast] {
+  background: var(--parchment-2) !important;
+  border: 1px solid var(--hairline-2) !important;
+  border-radius: var(--radius) !important;
+  color: var(--ink) !important;
+  font-family: var(--font-sans);
+  box-shadow: 0 20px 40px -20px rgba(27, 37, 48, 0.25);
+}
+[data-sonner-toast] [data-title] {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+[data-sonner-toast] [data-description] {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-3);
+}
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--staffed);
+}
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--rose);
+}
+[data-sonner-toast] [data-button] {
+  color: var(--gilt-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  background: transparent;
+  border: 1px solid var(--hairline-2);
+  border-radius: var(--radius);
+}
+[data-sonner-toast] [data-button]:hover {
+  color: var(--gilt);
+  border-color: var(--gilt-2);
+}
+[data-sonner-toast] [data-close-button] {
+  background: var(--parchment) !important;
+  border: 1px solid var(--hairline-2) !important;
+  color: var(--ink-3) !important;
+}
+
+/* Mobile: reposition toaster to top-center */
+@media (max-width: 640px) {
+  [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: auto !important;
+    top: 0 !important;
+  }
+  [data-sonner-toaster][data-x-position="right"],
+  [data-sonner-toaster][data-x-position="left"] {
+    right: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

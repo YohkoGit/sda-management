@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Sanctuary cover">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2F3D4A"/>
+      <stop offset="1" stop-color="#1B2530"/>
+    </linearGradient>
+    <linearGradient id="window" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E8D9B0" stop-opacity="0.55"/>
+      <stop offset="0.55" stop-color="#B89146" stop-opacity="0.40"/>
+      <stop offset="1" stop-color="#2A5673" stop-opacity="0.30"/>
+    </linearGradient>
+    <linearGradient id="window2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5EBCF" stop-opacity="0.45"/>
+      <stop offset="0.6" stop-color="#9C7A32" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#1B2530" stop-opacity="0.10"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.35" r="0.55">
+      <stop offset="0" stop-color="#FAF8F2" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#FAF8F2" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grain" width="3" height="3" patternUnits="userSpaceOnUse">
+      <rect width="3" height="3" fill="#1B2530"/>
+      <circle cx="0.5" cy="0.5" r="0.15" fill="#FAF8F2" opacity="0.04"/>
+      <circle cx="2.0" cy="1.4" r="0.10" fill="#FAF8F2" opacity="0.025"/>
+    </pattern>
+    <symbol id="archedWindow" viewBox="0 0 120 320" preserveAspectRatio="xMidYMid meet">
+      <path d="M0,320 V120 A60,60 0 0 1 120,120 V320 Z" fill="url(#window)"/>
+      <path d="M60,0 V320" stroke="#1B2530" stroke-width="2" opacity="0.65"/>
+      <path d="M0,210 H120" stroke="#1B2530" stroke-width="1.5" opacity="0.45"/>
+      <path d="M0,260 H120" stroke="#1B2530" stroke-width="1.2" opacity="0.35"/>
+      <path d="M60,60 m-30,0 a30,30 0 1,1 60,0 a30,30 0 1,1 -60,0" fill="none" stroke="#1B2530" stroke-width="1.4" opacity="0.5"/>
+    </symbol>
+  </defs>
+
+  <rect width="1200" height="1600" fill="url(#sky)"/>
+
+  <g opacity="0.85">
+    <use href="#archedWindow" x="120" y="380" width="180" height="600"/>
+    <use href="#archedWindow" x="360" y="320" width="220" height="680"/>
+    <use href="#archedWindow" x="640" y="320" width="220" height="680"/>
+    <use href="#archedWindow" x="920" y="380" width="180" height="600"/>
+  </g>
+
+  <g opacity="0.65">
+    <path d="M0,1100 L1200,1100 L1200,1140 L0,1140 Z" fill="#1B2530"/>
+    <path d="M100,1140 L1100,1140 L1100,1180 L100,1180 Z" fill="#2F3D4A"/>
+  </g>
+
+  <g opacity="0.55">
+    <rect x="540" y="1180" width="120" height="280" fill="#1B2530"/>
+    <rect x="555" y="1195" width="90" height="250" fill="url(#window2)"/>
+    <line x1="600" y1="1200" x2="600" y2="1440" stroke="#1B2530" stroke-width="1.5" opacity="0.5"/>
+    <line x1="555" y1="1320" x2="645" y2="1320" stroke="#1B2530" stroke-width="1.2" opacity="0.4"/>
+  </g>
+
+  <rect width="1200" height="1600" fill="url(#halo)"/>
+  <rect width="1200" height="1600" fill="url(#grain)" opacity="0.35"/>
+</svg>
