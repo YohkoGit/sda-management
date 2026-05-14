@@ -63,7 +63,9 @@ describe("AuthCalendarPage", () => {
     render(<AuthCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -71,7 +73,9 @@ describe("AuthCalendarPage", () => {
     render(<AuthCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+      expect(
+        screen.getByRole("region", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -99,14 +103,18 @@ describe("AuthCalendarPage", () => {
 
     // Verify mock activities from the auth endpoint are present in the DOM
     await waitFor(() => {
-      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
 
     // The auth calendar handlers return mockAuthCalendarActivities
     // which include both public and authenticated-visibility activities.
-    // CalendarView is partially mocked (ScheduleXCalendar is a stub),
+    // CalendarView's default view is the custom MonthGrid (region wrapper),
     // so we verify the page renders without error and the data hook is wired.
-    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /Calendrier/ }),
+    ).toBeInTheDocument();
     expect(mockAuthCalendarActivities.length).toBeGreaterThan(0);
   });
 
@@ -134,13 +142,17 @@ describe("AuthCalendarPage", () => {
     render(<AuthCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+      expect(
+        screen.getByRole("region", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
 
     // DayDetailDialog is rendered but closed (open={false}), so its content is not visible.
     // Verify the page renders without error with the DayDetailDialog import wired correctly.
     // The dialog aria-label is present on the wrapper even when closed in some dialog implementations.
-    expect(screen.getByText("Calendrier")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Calendrier/ }),
+    ).toBeInTheDocument();
   });
 
   it("ADMIN user can see the page with auth context loaded", async () => {
@@ -161,11 +173,15 @@ describe("AuthCalendarPage", () => {
     render(<AuthCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
 
     // ADMIN user is authenticated — page renders with calendar and filter
-    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /Calendrier/ }),
+    ).toBeInTheDocument();
   });
 
   it("VIEWER user sees page without errors (no creation affordance at page level)", async () => {
@@ -186,10 +202,14 @@ describe("AuthCalendarPage", () => {
     render(<AuthCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
 
     // VIEWER still sees the calendar — the role distinction is inside DayDetailDialog
-    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /Calendrier/ }),
+    ).toBeInTheDocument();
   });
 });

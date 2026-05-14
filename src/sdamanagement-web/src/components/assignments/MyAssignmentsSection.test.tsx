@@ -87,8 +87,10 @@ describe("MyAssignmentsSection", () => {
     });
 
     const articles = screen.getAllByRole("article");
-    expect(articles[0].className).toContain("bg-primary/5");
-    expect(articles[1].className).toContain("bg-background");
+    // First card emphasized via a gilt top border (border-t-2 border-[var(--gilt)])
+    expect(articles[0].className).toContain("border-[var(--gilt)]");
+    // Subsequent cards have the hairline top border instead.
+    expect(articles[1].className).toContain("border-[var(--hairline)]");
   });
 
   it("renders co-assignee avatars with correct names", async () => {

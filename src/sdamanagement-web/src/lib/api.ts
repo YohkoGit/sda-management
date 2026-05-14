@@ -33,12 +33,16 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     if (!originalRequest) return Promise.reject(error);
 
-    if (
-      error.response?.status !== 401 ||
-      originalRequest.url?.includes("/api/auth/refresh") ||
-      originalRequest.url?.includes("/api/auth/google-login") ||
-      originalRequest.url?.includes("/api/auth/logout")
-    ) {
+    // Only /api/auth/me benefits from the refresh-and-retry flow (expired
+    // access token on a still-valid session). Every other /api/auth/* endpoint
+    // returns 401 to mean "bad credentials/input", not "token expired" — so
+    // retrying would loop (login 401 → refresh 200 → login 401 → ...) and
+    // hammer the rate limit on a single user submission.
+    const url = originalRequest.url ?? "";
+    const isNonRefreshableAuth =
+      url.startsWith("/api/auth/") && !url.endsWith("/api/auth/me");
+
+    if (error.response?.status !== 401 || isNonRefreshableAuth) {
       return Promise.reject(error);
     }
 

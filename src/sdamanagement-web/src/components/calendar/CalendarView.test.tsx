@@ -68,7 +68,9 @@ const defaultProps = {
 describe("CalendarView", () => {
   it("renders calendar container", () => {
     render(<CalendarView {...defaultProps} />);
-    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    // Default view is the custom MonthGrid (not Schedule-X). The calendar container is
+    // queryable via its region role with aria-label "Calendrier".
+    expect(screen.getByRole("region", { name: "Calendrier" })).toBeInTheDocument();
   });
 
   it("renders view switcher with 4 options", () => {
@@ -102,7 +104,8 @@ describe("CalendarView", () => {
     render(
       <CalendarView {...defaultProps} onDayAction={onDayAction} />,
     );
-    expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+    // Default view is the custom MonthGrid; render successfully.
+    expect(screen.getByRole("region", { name: "Calendrier" })).toBeInTheDocument();
   });
 
   it("accepts navigateTo and onNavigateComplete props without error", () => {
@@ -114,6 +117,7 @@ describe("CalendarView", () => {
         onNavigateComplete={onNavigateComplete}
       />,
     );
+    // navigateTo={view: "day"} switches off the default month-grid into the Schedule-X day view
     expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
   });
 });

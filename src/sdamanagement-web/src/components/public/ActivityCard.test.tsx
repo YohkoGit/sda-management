@@ -29,7 +29,9 @@ describe("ActivityCard", () => {
     render(<ActivityCard activity={{ ...baseActivity, date: "2026-03-14" }} />);
 
     expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
-    expect(screen.getByText(/Ce Sabbat/)).toBeInTheDocument();
+    // Day number 14 + month "mars" rendered in the date column
+    expect(screen.getByText("14")).toBeInTheDocument();
+    // Time range now rendered as a single text "9h30–12h00" (en-dash, no spaces)
     expect(screen.getByText(/9h30/)).toBeInTheDocument();
     expect(screen.getByText(/12h00/)).toBeInTheDocument();
   });
@@ -61,14 +63,19 @@ describe("ActivityCard", () => {
       <ActivityCard activity={{ ...baseActivity, specialType: "sainte-cene" }} />
     );
 
-    expect(screen.getByText("Sainte-Cène")).toBeInTheDocument();
+    // Special type badge now reads "✣ Sainte-Cène" (gilt rune prefix + label)
+    expect(screen.getByText(/Sainte-Cène/)).toBeInTheDocument();
   });
 
-  it("renders department color as left border", () => {
+  it("renders department color as a dot swatch (left border replaced with hairline rule)", () => {
     render(<ActivityCard activity={baseActivity} />);
 
+    // The colored left border was replaced with a hairline top-rule + a small swatch dot.
+    // The dot's background-color is set inline to the department color.
     const article = screen.getByRole("article");
-    expect(article).toHaveStyle({ borderLeftColor: "#F43F5E" });
+    const dot = article.querySelector("span[aria-hidden]");
+    expect(dot).toBeTruthy();
+    expect(dot).toHaveStyle({ backgroundColor: "#F43F5E" });
   });
 
   it("has accessible article element with aria-label", () => {

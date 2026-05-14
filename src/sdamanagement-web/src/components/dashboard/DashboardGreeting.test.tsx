@@ -55,12 +55,15 @@ describe("DashboardGreeting", () => {
     });
   });
 
-  it("renders 'Centre de Commande' micro-label", async () => {
+  it("renders the current date as an eyebrow above the greeting", async () => {
     server.use(authViewerHandler);
     render(<DashboardGreeting />);
 
+    // Eyebrow renders the current date in long-form ("EEEE d MMMM · yyyy").
+    // Match the year tail so we don't depend on locale weekday/month names.
     await waitFor(() => {
-      expect(screen.getByText("CENTRE DE COMMANDE")).toBeInTheDocument();
+      const year = String(new Date().getFullYear());
+      expect(screen.getByText(new RegExp(`· ${year}$`))).toBeInTheDocument();
     });
   });
 

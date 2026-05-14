@@ -28,15 +28,23 @@ describe("HeroSection", () => {
   it("renders church identity from config", async () => {
     render(<HeroSection />);
 
+    // With default activity present, heading shows the activity title ("Culte du Sabbat"),
+    // not the church name. Church identity is now reflected via welcome message and the
+    // first segment of the address (rendered as the "Lieu" meta item).
     await waitFor(() => {
       expect(
-        screen.getByText("Eglise Adventiste du 7e Jour de Saint-Hubert")
+        screen.getByRole("heading", { name: /Culte du\s*Sabbat/ })
       ).toBeInTheDocument();
     });
 
+    // Welcome message from churchInfo is rendered
+    expect(screen.getByText("Bienvenue!")).toBeInTheDocument();
+
+    // Only the first segment of the address is rendered ("Lieu" meta item)
+    expect(screen.getByText("1234 Rue de l'Eglise")).toBeInTheDocument();
     expect(
-      screen.getByText("1234 Rue de l'Eglise, Saint-Hubert, QC")
-    ).toBeInTheDocument();
+      screen.queryByText("1234 Rue de l'Eglise, Saint-Hubert, QC")
+    ).not.toBeInTheDocument();
   });
 
   it("renders prédicateur name, department badge, and time when data loaded", async () => {
@@ -46,11 +54,13 @@ describe("HeroSection", () => {
       expect(screen.getByText("Jean Dupont")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+    // Title is wrapped in FancyTitle (splits text), use heading role with regex
+    expect(
+      screen.getByRole("heading", { name: /Culte du\s*Sabbat/ })
+    ).toBeInTheDocument();
     expect(screen.getByText("CU")).toBeInTheDocument();
-    // Verify time formatting (09:30:00 → 9h30, 12:00:00 → 12h00)
-    expect(screen.getByText(/9h30/)).toBeInTheDocument();
-    expect(screen.getByText(/12h00/)).toBeInTheDocument();
+    // Verify time formatting (09:30:00 → 9h30, 12:00:00 → 12h00) — joined by " – "
+    expect(screen.getByText(/9h30\s*–\s*12h00/)).toBeInTheDocument();
   });
 
   it("renders 'Ce Sabbat' when activity is this Saturday", async () => {
@@ -60,8 +70,11 @@ describe("HeroSection", () => {
 
     render(<HeroSection />);
 
+    // "Ce Sabbat" appears in both the eyebrow and the meta "Date" item when the
+    // activity is this Saturday (formatActivityDate also returns "Ce Sabbat").
     await waitFor(() => {
-      expect(screen.getByText(/Ce Sabbat/)).toBeInTheDocument();
+      const matches = screen.getAllByText("Ce Sabbat");
+      expect(matches.length).toBeGreaterThan(0);
     });
 
     vi.useRealTimers();
@@ -107,11 +120,15 @@ describe("HeroSection", () => {
     render(<HeroSection />);
 
     await waitFor(() => {
-      expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Culte du\s*Sabbat/ })
+      ).toBeInTheDocument();
     });
 
     expect(screen.queryByText("Jean Dupont")).not.toBeInTheDocument();
-    expect(screen.getByText("CU")).toBeInTheDocument();
+    // Without predicateur, the department badge is not rendered (it lives in
+    // the predicateur block) — verify the heading is the activity title only.
+    expect(screen.queryByText("CU")).not.toBeInTheDocument();
   });
 
   it("renders empty state message when no activities (204)", async () => {
@@ -119,10 +136,12 @@ describe("HeroSection", () => {
 
     render(<HeroSection />);
 
+    // No-activity state renders the message in both columns (left meta and right panel)
     await waitFor(() => {
-      expect(
-        screen.getByText("Aucune activité à venir — revenez bientôt!")
-      ).toBeInTheDocument();
+      const matches = screen.getAllByText(
+        "Aucune activité à venir — revenez bientôt!"
+      );
+      expect(matches.length).toBeGreaterThan(0);
     });
   });
 
@@ -141,9 +160,11 @@ describe("HeroSection", () => {
       { timeout: 5000 }
     );
 
-    // Church identity should still be visible from separate cached query
+    // Church name still drives the title fallback (no activity → churchName as title).
+    // FancyTitle splits on the last space, so the computed name concatenates the
+    // last word without a separating space ("de" + "Saint-Hubert" → "deSaint-Hubert").
     expect(
-      screen.getByText("Eglise Adventiste du 7e Jour de Saint-Hubert")
+      screen.getByRole("heading", { name: /Eglise Adventiste du 7e Jour de\s*Saint-Hubert/ })
     ).toBeInTheDocument();
   });
 
@@ -154,9 +175,9 @@ describe("HeroSection", () => {
       expect(screen.getByText("Jean Dupont")).toBeInTheDocument();
     });
 
-    // Church name is in French
-    expect(
-      screen.getByText("Eglise Adventiste du 7e Jour de Saint-Hubert")
-    ).toBeInTheDocument();
+    // French labels: eyebrow "Ce Sabbat" / meta labels in French
+    expect(screen.getByText("Ce Sabbat")).toBeInTheDocument();
+    expect(screen.getByText("Lieu")).toBeInTheDocument();
+    expect(screen.getByText("Horaire")).toBeInTheDocument();
   });
 });

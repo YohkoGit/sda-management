@@ -6,6 +6,7 @@ import { configHandlers } from "@/mocks/handlers/config";
 import {
   publicHandlers,
   liveStatusHandlers,
+  liveStatusHandlersLive,
   upcomingActivitiesHandlers,
   programScheduleHandlers,
   departmentHandlers,
@@ -30,9 +31,11 @@ describe("HomePage", () => {
   it("renders HeroSection", async () => {
     render(<HomePage />);
 
+    // Redesign: with an activity present, hero heading shows the activity title
+    // (FancyTitle splits on space, so use heading role with regex)
     await waitFor(() => {
       expect(
-        screen.getByText("Eglise Adventiste du 7e Jour de Saint-Hubert")
+        screen.getByRole("heading", { name: /Culte du\s*Sabbat/ })
       ).toBeInTheDocument();
     });
   });
@@ -45,7 +48,11 @@ describe("HomePage", () => {
     });
   });
 
-  it("renders YouTubeSection below HeroSection when URL configured", async () => {
+  it("renders YouTubeSection below HeroSection when live", async () => {
+    // Redesign: YouTubeSection only renders when isLive OR URL has a video ID.
+    // Default config is a channel URL — switch to live to make it visible.
+    server.use(...liveStatusHandlersLive);
+
     render(<HomePage />);
 
     await waitFor(() => {

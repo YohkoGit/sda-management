@@ -84,15 +84,20 @@ describe("PublicCalendarPage", () => {
     render(<PublicCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+      expect(
+        screen.getByRole("region", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
   });
 
   it("renders page heading", async () => {
     render(<PublicCalendarPage />);
 
+    // PublicCalendarPage renders a "Calendrier liturgique" eyebrow + a
+    // dynamic month-label h1 (e.g. "mai 2026"). Assert the eyebrow which is
+    // the stable identifier of the page header.
     await waitFor(() => {
-      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+      expect(screen.getByText("Calendrier liturgique")).toBeInTheDocument();
     });
   });
 
@@ -102,7 +107,9 @@ describe("PublicCalendarPage", () => {
     render(<PublicCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+      expect(
+        screen.getByRole("region", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
 
     expect(
@@ -129,20 +136,22 @@ describe("PublicCalendarPage", () => {
     render(<PublicCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("schedule-x-calendar")).toBeInTheDocument();
+      expect(
+        screen.getByRole("region", { name: /Calendrier/ }),
+      ).toBeInTheDocument();
     });
 
     // PublicCalendarPage renders DayDetailDialog with user={null}.
     // The dialog is closed by default (dayDialogDate is null),
     // but verifying the page renders without import/runtime errors.
-    expect(screen.getByText("Calendrier")).toBeInTheDocument();
+    expect(screen.getByText("Calendrier liturgique")).toBeInTheDocument();
   });
 
   it("public page has no creation affordance visible", async () => {
     render(<PublicCalendarPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Calendrier")).toBeInTheDocument();
+      expect(screen.getByText("Calendrier liturgique")).toBeInTheDocument();
     });
 
     // No "Nouvelle activité" button should be visible at the page level

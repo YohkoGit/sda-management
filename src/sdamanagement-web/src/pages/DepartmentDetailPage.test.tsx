@@ -60,7 +60,13 @@ describe("DepartmentDetailPage", () => {
     renderWithRoute();
 
     await waitFor(() => {
-      expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, el) =>
+            el?.tagName === "H1" &&
+            (el.textContent ?? "").replace(/\s+/g, " ").includes("Jeunesse Adventiste")
+        )
+      ).toBeInTheDocument();
     });
     expect(screen.getAllByText("JA").length).toBeGreaterThan(0);
     // Breadcrumb
@@ -75,8 +81,8 @@ describe("DepartmentDetailPage", () => {
       expect(screen.getByText("Eclaireurs")).toBeInTheDocument();
     });
     expect(screen.getByText("Ambassadeurs")).toBeInTheDocument();
-    // Lead info should be visible for Eclaireurs (has lead)
-    expect(screen.getByText("Marie Dupont")).toBeInTheDocument();
+    // Lead info should be visible for Eclaireurs (has lead, rendered as "Marie D.")
+    expect(screen.getByText(/Marie D\./)).toBeInTheDocument();
   });
 
   it("renders 404 state with back link for non-existent department", async () => {
@@ -101,7 +107,7 @@ describe("DepartmentDetailPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Département non trouvé")).toBeInTheDocument();
     });
-    expect(screen.getByText("Unités Ministérielles")).toBeInTheDocument();
+    expect(screen.getByText(/Unités Ministérielles/)).toBeInTheDocument();
   });
 
   it("renders empty pipeline with viewer message", async () => {
@@ -205,7 +211,13 @@ describe("DepartmentDetailPage", () => {
     renderWithRoute(3, 1, adminUser);
 
     await waitFor(() => {
-      expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, el) =>
+            el?.tagName === "H1" &&
+            (el.textContent ?? "").replace(/\s+/g, " ").includes("Jeunesse Adventiste")
+        )
+      ).toBeInTheDocument();
     });
 
     expect(screen.getAllByText("New Activity").length).toBeGreaterThan(0);
@@ -216,7 +228,13 @@ describe("DepartmentDetailPage", () => {
     renderWithRoute(10, 1, ownerUser);
 
     await waitFor(() => {
-      expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, el) =>
+            el?.tagName === "H1" &&
+            (el.textContent ?? "").replace(/\s+/g, " ").includes("Jeunesse Adventiste")
+        )
+      ).toBeInTheDocument();
     });
 
     expect(screen.getAllByText("New Activity").length).toBeGreaterThan(0);
@@ -227,7 +245,13 @@ describe("DepartmentDetailPage", () => {
     renderWithRoute(1, 1, viewerUser);
 
     await waitFor(() => {
-      expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, el) =>
+            el?.tagName === "H1" &&
+            (el.textContent ?? "").replace(/\s+/g, " ").includes("Jeunesse Adventiste")
+        )
+      ).toBeInTheDocument();
     });
 
     expect(screen.queryByText("New Activity")).not.toBeInTheDocument();
@@ -238,7 +262,13 @@ describe("DepartmentDetailPage", () => {
     renderWithRoute(4, 1, adminNoScopeUser);
 
     await waitFor(() => {
-      expect(screen.getByText("Jeunesse Adventiste")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, el) =>
+            el?.tagName === "H1" &&
+            (el.textContent ?? "").replace(/\s+/g, " ").includes("Jeunesse Adventiste")
+        )
+      ).toBeInTheDocument();
     });
 
     expect(screen.queryByText("New Activity")).not.toBeInTheDocument();
@@ -315,8 +345,8 @@ describe("DepartmentDetailPage", () => {
     });
     // No add button for viewer
     expect(screen.queryByText("Ajouter un sous-ministère")).not.toBeInTheDocument();
-    // Lead info visible
-    expect(screen.getByText("Marie Dupont")).toBeInTheDocument();
+    // Lead info visible (rendered as "Marie D." in viewer read-only mode)
+    expect(screen.getByText(/Marie D\./)).toBeInTheDocument();
   });
 
   it("shows read-only sub-ministries for ADMIN without scope (8.3)", async () => {
@@ -336,7 +366,13 @@ describe("DepartmentDetailPage", () => {
     renderWithRoute(10, 2, ownerUser);
 
     await waitFor(() => {
-      expect(screen.getByText("Ministere de la Femme")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_, el) =>
+            el?.tagName === "H1" &&
+            (el.textContent ?? "").replace(/\s+/g, " ").includes("Ministere de la Femme")
+        )
+      ).toBeInTheDocument();
     });
 
     // OWNER should see management buttons even with zero department assignments

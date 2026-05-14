@@ -271,13 +271,17 @@ describe("DayDetailDialog", () => {
       expect(screen.getByLabelText("Titre")).toBeInTheDocument();
     });
 
-    // Date field should be pre-filled from the dialog's date prop
-    const dateInput = screen.getByLabelText("Date") as HTMLInputElement;
-    expect(dateInput.value).toBe(MAIN_DATE);
+    // Date field is now a custom popover-trigger button. When pre-filled, the trigger
+    // renders the localized formatted date (e.g. "samedi 13 juin 2026"). Verify by
+    // matching the day number from MAIN_DATE in the trigger text.
+    const dateTrigger = screen.getByLabelText("Date") as HTMLButtonElement;
+    const [, , dayPart] = MAIN_DATE.split("-");
+    const dayNum = String(Number(dayPart));
+    expect(dateTrigger.textContent ?? "").toMatch(new RegExp(`\\b${dayNum}\\b`));
 
     // Department should be auto-selected (ADMIN with departmentIds=[1], single dept available)
-    // Submit button should be present
-    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeInTheDocument();
+    // Submit button label now includes a trailing arrow ("Enregistrer →")
+    expect(screen.getByRole("button", { name: /enregistrer/i })).toBeInTheDocument();
 
     // Back button returns to template step
     await user.click(screen.getByText("Retour aux modèles"));

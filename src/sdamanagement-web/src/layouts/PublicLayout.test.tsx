@@ -22,8 +22,8 @@ describe("PublicLayout", () => {
       { routerProps: { initialEntries: ["/"] } }
     );
 
-    // TopNav should be rendered
-    expect(screen.getByText("Accueil")).toBeInTheDocument();
+    // TopNav should be rendered (note: both TopNav AND PublicFooter render "Accueil" links)
+    expect(screen.getAllByText("Accueil").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Connexion")).toBeInTheDocument();
 
     // Child content should be rendered

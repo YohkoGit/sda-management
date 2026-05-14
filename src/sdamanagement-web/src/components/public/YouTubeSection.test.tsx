@@ -28,7 +28,11 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("YouTubeSection", () => {
-  it("renders 'Suivez le culte en direct' heading", async () => {
+  it("renders 'Suivez le culte en direct' heading when live", async () => {
+    // Redesign: section only renders when isLive OR the URL has a video ID.
+    // Default config is a channel URL — switch to live to show the heading.
+    server.use(...liveStatusHandlersLive);
+
     render(<YouTubeSection />);
 
     await waitFor(() => {
@@ -36,17 +40,19 @@ describe("YouTubeSection", () => {
     });
   });
 
-  it("renders YouTube section as link card when channel URL (no video ID, not live)", async () => {
+  it("returns null when channel URL only (no video ID, not live)", async () => {
+    // Redesign behavior: section is hidden entirely when there's no video ID
+    // and the channel is not live. The link card is no longer rendered here.
     render(<YouTubeSection />);
 
+    // Allow live-status query to settle before asserting null
     await waitFor(() => {
-      expect(screen.getByText("Regarder sur YouTube")).toBeInTheDocument();
+      expect(
+        document.querySelector('section[aria-labelledby="youtube-section-title"]')
+      ).not.toBeInTheDocument();
     });
 
-    // Link card should open in new tab
-    const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.queryByText("Suivez le culte en direct")).not.toBeInTheDocument();
   });
 
   it("renders YouTube section with live embed when API returns isLive with liveVideoId", async () => {
@@ -63,11 +69,17 @@ describe("YouTubeSection", () => {
     expect(iframe?.src).toContain("youtube.com/embed/dQw4w9WgXcQ");
   });
 
-  it("does NOT render 'EN DIRECT' when API isLive is false", async () => {
+  it("does NOT render 'EN DIRECT' when API isLive is false (and video URL is configured)", async () => {
+    // Use a video URL so the section renders even when not live
+    server.use(...configHandlersWithVideoUrl);
+
     render(<YouTubeSection />);
 
     await waitFor(() => {
-      expect(screen.getByText("Suivez le culte en direct")).toBeInTheDocument();
+      // Static embed mode: heading is "Regarder sur YouTube" (h2)
+      expect(
+        screen.getByRole("heading", { name: /Regarder sur YouTube/ })
+      ).toBeInTheDocument();
     });
 
     expect(screen.queryByText("EN DIRECT")).not.toBeInTheDocument();
@@ -117,13 +129,17 @@ describe("YouTubeSection", () => {
     expect(screen.queryByText("Suivez le culte en direct")).not.toBeInTheDocument();
   });
 
-  it("falls back to link card when live status API errors (AC #7)", async () => {
+  it("falls back to null when live status API errors (channel URL only)", async () => {
+    // Redesign: when live status errors and there's no video ID, the section is
+    // hidden entirely instead of falling back to a link card.
     server.use(...liveStatusHandlersError);
 
     render(<YouTubeSection />);
 
     await waitFor(() => {
-      expect(screen.getByText("Regarder sur YouTube")).toBeInTheDocument();
+      expect(
+        document.querySelector('section[aria-labelledby="youtube-section-title"]')
+      ).not.toBeInTheDocument();
     });
 
     expect(screen.queryByText("EN DIRECT")).not.toBeInTheDocument();
@@ -143,13 +159,18 @@ describe("YouTubeSection", () => {
     });
   });
 
-  it("section has aria-labelledby pointing to heading", async () => {
+  it("section has aria-labelledby pointing to heading (when rendered)", async () => {
+    // Use live status so the section actually renders (default channel URL +
+    // not-live produces null in redesign).
+    server.use(...liveStatusHandlersLive);
+
     render(<YouTubeSection />);
 
     await waitFor(() => {
-      const section = document.querySelector("section[aria-labelledby]");
+      const section = document.querySelector(
+        'section[aria-labelledby="youtube-section-title"]'
+      );
       expect(section).toBeInTheDocument();
-      expect(section?.getAttribute("aria-labelledby")).toBe("youtube-section-title");
     });
   });
 });

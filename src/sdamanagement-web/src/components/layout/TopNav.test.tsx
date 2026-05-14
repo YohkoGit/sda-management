@@ -28,12 +28,14 @@ describe("TopNav", () => {
 
   it("renders the church name", () => {
     render(<TopNav />);
-    expect(screen.getByText("SDAC Saint-Hubert")).toBeInTheDocument();
+    expect(screen.getByText("Saint-Hubert")).toBeInTheDocument();
   });
 
   it("renders the language switcher", () => {
     render(<TopNav />);
-    expect(screen.getByText("fr")).toBeInTheDocument();
+    // LanguageSwitcher renders FR/EN spans; FR is active by default with text-[var(--ink)]
+    expect(screen.getByText("FR")).toBeInTheDocument();
+    expect(screen.getByText("EN")).toBeInTheDocument();
   });
 
   it("nav links point to correct routes", () => {
@@ -55,7 +57,8 @@ describe("TopNav", () => {
 
     const calendarLink = screen.getByRole("link", { name: "Calendrier" });
     expect(calendarLink).toHaveAttribute("aria-current", "page");
-    expect(calendarLink.className).toContain("text-primary");
+    // Active link uses --ink color + gilt underline
+    expect(calendarLink.className).toContain("text-[var(--ink)]");
 
     // Non-active links should NOT have aria-current
     const homeLink = screen.getByRole("link", { name: "Accueil" });

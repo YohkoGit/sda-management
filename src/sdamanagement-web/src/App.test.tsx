@@ -29,12 +29,16 @@ describe("Route navigation integration", () => {
       { routerProps: { initialEntries: ["/"] } }
     );
 
-    // Public TopNav is present
-    expect(screen.getByRole("link", { name: "Accueil" })).toBeInTheDocument();
+    // Public TopNav is present — redesign also adds the same links in the
+    // PublicFooter "Naviguer" section, so use getAllByRole to allow duplicates.
+    expect(screen.getAllByRole("link", { name: "Accueil" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Connexion" })).toBeInTheDocument();
-    // HeroSection renders church identity from API
+    // HeroSection renders the activity title (church identity is reflected in the
+    // footer). FancyTitle splits the title text — use heading role with regex.
     await waitFor(() => {
-      expect(screen.getByText("Eglise Adventiste du 7e Jour de Saint-Hubert")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Culte du\s*Sabbat/ })
+      ).toBeInTheDocument();
     });
   });
 
@@ -52,7 +56,7 @@ describe("Route navigation integration", () => {
     await waitFor(() => {
       expect(screen.getByText("Login Page")).toBeInTheDocument();
     });
-    expect(screen.queryByText("Tableau de Bord")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tableau de bord")).not.toBeInTheDocument();
   });
 
   it("/dashboard renders dashboard when authenticated", async () => {
@@ -79,9 +83,8 @@ describe("Route navigation integration", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("CENTRE DE COMMANDE")).toBeInTheDocument();
+      expect(screen.getByText("Bonjour, Test", { exact: false })).toBeInTheDocument();
     });
-    expect(screen.getByText("Bonjour, Test")).toBeInTheDocument();
   });
 });
 
@@ -98,11 +101,12 @@ describe("i18n integration", () => {
       { routerProps: { initialEntries: ["/"] } }
     );
 
-    // Initially in French — use role selectors to avoid duplicates (nav link + heading)
-    expect(screen.getByRole("link", { name: "Accueil" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Calendrier" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Départements" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "En Direct" })).toBeInTheDocument();
+    // Initially in French — redesign added a PublicFooter with the same nav
+    // links, so each label appears in both TopNav and footer. Use getAllByRole.
+    expect(screen.getAllByRole("link", { name: "Accueil" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Calendrier" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Départements" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "En Direct" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Connexion" })).toBeInTheDocument();
 
     // Click language switcher
@@ -111,11 +115,11 @@ describe("i18n integration", () => {
 
     // Verify all nav labels switched to English
     await waitFor(() => {
-      expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
+      expect(screen.getAllByRole("link", { name: "Home" }).length).toBeGreaterThan(0);
     });
-    expect(screen.getByRole("link", { name: "Calendar" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Departments" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Live" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Calendar" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Departments" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Live" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Sign In" })).toBeInTheDocument();
   });
 });

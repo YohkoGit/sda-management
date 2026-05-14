@@ -35,13 +35,13 @@ testI18n.use(initReactI18next).init({
             menu: "Menu",
           },
           auth: {
-            navigation: "Navigation",
-            dashboard: "Tableau de Bord",
+            navigation: "Naviguer",
+            dashboard: "Tableau de bord",
             calendar: "Calendrier",
             departments: "Départements",
             admin: "Administration",
             settings: "Paramètres",
-            signOut: "Terminer la Session",
+            signOut: "Se déconnecter",
           adminProgramSchedules: "Horaires récurrents",
           adminSystemHealth: "Santé du système",
           adminUsers: "Membres",
@@ -82,11 +82,9 @@ testI18n.use(initReactI18next).init({
             },
           },
           dashboard: {
-            title: "Tableau de Bord",
+            title: "Tableau de bord",
             welcome: "Bienvenue, {{name}}",
-            commandCenter: "CENTRE DE COMMANDE",
             greeting: "Bonjour, {{name}}",
-            personalRegister: "REGISTRE PERSONNEL",
             role: {
               viewer: "Membre",
               admin: "Directeur",
@@ -719,9 +717,7 @@ testI18n.use(initReactI18next).init({
           dashboard: {
             title: "Dashboard",
             welcome: "Welcome, {{name}}",
-            commandCenter: "COMMAND CENTER",
             greeting: "Hello, {{name}}",
-            personalRegister: "PERSONAL REGISTER",
             role: {
               viewer: "Member",
               admin: "Director",

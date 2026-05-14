@@ -3,10 +3,10 @@ import { render, screen } from "@/test-utils";
 import LiveIndicator from "./LiveIndicator";
 
 describe("LiveIndicator", () => {
-  it("renders pulsing dot with animate-pulse class", () => {
+  it("renders with .live class (pulsing dot is rendered via CSS ::before)", () => {
     render(<LiveIndicator />);
-    const dot = document.querySelector(".animate-pulse");
-    expect(dot).toBeInTheDocument();
+    const indicator = document.querySelector(".live");
+    expect(indicator).toBeInTheDocument();
   });
 
   it("renders 'EN DIRECT' text", () => {

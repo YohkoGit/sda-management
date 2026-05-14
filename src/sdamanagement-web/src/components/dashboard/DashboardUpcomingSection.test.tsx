@@ -188,9 +188,10 @@ describe("DashboardUpcomingSection", () => {
       expect(screen.getByText("Culte Divin")).toBeInTheDocument();
     });
 
-    const viewAllLink = screen.getByText("Voir tout").closest("a");
+    // View-all link now reads "Voir tout →" (with trailing arrow)
+    const viewAllLink = screen.getByRole("link", { name: /voir tout/i });
     expect(viewAllLink).toBeTruthy();
-    expect(viewAllLink?.getAttribute("href")).toBe("/admin/activities");
+    expect(viewAllLink.getAttribute("href")).toBe("/admin/activities");
     unmount();
 
     // Test with VIEWER
@@ -201,7 +202,7 @@ describe("DashboardUpcomingSection", () => {
       expect(screen.getByText("Culte Divin")).toBeInTheDocument();
     });
 
-    expect(screen.queryByText("Voir tout")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /voir tout/i })).not.toBeInTheDocument();
   });
 
   it("ADMIN empty state shows admin hint", async () => {
@@ -273,6 +274,7 @@ describe("DashboardUpcomingSection", () => {
     });
 
     const article = screen.getByRole("article");
-    expect(article.className).toContain("bg-primary/5");
+    // Today's card emphasis now uses gilt-wash background (CSS var --gilt-wash)
+    expect(article.className).toContain("bg-[var(--gilt-wash)]");
   });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { setupServer } from "msw/node";
+import { http, HttpResponse } from "msw";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import {
@@ -37,21 +38,48 @@ describe("DepartmentOverviewSection", () => {
   it("renders correct card count", async () => {
     render(<DepartmentOverviewSection />);
 
+    // Redesign: departments are list items (<li>), not <article> cards
     await waitFor(() => {
-      const articles = screen.getAllByRole("article");
-      expect(articles.length).toBe(3);
+      const items = screen.getAllByRole("listitem");
+      expect(items.length).toBe(3);
     });
   });
 
-  it("renders next activity for department with activity", async () => {
+  it("renders description for department with description", async () => {
+    // Redesign: when a department has a description, the description is shown
+    // (it takes priority over the next-activity title text).
     render(<DepartmentOverviewSection />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Culte du Sabbat/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Organisation des cultes et services religieux/)
+      ).toBeInTheDocument();
     });
   });
 
-  it("renders 'Aucune activité planifiée' for department without activity", async () => {
+  it("renders 'Aucune activité planifiée' when no description AND no activity", async () => {
+    // All three default departments have descriptions, so the
+    // "noPlannedActivity" branch is never reached. Use a custom handler.
+    server.use(
+      ...departmentHandlersEmpty
+    );
+    server.use(
+      http.get("/api/public/departments", () =>
+        HttpResponse.json([
+          {
+            id: 99,
+            name: "Empty Dept",
+            abbreviation: "ED",
+            color: "#000000",
+            description: null,
+            nextActivityTitle: null,
+            nextActivityDate: null,
+            nextActivityStartTime: null,
+          },
+        ])
+      )
+    );
+
     render(<DepartmentOverviewSection />);
 
     await waitFor(() => {
@@ -83,8 +111,9 @@ describe("DepartmentOverviewSection", () => {
   it("has correct accessibility attributes (AC 8)", async () => {
     render(<DepartmentOverviewSection />);
 
+    // Redesign: departments are list items (<li>) inside a <ul>
     await waitFor(() => {
-      expect(screen.getAllByRole("article").length).toBe(3);
+      expect(screen.getAllByRole("listitem").length).toBe(3);
     });
 
     // h2 heading with correct id

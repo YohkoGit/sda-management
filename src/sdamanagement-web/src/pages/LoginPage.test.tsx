@@ -15,9 +15,9 @@ describe("LoginPage", () => {
   it("renders email step initially", () => {
     render(<LoginPage />);
 
-    expect(screen.getByText("Connexion")).toBeInTheDocument();
+    expect(screen.getByText("— Connexion")).toBeInTheDocument();
     expect(screen.getByLabelText("Adresse courriel")).toBeInTheDocument();
-    expect(screen.getByText("Continuer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Continuer →$/i })).toBeInTheDocument();
     expect(screen.getByText("Continuer avec Google")).toBeInTheDocument();
   });
 
@@ -27,12 +27,12 @@ describe("LoginPage", () => {
 
     const emailInput = screen.getByLabelText("Adresse courriel");
     await user.type(emailInput, "viewer@test.local");
-    await user.click(screen.getByText("Continuer"));
+    await user.click(screen.getByRole("button", { name: /^Continuer →$/i }));
 
     await waitFor(() => {
       expect(screen.getByLabelText("Mot de passe")).toBeInTheDocument();
     });
-    expect(screen.getByText("Se connecter")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Se connecter/i })).toBeInTheDocument();
   });
 
   it("transitions to set-password step for first-login user", async () => {
@@ -41,10 +41,10 @@ describe("LoginPage", () => {
 
     const emailInput = screen.getByLabelText("Adresse courriel");
     await user.type(emailInput, "first-login@test.local");
-    await user.click(screen.getByText("Continuer"));
+    await user.click(screen.getByRole("button", { name: /^Continuer →$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Définir votre mot de passe")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Définir votre mot de passe/ })).toBeInTheDocument();
     });
     expect(screen.getByLabelText("Nouveau mot de passe")).toBeInTheDocument();
     expect(screen.getByLabelText("Confirmer le mot de passe")).toBeInTheDocument();
@@ -55,16 +55,16 @@ describe("LoginPage", () => {
     render(<LoginPage />);
 
     await user.type(screen.getByLabelText("Adresse courriel"), "viewer@test.local");
-    await user.click(screen.getByText("Continuer"));
+    await user.click(screen.getByRole("button", { name: /^Continuer →$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Retour")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Retour/i })).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("Retour"));
+    await user.click(screen.getByRole("button", { name: /Retour/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Continuer")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^Continuer →$/i })).toBeInTheDocument();
     });
   });
 
@@ -73,7 +73,7 @@ describe("LoginPage", () => {
     render(<LoginPage />);
 
     await user.type(screen.getByLabelText("Adresse courriel"), "first-login@test.local");
-    await user.click(screen.getByText("Continuer"));
+    await user.click(screen.getByRole("button", { name: /^Continuer →$/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Minimum 8 caractères/)).toBeInTheDocument();

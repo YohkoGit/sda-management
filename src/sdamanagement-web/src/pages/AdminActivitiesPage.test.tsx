@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor, futureDate } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
@@ -69,6 +69,53 @@ async function skipTemplateStep(user: ReturnType<typeof userEvent.setup>) {
     expect(screen.getByText("Activité sans modèle")).toBeInTheDocument();
   });
   await user.click(screen.getByText("Activité sans modèle"));
+}
+
+/** Helper: pick a date via the DateField popover.
+ * The DateField trigger is a button labeled by its ariaLabel; each day cell is
+ * a button with aria-label set to its ISO date string. The popover only shows
+ * one month at a time, so we navigate the calendar header chevrons until the
+ * target month is visible. */
+async function pickDate(
+  user: ReturnType<typeof userEvent.setup>,
+  fieldLabel: string,
+  iso: string
+) {
+  await user.click(screen.getByLabelText(fieldLabel));
+
+  const [y, m] = iso.split("-").map(Number);
+  const target = new Date(y, m - 1, 1);
+  const today = new Date();
+  const cur = new Date(today.getFullYear(), today.getMonth(), 1);
+  let diff = (target.getFullYear() - cur.getFullYear()) * 12 + (target.getMonth() - cur.getMonth());
+
+  while (diff !== 0) {
+    const nextBtn = screen.getByRole("button", {
+      name: diff > 0 ? /Mois suivant/i : /Mois précédent/i,
+    });
+    await user.click(nextBtn);
+    diff += diff > 0 ? -1 : 1;
+  }
+
+  const dayBtn = await screen.findByLabelText(iso);
+  await user.click(dayBtn);
+}
+
+/** Helper: pick a time via the TimeField popover.
+ * Opens the popover and types into the inner <input type="time"> then clicks OK. */
+async function pickTime(
+  user: ReturnType<typeof userEvent.setup>,
+  fieldLabel: string,
+  time: string
+) {
+  await user.click(screen.getByLabelText(fieldLabel));
+  // Find the time input inside the open popover and set its value.
+  const inputs = document.querySelectorAll('input[type="time"]');
+  const input = inputs[inputs.length - 1] as HTMLInputElement;
+  fireEvent.change(input, { target: { value: time } });
+  // Click the OK button to commit
+  const okButtons = screen.getAllByRole("button", { name: /^OK$/i });
+  await user.click(okButtons[okButtons.length - 1]);
 }
 
 describe("AdminActivitiesPage", () => {
@@ -214,9 +261,9 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByLabelText("Titre")).toBeInTheDocument();
     });
     await user.type(screen.getByLabelText("Titre"), "Test Activite");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
-    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
-    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+    await pickDate(user, "Date", date);
+    await pickTime(user, "Heure de début", "10:00");
+    await pickTime(user, "Heure de fin", "12:00");
 
     const selectTrigger = screen.getAllByRole("combobox")[0];
     await user.click(selectTrigger);
@@ -288,9 +335,9 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByLabelText("Titre")).toBeInTheDocument();
     });
     await user.type(screen.getByLabelText("Titre"), "Custom Activity");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
-    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
-    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+    await pickDate(user, "Date", date);
+    await pickTime(user, "Heure de début", "10:00");
+    await pickTime(user, "Heure de fin", "12:00");
 
     const selectTrigger = screen.getAllByRole("combobox")[0];
     await user.click(selectTrigger);
@@ -637,9 +684,9 @@ describe("AdminActivitiesPage", () => {
 
     // Fill required fields
     await user.type(screen.getByLabelText("Titre"), "With Role");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
-    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
-    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+    await pickDate(user, "Date", date);
+    await pickTime(user, "Heure de début", "10:00");
+    await pickTime(user, "Heure de fin", "12:00");
 
     const selectTrigger = screen.getAllByRole("combobox")[0];
     await user.click(selectTrigger);
@@ -840,23 +887,20 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Type spécial")).toBeInTheDocument();
     });
 
-    // Open the specialType select — find by label
-    const specialTypeLabel = screen.getByText("Type spécial");
-    const selectContainer = specialTypeLabel.closest("div")!;
-    const selectTrigger = selectContainer.querySelector('[role="combobox"]')!;
-    await user.click(selectTrigger);
+    // The specialType field is now a TagPicker (ToggleGroup); each option is a
+    // radio rendered inline (Radix ToggleGroup with type="single").
+    const tagGroup = screen.getByRole("group", { name: "Type spécial" });
+    expect(tagGroup).toBeInTheDocument();
 
-    // Verify all options are present
-    await waitFor(() => {
-      expect(screen.getByRole("option", { name: "Aucun" })).toBeInTheDocument();
-    });
-    expect(screen.getByRole("option", { name: "Sainte-Cène" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Semaine de prière" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Camp Meeting" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Journée de la jeunesse" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Journée de la famille" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Journée de la femme" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Évangélisation" })).toBeInTheDocument();
+    // "Aucun" (none) and each special type option
+    expect(screen.getByRole("radio", { name: "Aucun" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Sainte-Cène" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Semaine de prière" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Camp Meeting" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Journée de la jeunesse" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Journée de la famille" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Journée de la femme" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Évangélisation" })).toBeInTheDocument();
   });
 
   it("selecting specialType includes it in the create payload", async () => {
@@ -908,9 +952,9 @@ describe("AdminActivitiesPage", () => {
 
     // Fill required fields
     await user.type(screen.getByLabelText("Titre"), "Sainte-Cene");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
-    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
-    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+    await pickDate(user, "Date", date);
+    await pickTime(user, "Heure de début", "10:00");
+    await pickTime(user, "Heure de fin", "12:00");
 
     // Select department
     const deptTrigger = screen.getAllByRole("combobox")[0];
@@ -918,14 +962,10 @@ describe("AdminActivitiesPage", () => {
     const deptOption = await screen.findByRole("option", { name: /Jeunesse Adventiste/i });
     await user.click(deptOption);
 
-    // Select specialType
-    const specialTypeLabel = screen.getByText("Type spécial");
-    const specialTypeContainer = specialTypeLabel.closest("div")!;
-    const specialTypeTrigger = specialTypeContainer.querySelector('[role="combobox"]')!;
-    await user.click(specialTypeTrigger);
-
-    const sainteCeneOption = await screen.findByRole("option", { name: "Sainte-Cène" });
-    await user.click(sainteCeneOption);
+    // Select specialType via the TagPicker — click the Sainte-Cène radio
+    // (Radix ToggleGroup with type="single" renders items as radios).
+    const tagGroup = screen.getByRole("group", { name: "Type spécial" });
+    await user.click(within(tagGroup).getByRole("radio", { name: "Sainte-Cène" }));
 
     // Submit
     await user.click(screen.getByRole("button", { name: /enregistrer/i }));
@@ -988,9 +1028,9 @@ describe("AdminActivitiesPage", () => {
     });
 
     await user.type(screen.getByLabelText("Titre"), "No Special");
-    fireEvent.change(screen.getByLabelText("Date"), { target: { value: date } });
-    fireEvent.change(screen.getByLabelText("Heure de début"), { target: { value: "10:00" } });
-    fireEvent.change(screen.getByLabelText("Heure de fin"), { target: { value: "12:00" } });
+    await pickDate(user, "Date", date);
+    await pickTime(user, "Heure de début", "10:00");
+    await pickTime(user, "Heure de fin", "12:00");
 
     const deptTrigger = screen.getAllByRole("combobox")[0];
     await user.click(deptTrigger);
@@ -1085,8 +1125,9 @@ describe("AdminActivitiesPage", () => {
     // Check that the staffing column header is present
     expect(screen.getByText("Effectif")).toBeInTheDocument();
 
-    // "Culte du Sabbat" has CriticalGap (Predicateur empty) — should show "Critique"
-    expect(screen.getByText("Critique")).toBeInTheDocument();
+    // "Culte du Sabbat" has CriticalGap — label combines count and "Critique"
+    // (e.g. "0/1 · Critique"). Match via partial regex.
+    expect(screen.getByText(/Critique/)).toBeInTheDocument();
 
     // "Reunion JA" has NoRoles — should show "Aucun rôle" (may appear in multiple rows)
     expect(screen.getAllByText("Aucun rôle").length).toBeGreaterThanOrEqual(1);

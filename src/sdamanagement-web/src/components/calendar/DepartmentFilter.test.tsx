@@ -102,7 +102,7 @@ describe("DepartmentFilter", () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 
-  it("shows active state with department color for selected chips", () => {
+  it("shows active state for selected chips and renders dept color dot", () => {
     render(
       <DepartmentFilter
         departments={mockDepartments}
@@ -113,7 +113,11 @@ describe("DepartmentFilter", () => {
 
     const cuChip = screen.getByText("CU").closest("[role='checkbox']");
     expect(cuChip).toHaveAttribute("aria-checked", "true");
-    expect(cuChip).toHaveStyle({ backgroundColor: "#F43F5E" });
+    // Active chips now use ink/parchment colors (background-color is set via Tailwind classes);
+    // the dept color is rendered as an inline-styled dot inside the chip.
+    expect(cuChip?.className).toContain("bg-[var(--ink)]");
+    const dot = cuChip?.querySelector("span[aria-hidden]");
+    expect(dot).toHaveStyle({ backgroundColor: "#F43F5E" });
   });
 
   it("has toolbar role with aria-label", () => {

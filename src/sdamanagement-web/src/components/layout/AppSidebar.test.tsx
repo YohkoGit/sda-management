@@ -40,18 +40,18 @@ describe("AppSidebar", () => {
       renderSidebar();
 
       await waitFor(() => {
-        expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
+        expect(screen.getByText("Tableau de bord")).toBeInTheDocument();
       });
       expect(screen.getByText("Calendrier")).toBeInTheDocument();
       expect(screen.getByText("Départements")).toBeInTheDocument();
-      expect(screen.getByText("Terminer la Session")).toBeInTheDocument();
+      expect(screen.getByText("Se déconnecter")).toBeInTheDocument();
     });
 
     it("does not show admin items for VIEWER", async () => {
       renderSidebar();
 
       await waitFor(() => {
-        expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
+        expect(screen.getByText("Tableau de bord")).toBeInTheDocument();
       });
       expect(screen.queryByText("Administration")).not.toBeInTheDocument();
       expect(screen.queryByText("Paramètres")).not.toBeInTheDocument();
@@ -77,16 +77,18 @@ describe("AppSidebar", () => {
       renderSidebar();
 
       await waitFor(() => {
-        expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
+        expect(screen.getByText("Tableau de bord")).toBeInTheDocument();
       });
-      expect(screen.getByText("Administration")).toBeInTheDocument();
+      // "Administration" appears as both the section eyebrow heading and a nav link label.
+      // Verify the nav link is present.
+      expect(screen.getByRole("link", { name: /administration/i })).toBeInTheDocument();
     });
 
     it("does not show settings for ADMIN", async () => {
       renderSidebar();
 
       await waitFor(() => {
-        expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
+        expect(screen.getByText("Tableau de bord")).toBeInTheDocument();
       });
       expect(screen.queryByText("Paramètres")).not.toBeInTheDocument();
     });
@@ -111,9 +113,10 @@ describe("AppSidebar", () => {
       renderSidebar();
 
       await waitFor(() => {
-        expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
+        expect(screen.getByText("Tableau de bord")).toBeInTheDocument();
       });
-      expect(screen.getByText("Administration")).toBeInTheDocument();
+      // "Administration" appears as section heading + nav link; assert the nav link.
+      expect(screen.getByRole("link", { name: /administration/i })).toBeInTheDocument();
       expect(screen.getByText("Paramètres")).toBeInTheDocument();
     });
   });

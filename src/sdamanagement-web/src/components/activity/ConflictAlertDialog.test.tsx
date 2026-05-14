@@ -56,7 +56,8 @@ describe("ConflictAlertDialog", () => {
     render(<ConflictAlertDialog {...defaultProps} />);
 
     const overwriteButton = screen.getByText("Écraser avec mes modifications");
-    expect(overwriteButton).toHaveClass("bg-destructive");
+    // Destructive variant now uses CSS var --rose (e.g., bg-[var(--rose)])
+    expect(overwriteButton.className).toContain("bg-[var(--rose)]");
   });
 
   it("pressing Escape calls onOpenChange to close dialog", async () => {

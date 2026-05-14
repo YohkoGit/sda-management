@@ -38,9 +38,9 @@ describe("ProgramTimesSection", () => {
     const saturdayLabels = screen.getAllByText("Samedi");
     expect(saturdayLabels.length).toBe(3);
 
-    // Time formatting
-    expect(screen.getByText(/9h30–10h30/)).toBeInTheDocument();
-    expect(screen.getByText(/11h00–12h30/)).toBeInTheDocument();
+    // Time formatting — component renders "9h30 – 10h30" with en-dash + spaces
+    expect(screen.getByText(/9h30\s+–\s+10h30/)).toBeInTheDocument();
+    expect(screen.getByText(/11h00\s+–\s+12h30/)).toBeInTheDocument();
   });
 
   it("renders host name when available", async () => {

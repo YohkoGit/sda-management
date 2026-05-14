@@ -3,7 +3,11 @@ import { setupServer } from "msw/node";
 import { render, screen, waitFor } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { configHandlers } from "@/mocks/handlers/config";
-import { publicHandlers, liveStatusHandlers } from "@/mocks/handlers/public";
+import {
+  publicHandlers,
+  liveStatusHandlers,
+  liveStatusHandlersLive,
+} from "@/mocks/handlers/public";
 import LivePage from "./LivePage";
 
 const server = setupServer(...authHandlers, ...configHandlers, ...publicHandlers, ...liveStatusHandlers);
@@ -18,7 +22,11 @@ describe("LivePage", () => {
     expect(screen.getByText("En Direct")).toBeInTheDocument();
   });
 
-  it("renders YouTubeSection", async () => {
+  it("renders YouTubeSection when live", async () => {
+    // Redesign: YouTubeSection only renders when isLive OR URL has a video ID.
+    // Default config is a channel URL — switch to live to make it visible.
+    server.use(...liveStatusHandlersLive);
+
     render(<LivePage />);
 
     await waitFor(() => {

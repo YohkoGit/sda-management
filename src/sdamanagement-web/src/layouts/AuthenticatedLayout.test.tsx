@@ -42,8 +42,8 @@ describe("AuthenticatedLayout", () => {
     });
 
     // Sidebar elements
-    expect(screen.getByText("Tableau de Bord")).toBeInTheDocument();
-    expect(screen.getByText("Terminer la Session")).toBeInTheDocument();
+    expect(screen.getByText("Tableau de bord")).toBeInTheDocument();
+    expect(screen.getByText("Se déconnecter")).toBeInTheDocument();
   });
 
   it("has a main element with id main-content", async () => {

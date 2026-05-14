@@ -9,7 +9,7 @@ describe("StaffingIndicator", () => {
     );
 
     expect(screen.getByText("Complet")).toBeInTheDocument();
-    expect(screen.getByText("Complet")).toHaveClass("text-emerald-600");
+    expect(screen.getByRole("status")).toHaveClass("text-[var(--staffed)]");
   });
 
   it("renders amber half-circle and 'X/Y' for PartiallyStaffed", () => {
@@ -22,7 +22,7 @@ describe("StaffingIndicator", () => {
     );
 
     expect(screen.getByText("2/5")).toBeInTheDocument();
-    expect(screen.getByText("2/5")).toHaveClass("text-amber-600");
+    expect(screen.getByRole("status")).toHaveClass("text-[var(--gaps)]");
   });
 
   it("renders red empty circle and 'Critique' badge for CriticalGap", () => {
@@ -30,9 +30,9 @@ describe("StaffingIndicator", () => {
       <StaffingIndicator staffingStatus="CriticalGap" assigned={1} total={5} />,
     );
 
-    expect(screen.getByText("1/5")).toBeInTheDocument();
-    expect(screen.getByText("1/5")).toHaveClass("text-red-600");
-    expect(screen.getByText("Critique")).toBeInTheDocument();
+    expect(screen.getByText(/1\/5/)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveClass("text-[var(--rose)]");
+    expect(screen.getByText(/Critique/)).toBeInTheDocument();
   });
 
   it("renders muted dash and 'Aucun rôle' for NoRoles", () => {

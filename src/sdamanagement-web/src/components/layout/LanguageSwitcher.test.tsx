@@ -19,7 +19,10 @@ afterAll(() => server.close());
 describe("LanguageSwitcher", () => {
   it("renders current language code (FR by default)", () => {
     render(<LanguageSwitcher />);
-    expect(screen.getByText("fr")).toBeInTheDocument();
+    const frSpan = screen.getByText("FR");
+    expect(frSpan).toBeInTheDocument();
+    // Active language is highlighted with text-[var(--ink)]
+    expect(frSpan).toHaveClass("text-[var(--ink)]");
   });
 
   it("has accessible aria-label", () => {
@@ -33,7 +36,8 @@ describe("LanguageSwitcher", () => {
 
     await user.click(screen.getByRole("button"));
 
-    expect(screen.getByText("en")).toBeInTheDocument();
+    // After toggle, EN is highlighted
+    expect(screen.getByText("EN")).toHaveClass("text-[var(--ink)]");
     expect(localStorage.getItem("language")).toBe("en");
   });
 
@@ -42,10 +46,10 @@ describe("LanguageSwitcher", () => {
     render(<LanguageSwitcher />);
 
     await user.click(screen.getByRole("button"));
-    expect(screen.getByText("en")).toBeInTheDocument();
+    expect(screen.getByText("EN")).toHaveClass("text-[var(--ink)]");
 
     await user.click(screen.getByRole("button"));
-    expect(screen.getByText("fr")).toBeInTheDocument();
+    expect(screen.getByText("FR")).toHaveClass("text-[var(--ink)]");
     expect(localStorage.getItem("language")).toBe("fr");
   });
 });
