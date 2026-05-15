@@ -63,9 +63,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Note: Node 22 (current LTS), not 20. MSW v2 + jsdom 28 + Node 20 has a
+      # known XHR-interceptor regression that causes axios requests to bypass
+      # MSW and hit the real network (ERR_NETWORK). Node 22+ resolves it.
+      # The production image still builds on Node 20 via Dockerfile — that
+      # stage only runs Vite, not tests.
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: src/sdamanagement-web/package-lock.json
 
