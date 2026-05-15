@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
                   <InitialsAvatar
                     firstName={user.firstName}
                     lastName={user.lastName}
-                    avatarUrl={user.avatarUrl}
+                    avatarUrl={user.avatarUrl ?? undefined}
                   />
                   {uploadingUserId === user.id && (
                     <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">

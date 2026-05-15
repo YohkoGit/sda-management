@@ -1,31 +1,11 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 import type { ProgramScheduleFormData } from "@/schemas/programScheduleSchema";
 
-export interface ProgramScheduleResponse {
-  id: number;
-  title: string;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  hostName?: string | null;
-  departmentId?: number | null;
-  departmentName?: string | null;
-  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
-  createdAt: string;
-  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
-  updatedAt: string;
-}
+type Schemas = components["schemas"];
 
-export interface ProgramScheduleListItem {
-  id: number;
-  title: string;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  hostName?: string | null;
-  departmentId?: number | null;
-  departmentName?: string | null;
-}
+export type ProgramScheduleResponse = NonNullable<Schemas["ProgramScheduleResponse"]>;
+export type ProgramScheduleListItem = NonNullable<Schemas["ProgramScheduleListItem"]>;
 
 export const programScheduleService = {
   getAll: () =>

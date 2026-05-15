@@ -62,9 +62,9 @@ export function DashboardUpcomingSection() {
                     }),
                   }}
                 />
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-                  {abbr}
-                </span>
+                <Eyebrow asChild>
+                  <span>{abbr}</span>
+                </Eyebrow>
               </span>
             ))}
           </div>
@@ -87,12 +87,11 @@ export function DashboardUpcomingSection() {
           {renderSubtitle()}
         </div>
         {showStaffing && (
-          <Link
-            to="/admin/activities"
-            className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--gilt-2)] hover:text-[var(--ink)] hover:underline"
-          >
-            {t("pages.dashboard.upcoming.viewAll")} →
-          </Link>
+          <Eyebrow gilt asChild className="hover:text-[var(--ink)] hover:underline">
+            <Link to="/admin/activities">
+              {t("pages.dashboard.upcoming.viewAll")} →
+            </Link>
+          </Eyebrow>
         )}
       </div>
 
@@ -114,12 +113,11 @@ export function DashboardUpcomingSection() {
           <p className="text-sm text-[var(--rose)]">
             {t("pages.dashboard.upcoming.loadError")}
           </p>
-          <button
-            onClick={() => refetch()}
-            className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] underline-offset-4 hover:underline"
-          >
-            {t("pages.dashboard.upcoming.retry")}
-          </button>
+          <Eyebrow asChild className="mt-2 text-[var(--ink-2)] underline-offset-4 hover:underline">
+            <button onClick={() => refetch()}>
+              {t("pages.dashboard.upcoming.retry")}
+            </button>
+          </Eyebrow>
         </div>
       )}
 

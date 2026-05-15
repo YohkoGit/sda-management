@@ -94,10 +94,12 @@ export default function AppSidebar() {
             <span className="truncate font-display text-base text-[var(--ink)]">
               {firstName} {lastName}
             </span>
-            <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-              {roleLabel}
-              {departmentName ? ` · ${departmentName}` : ""}
-            </span>
+            <Eyebrow asChild className="mt-0.5">
+              <span>
+                {roleLabel}
+                {departmentName ? ` · ${departmentName}` : ""}
+              </span>
+            </Eyebrow>
           </div>
         </div>
       </SidebarHeader>
@@ -137,14 +139,15 @@ export default function AppSidebar() {
       <SidebarFooter className="gap-3 border-t border-[var(--hairline)] px-6 py-5">
         <div className="flex items-center justify-between">
           <LanguageSwitcher />
-          <button
-            type="button"
-            onClick={() => logout()}
-            className="inline-flex items-center gap-2 rounded-[var(--radius)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] transition-colors hover:bg-[var(--parchment-2)] hover:text-[var(--ink)]"
+          <Eyebrow
+            asChild
+            className="inline-flex items-center gap-2 rounded-[var(--radius)] px-2 py-1 transition-colors hover:bg-[var(--parchment-2)] hover:text-[var(--ink)]"
           >
-            <LogOut className="h-3.5 w-3.5" />
-            {t("nav.auth.signOut")}
-          </button>
+            <button type="button" onClick={() => logout()}>
+              <LogOut className="h-3.5 w-3.5" />
+              {t("nav.auth.signOut")}
+            </button>
+          </Eyebrow>
         </div>
       </SidebarFooter>
     </Sidebar>

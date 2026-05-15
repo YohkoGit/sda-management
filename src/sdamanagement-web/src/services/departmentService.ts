@@ -1,42 +1,16 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 import type {
   DepartmentFormData,
   SubMinistryFormData,
 } from "@/schemas/departmentSchema";
 
-export interface SubMinistryResponse {
-  id: number;
-  name: string;
-  leadUserId?: number | null;
-  leadFirstName?: string | null;
-  leadLastName?: string | null;
-  leadAvatarUrl?: string | null;
-}
+type Schemas = components["schemas"];
 
-export interface DepartmentResponse {
-  id: number;
-  name: string;
-  abbreviation: string;
-  color: string;
-  description: string | null;
-  subMinistries: SubMinistryResponse[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DepartmentListItem {
-  id: number;
-  name: string;
-  abbreviation: string;
-  color: string;
-  description: string | null;
-  subMinistryCount: number;
-}
-
-export interface DepartmentWithStaffingListItem extends DepartmentListItem {
-  upcomingActivityCount: number;
-  aggregateStaffingStatus: string;
-}
+export type SubMinistryResponse = NonNullable<Schemas["SubMinistryResponse"]>;
+export type DepartmentResponse = NonNullable<Schemas["DepartmentResponse"]>;
+export type DepartmentListItem = NonNullable<Schemas["DepartmentListItem"]>;
+export type DepartmentWithStaffingListItem = NonNullable<Schemas["DepartmentWithStaffingListItem"]>;
 
 export const departmentService = {
   getAll: () => api.get<DepartmentListItem[]>("/api/departments"),

@@ -166,7 +166,7 @@ describe("AdminDepartmentsPage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer le département")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
     expect(

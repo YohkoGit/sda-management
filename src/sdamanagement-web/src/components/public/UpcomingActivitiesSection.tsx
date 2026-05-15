@@ -64,9 +64,9 @@ function UpcomingRow({
           className="h-2 w-2 shrink-0 rounded-full"
           style={{ backgroundColor: swatch }}
         />
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-          {activity.departmentAbbreviation ?? "—"}
-        </span>
+        <Eyebrow asChild>
+          <span>{activity.departmentAbbreviation ?? "—"}</span>
+        </Eyebrow>
       </div>
 
       <span className="text-right font-mono text-sm tabular-nums text-[var(--ink-2)]">

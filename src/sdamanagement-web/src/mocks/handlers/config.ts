@@ -16,6 +16,7 @@ const mockConfig: ChurchConfigResponse = {
 const mockPublicConfig: PublicChurchConfigResponse = {
   churchName: mockConfig.churchName,
   address: mockConfig.address,
+  phoneNumber: mockConfig.phoneNumber,
   welcomeMessage: mockConfig.welcomeMessage,
   youTubeChannelUrl: mockConfig.youTubeChannelUrl,
 };

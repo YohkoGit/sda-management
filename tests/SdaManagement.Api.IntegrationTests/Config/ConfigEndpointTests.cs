@@ -50,14 +50,16 @@ public class ConfigEndpointTests : IntegrationTestBase
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
-        // Public fields present
+        // Public fields present. PhoneNumber is included because the public
+        // footer displays the church's contact phone — a church's main contact
+        // number is legitimately public-facing info.
         root.GetProperty("churchName").GetString().ShouldBe("Eglise Adventiste de Saint-Hubert");
         root.GetProperty("address").GetString().ShouldBe("1234 Rue de l'Eglise, Saint-Hubert, QC");
+        root.GetProperty("phoneNumber").GetString().ShouldBe("+1 (450) 555-0100");
         root.GetProperty("welcomeMessage").GetString().ShouldBe("Bienvenue!");
         root.GetProperty("youTubeChannelUrl").GetString().ShouldBe("https://www.youtube.com/@sdac-st-hubert");
 
-        // Private fields absent
-        root.TryGetProperty("phoneNumber", out _).ShouldBeFalse();
+        // Admin-only fields absent (config row metadata + locale stays out of the public surface)
         root.TryGetProperty("defaultLocale", out _).ShouldBeFalse();
         root.TryGetProperty("createdAt", out _).ShouldBeFalse();
         root.TryGetProperty("updatedAt", out _).ShouldBeFalse();

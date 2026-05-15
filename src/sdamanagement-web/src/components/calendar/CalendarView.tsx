@@ -9,6 +9,7 @@ import { createEventsServicePlugin } from "@schedule-x/events-service";
 import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
 import "temporal-polyfill/global";
 import "@schedule-x/theme-default/dist/index.css";
+import { Eyebrow } from "@/components/ui/typography";
 import ViewSwitcher from "./ViewSwitcher";
 import YearGrid from "./YearGrid";
 import MonthGrid from "./MonthGrid";
@@ -245,13 +246,14 @@ export default function CalendarView({
           <p className="text-sm text-[var(--rose)]">
             {t("pages.calendar.loadError")}
           </p>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
+          <Eyebrow
+            asChild
+            className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
           >
-            {t("pages.calendar.retry")}
-          </button>
+            <button type="button" onClick={onRetry}>
+              {t("pages.calendar.retry")}
+            </button>
+          </Eyebrow>
         </div>
       )}
 
@@ -263,13 +265,14 @@ export default function CalendarView({
                 {t("pages.calendar.loadError")}
               </p>
               {onYearRetry && (
-                <button
-                  type="button"
-                  onClick={onYearRetry}
-                  className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
+                <Eyebrow
+                  asChild
+                  className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
                 >
-                  {t("pages.calendar.retry")}
-                </button>
+                  <button type="button" onClick={onYearRetry}>
+                    {t("pages.calendar.retry")}
+                  </button>
+                </Eyebrow>
               )}
             </div>
           )}

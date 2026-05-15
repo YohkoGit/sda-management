@@ -14,6 +14,7 @@ public class ConfigService(AppDbContext dbContext) : IConfigService
             {
                 ChurchName = c.ChurchName,
                 Address = c.Address,
+                PhoneNumber = c.PhoneNumber,
                 WelcomeMessage = c.WelcomeMessage,
                 YouTubeChannelUrl = c.YouTubeChannelUrl,
             })

@@ -83,12 +83,11 @@ export function DashboardActivityCard({
                   className="h-1.5 w-1.5 rounded-full"
                   style={{ backgroundColor: swatch }}
                 />
-                <span
-                  className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]"
-                  title={activity.departmentName}
-                >
-                  {activity.departmentAbbreviation}
-                </span>
+                <Eyebrow asChild>
+                  <span title={activity.departmentName}>
+                    {activity.departmentAbbreviation}
+                  </span>
+                </Eyebrow>
               </span>
             )}
             {activity.specialType && (
@@ -96,9 +95,9 @@ export function DashboardActivityCard({
                 ✣ {t(`pages.home.specialType.${activity.specialType}`)}
               </span>
             )}
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-4)]">
-              {relativeDate}
-            </span>
+            <Eyebrow asChild className="text-[var(--ink-4)]">
+              <span>{relativeDate}</span>
+            </Eyebrow>
           </div>
 
           {predicateur && (

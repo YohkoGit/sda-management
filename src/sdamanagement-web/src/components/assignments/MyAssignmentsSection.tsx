@@ -46,12 +46,11 @@ export function MyAssignmentsSection() {
           <p className="text-sm text-[var(--rose)]">
             {t("pages.dashboard.myAssignments.loadError")}
           </p>
-          <button
-            onClick={() => refetch()}
-            className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] underline-offset-4 hover:underline"
-          >
-            {t("pages.dashboard.myAssignments.retry")}
-          </button>
+          <Eyebrow asChild className="mt-2 text-[var(--ink-2)] underline-offset-4 hover:underline">
+            <button onClick={() => refetch()}>
+              {t("pages.dashboard.myAssignments.retry")}
+            </button>
+          </Eyebrow>
         </div>
       )}
 

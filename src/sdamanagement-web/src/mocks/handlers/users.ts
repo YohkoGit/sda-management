@@ -20,6 +20,7 @@ const mockUsers: UserListItem[] = [
     lastName: "Augustin",
     email: "jp.augustin@gmail.com",
     role: "Admin",
+    avatarUrl: null,
     departments: [
       { id: 1, name: "Jeunesse Adventiste", abbreviation: "JA", color: "#4F46E5" },
       { id: 2, name: "MIFEM", abbreviation: "MIFEM", color: "#EC4899" },
@@ -32,6 +33,7 @@ const mockUsers: UserListItem[] = [
     lastName: "Beaumont",
     email: "sophie.b@gmail.com",
     role: "Viewer",
+    avatarUrl: null,
     departments: [
       { id: 2, name: "MIFEM", abbreviation: "MIFEM", color: "#EC4899" },
     ],
@@ -43,6 +45,7 @@ const mockUsers: UserListItem[] = [
     lastName: "Charles",
     email: "p.charles@gmail.com",
     role: "Viewer",
+    avatarUrl: null,
     departments: [
       { id: 3, name: "Diaconat", abbreviation: "DIA", color: "#10B981" },
     ],

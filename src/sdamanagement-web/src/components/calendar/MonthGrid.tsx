@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Eyebrow } from "@/components/ui/typography";
 import { deptSwatchColor } from "@/lib/dept-color";
 import type { PublicActivityListItem } from "@/types/public";
 
@@ -125,13 +126,14 @@ export default function MonthGrid({
     <div className="border border-[var(--hairline)] border-t-0 bg-[var(--parchment)]">
       {/* Navigation strip */}
       <div className="flex items-center justify-between border-b border-[var(--hairline)] px-4 py-3">
-        <button
-          type="button"
-          onClick={goToday}
-          className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
+        <Eyebrow
+          asChild
+          className="rounded-[var(--radius)] border border-[var(--hairline-2)] px-3 py-1.5 text-[var(--ink-2)] transition-colors hover:border-[var(--ink)]"
         >
-          {t("pages.calendar.today", "Aujourd'hui")}
-        </button>
+          <button type="button" onClick={goToday}>
+            {t("pages.calendar.today", "Aujourd'hui")}
+          </button>
+        </Eyebrow>
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -162,16 +164,16 @@ export default function MonthGrid({
       {/* Weekday header */}
       <div className="grid grid-cols-7 border-b border-[var(--hairline)]">
         {weekdays.map((w, i) => (
-          <div
+          <Eyebrow
             key={i}
             className={[
-              "px-3 py-3 font-mono text-[10px] uppercase tracking-[0.18em] capitalize",
+              "px-3 py-3 capitalize",
               i > 0 ? "border-l border-[var(--hairline)]" : "",
               i === 0 ? "text-[var(--gilt-2)]" : "text-[var(--ink-3)]",
             ].join(" ")}
           >
             {w}.
-          </div>
+          </Eyebrow>
         ))}
       </div>
 
@@ -225,14 +227,14 @@ export default function MonthGrid({
                   {cell.date.getDate()}
                 </span>
                 {isToday && (
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--gilt-2)]">
-                    {t("pages.calendar.today", "Aujourd'hui")}
-                  </span>
+                  <Eyebrow gilt asChild>
+                    <span>{t("pages.calendar.today", "Aujourd'hui")}</span>
+                  </Eyebrow>
                 )}
                 {isFeatured && !isToday && featuredEvent?.specialType && (
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--gilt-2)]">
-                    ✣ {t(`pages.home.specialType.${featuredEvent.specialType}`)}
-                  </span>
+                  <Eyebrow gilt asChild>
+                    <span>✣ {t(`pages.home.specialType.${featuredEvent.specialType}`)}</span>
+                  </Eyebrow>
                 )}
               </div>
 
@@ -282,15 +284,15 @@ export default function MonthGrid({
       <div className="flex items-center gap-5 border-t border-[var(--hairline)] px-4 py-3">
         <span className="inline-flex items-center gap-2">
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--gilt)]" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-            {t("pages.calendar.legendFeatured", "Sabbat / Sainte-cène")}
-          </span>
+          <Eyebrow asChild>
+            <span>{t("pages.calendar.legendFeatured", "Sabbat / Sainte-cène")}</span>
+          </Eyebrow>
         </span>
         <span className="inline-flex items-center gap-2">
           <span aria-hidden className="h-3 w-3 bg-[var(--parchment-2)] ring-1 ring-[var(--hairline)]" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-            {t("pages.calendar.legendSaturday", "Samedi")}
-          </span>
+          <Eyebrow asChild>
+            <span>{t("pages.calendar.legendSaturday", "Samedi")}</span>
+          </Eyebrow>
         </span>
       </div>
     </div>

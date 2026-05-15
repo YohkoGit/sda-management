@@ -1,12 +1,11 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, CalendarDays, Pencil, Trash2, ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
 import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
-import { useActivityCacheInvalidation } from "@/hooks/useActivityCacheInvalidation";
+import { useActivityCrud } from "@/hooks/useActivityCrud";
 import {
   activityService,
   type ActivityListItem,
@@ -21,7 +20,6 @@ import { ConflictAlertDialog } from "@/components/activity/ConflictAlertDialog";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import {
   type CreateActivityFormData,
-  type UpdateActivityFormData,
 } from "@/schemas/activitySchema";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -47,7 +45,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { AssignableOfficer } from "@/services/userService";
-import type { AxiosError } from "axios";
 
 /** Read-only roster panel content — extracted to avoid triple .find() on activities array */
 function RosterPanelContent({
@@ -101,7 +98,6 @@ export default function AdminActivitiesPage() {
   const { t } = useTranslation();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { isOwner, isAdmin } = useRole();
-  const invalidateActivityCache = useActivityCacheInvalidation();
   const {
     Root: FormWrapper,
     Content: FormContent,
@@ -115,10 +111,40 @@ export default function AdminActivitiesPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createStep, setCreateStep] = useState<"template" | "form">("template");
   const [selectedTemplate, setSelectedTemplate] = useState<ActivityTemplateListItem | null>(null);
-  const [editActivity, setEditActivity] = useState<ActivityResponse | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ActivityListItem | null>(null);
   const [viewActivityId, setViewActivityId] = useState<number | null>(null);
-  const [conflictState, setConflictState] = useState<{ activityId: number; formData: UpdateActivityFormData } | null>(null);
+
+  const {
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    editActivity,
+    setEditActivity,
+    handleEdit,
+    handleEditSubmit,
+    conflictState,
+    setConflictState,
+    handleConflictReload,
+    handleConflictOverwrite,
+  } = useActivityCrud({
+    toastKeys: {
+      created: "pages.adminActivities.toast.created",
+      updated: "pages.adminActivities.toast.updated",
+      deleted: "pages.adminActivities.toast.deleted",
+      conflictError: "pages.adminActivities.conflictError",
+      assignmentError: "pages.adminActivities.assignmentError",
+      templateError: "pages.adminActivities.templateSelector.templateError",
+      conflictReloaded: "pages.adminActivities.conflict.reloaded",
+      conflictReloadError: "pages.adminActivities.conflict.reloadError",
+    },
+    hasSelectedTemplate: () => selectedTemplate !== null,
+    onCreated: () => {
+      setShowCreateForm(false);
+      setCreateStep("template");
+      setSelectedTemplate(null);
+    },
+    onDeleted: () => setDeleteTarget(null),
+  });
 
   // For admin, use first departmentId; owner sees all
   const adminDeptId = user?.departmentIds?.[0];
@@ -156,99 +182,6 @@ export default function AdminActivitiesPage() {
   const availableDepartments = isOwner
     ? (departments ?? [])
     : (departments ?? []).filter((d) => user?.departmentIds?.includes(d.id));
-
-  const createMutation = useMutation({
-    mutationFn: (data: CreateActivityFormData) =>
-      activityService.create({
-        ...data,
-        startTime: data.startTime + ":00",
-        endTime: data.endTime + ":00",
-      }),
-    onSuccess: () => {
-      void invalidateActivityCache.invalidateAll();
-      setShowCreateForm(false);
-      setCreateStep("template");
-      setSelectedTemplate(null);
-      toast.success(t("pages.adminActivities.toast.created"));
-    },
-    onError: (error: AxiosError) => {
-      if (error.response?.status === 400 && selectedTemplate) {
-        toast.error(t("pages.adminActivities.templateSelector.templateError"));
-      } else if (error.response?.status === 422) {
-        toast.error(t("pages.adminActivities.assignmentError"));
-      }
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data, force }: { id: number; data: UpdateActivityFormData; force?: boolean }) =>
-      activityService.update(id, {
-        ...data,
-        startTime: data.startTime.length === 5 ? data.startTime + ":00" : data.startTime,
-        endTime: data.endTime.length === 5 ? data.endTime + ":00" : data.endTime,
-      }, force),
-    onSuccess: () => {
-      void invalidateActivityCache.invalidateAll();
-      setEditActivity(null);
-      toast.success(t("pages.adminActivities.toast.updated"));
-    },
-    onError: (error: AxiosError, variables) => {
-      if (error.response?.status === 409) {
-        // If force-save also got 409 (ultra-rare race), fall back to toast to prevent infinite dialog loop
-        if (variables.force) {
-          toast.error(t("pages.adminActivities.conflictError"));
-        } else {
-          setConflictState({ activityId: variables.id, formData: variables.data });
-        }
-      } else if (error.response?.status === 422) {
-        toast.error(t("pages.adminActivities.assignmentError"));
-      }
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => activityService.delete(id),
-    onSuccess: () => {
-      void invalidateActivityCache.invalidateAll();
-      setDeleteTarget(null);
-      toast.success(t("pages.adminActivities.toast.deleted"));
-    },
-  });
-
-  const handleEdit = useCallback(async (item: ActivityListItem) => {
-    const res = await activityService.getById(item.id);
-    setEditActivity(res.data);
-  }, []);
-
-  const handleEditSubmit = useCallback(
-    (data: CreateActivityFormData) => {
-      if (!editActivity) return;
-      updateMutation.mutate({
-        id: editActivity.id,
-        data: { ...data, concurrencyToken: editActivity.concurrencyToken },
-      });
-    },
-    [editActivity, updateMutation]
-  );
-
-  const handleConflictReload = useCallback(async () => {
-    const activityId = conflictState!.activityId;
-    setConflictState(null);
-    try {
-      const res = await activityService.getById(activityId);
-      setEditActivity(res.data);
-      toast.success(t("pages.adminActivities.conflict.reloaded"));
-    } catch {
-      toast.error(t("pages.adminActivities.conflict.reloadError"));
-      setEditActivity(null);
-    }
-  }, [conflictState, t]);
-
-  const handleConflictOverwrite = useCallback(() => {
-    const { activityId, formData } = conflictState!;
-    setConflictState(null);
-    updateMutation.mutate({ id: activityId, data: formData, force: true });
-  }, [conflictState, updateMutation]);
 
   const formatTime = (time: string) => time.slice(0, 5);
 

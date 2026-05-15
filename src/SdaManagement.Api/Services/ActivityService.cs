@@ -210,18 +210,35 @@ public class ActivityService(
             dbContext.Entry(activity).Property(a => a.Version).OriginalValue = request.ConcurrencyToken;
 
         var now = DateTime.UtcNow;
-
-        // Snapshot fields before changes for updatedFields computation
-        var prevTitle = activity.Title;
-        var prevDate = activity.Date;
-        var prevStartTime = activity.StartTime;
-        var prevEndTime = activity.EndTime;
-        var prevDepartmentId = activity.DepartmentId;
-        var prevVisibility = activity.Visibility;
-        var prevDescription = activity.Description;
-
+        var snapshot = ActivitySnapshot.Capture(activity);
         var isMeeting = request.IsMeeting == true;
 
+        ApplyScalarFieldUpdates(activity, request, isMeeting, now);
+
+        if (isMeeting)
+        {
+            var existingRoles = await dbContext.ActivityRoles
+                .Where(r => r.ActivityId == activity.Id)
+                .ToListAsync();
+            dbContext.ActivityRoles.RemoveRange(existingRoles);
+        }
+        else if (request.Roles is not null)
+        {
+            await ReconcileRolesAsync(activity, request.Roles, now);
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var response = (await GetByIdAsync(activity.Id))!;
+        var updatedFields = ComputeChangedFields(snapshot, activity, hasRoleChanges: request.Roles is not null);
+
+        await notificationService.NotifyActivityUpdatedAsync(response, updatedFields);
+
+        return response;
+    }
+
+    private void ApplyScalarFieldUpdates(Activity activity, UpdateActivityRequest request, bool isMeeting, DateTime now)
+    {
         activity.Title = sanitizer.Sanitize(request.Title);
         activity.Description = sanitizer.SanitizeNullable(request.Description);
         activity.Date = request.Date;
@@ -236,129 +253,142 @@ public class ActivityService(
         activity.LocationName = isMeeting && request.MeetingType == Data.Entities.MeetingType.Physical ? request.LocationName : null;
         activity.LocationAddress = isMeeting && request.MeetingType == Data.Entities.MeetingType.Physical ? request.LocationAddress : null;
         activity.UpdatedAt = now;
+    }
 
-        // Meetings: clear all existing roles
-        if (isMeeting)
+    /// <summary>
+    /// Reconciles the activity's roles against the incoming role list:
+    /// removes roles not in the request (cascade-deletes their assignments),
+    /// updates existing roles in-place + reconciles their assignments, and
+    /// inserts new roles. Throws if the post-reconciliation state would have
+    /// more assignments than headcount on any role.
+    /// </summary>
+    private async Task ReconcileRolesAsync(Activity activity, List<ActivityRoleInput> roleInputs, DateTime now)
+    {
+        var existingRoles = await dbContext.ActivityRoles
+            .Include(r => r.Assignments)
+            .Where(r => r.ActivityId == activity.Id)
+            .ToListAsync();
+
+        var allAssignmentUserIds = roleInputs
+            .Where(r => r.Assignments is { Count: > 0 })
+            .SelectMany(r => r.Assignments!)
+            .Select(a => a.UserId)
+            .Distinct()
+            .ToList();
+
+        if (allAssignmentUserIds.Count > 0)
+            await ValidateAssignmentUsersAsync(allAssignmentUserIds);
+
+        var incomingIds = roleInputs
+            .Where(r => r.Id.HasValue)
+            .Select(r => r.Id!.Value)
+            .ToHashSet();
+
+        // DELETE: existing roles not in request (cascade deletes assignments)
+        var toRemove = existingRoles.Where(r => !incomingIds.Contains(r.Id)).ToList();
+        dbContext.ActivityRoles.RemoveRange(toRemove);
+
+        // UPDATE existing + ADD new
+        for (var i = 0; i < roleInputs.Count; i++)
         {
-            var existingRoles = await dbContext.ActivityRoles
-                .Where(r => r.ActivityId == activity.Id)
-                .ToListAsync();
-            dbContext.ActivityRoles.RemoveRange(existingRoles);
-        }
-        else if (request.Roles is not null)
-        {
-            // Include Assignments for reconciliation
-            var existingRoles = await dbContext.ActivityRoles
-                .Include(r => r.Assignments)
-                .Where(r => r.ActivityId == activity.Id)
-                .ToListAsync();
-
-            // Validate assignment userIds if any assignments are provided
-            var allAssignmentUserIds = request.Roles
-                .Where(r => r.Assignments is { Count: > 0 })
-                .SelectMany(r => r.Assignments!)
-                .Select(a => a.UserId)
-                .Distinct()
-                .ToList();
-
-            if (allAssignmentUserIds.Count > 0)
-                await ValidateAssignmentUsersAsync(allAssignmentUserIds);
-
-            var incomingIds = request.Roles
-                .Where(r => r.Id.HasValue)
-                .Select(r => r.Id!.Value)
-                .ToHashSet();
-
-            // DELETE: existing roles not in request (cascade deletes assignments)
-            var toRemove = existingRoles.Where(r => !incomingIds.Contains(r.Id)).ToList();
-            dbContext.ActivityRoles.RemoveRange(toRemove);
-
-            // UPDATE existing + ADD new
-            for (var i = 0; i < request.Roles.Count; i++)
+            var roleInput = roleInputs[i];
+            if (roleInput.Id.HasValue)
             {
-                var roleInput = request.Roles[i];
-                if (roleInput.Id.HasValue)
+                var existing = existingRoles.FirstOrDefault(r => r.Id == roleInput.Id.Value);
+                if (existing is not null)
                 {
-                    var existing = existingRoles.FirstOrDefault(r => r.Id == roleInput.Id.Value);
-                    if (existing is not null)
-                    {
-                        existing.RoleName = sanitizer.Sanitize(roleInput.RoleName);
-                        existing.Headcount = roleInput.Headcount;
-                        existing.SortOrder = i;
-                        if (roleInput.IsCritical.HasValue) existing.IsCritical = roleInput.IsCritical.Value;
-                        if (roleInput.IsPredicateur.HasValue) existing.IsPredicateur = roleInput.IsPredicateur.Value;
-                        existing.UpdatedAt = now;
+                    existing.RoleName = sanitizer.Sanitize(roleInput.RoleName);
+                    existing.Headcount = roleInput.Headcount;
+                    existing.SortOrder = i;
+                    if (roleInput.IsCritical.HasValue) existing.IsCritical = roleInput.IsCritical.Value;
+                    if (roleInput.IsPredicateur.HasValue) existing.IsPredicateur = roleInput.IsPredicateur.Value;
+                    existing.UpdatedAt = now;
 
-                        // Reconcile assignments for existing role
-                        ReconcileAssignments(existing, roleInput, now);
-                    }
+                    ReconcileAssignments(existing, roleInput, now);
                 }
-                else
+            }
+            else
+            {
+                var newRole = new ActivityRole
                 {
-                    var newRole = new ActivityRole
-                    {
-                        ActivityId = activity.Id,
-                        RoleName = sanitizer.Sanitize(roleInput.RoleName),
-                        Headcount = roleInput.Headcount,
-                        SortOrder = i,
-                        IsCritical = roleInput.IsCritical ?? false,
-                        IsPredicateur = roleInput.IsPredicateur ?? false,
-                        CreatedAt = now,
-                        UpdatedAt = now,
-                    };
+                    ActivityId = activity.Id,
+                    RoleName = sanitizer.Sanitize(roleInput.RoleName),
+                    Headcount = roleInput.Headcount,
+                    SortOrder = i,
+                    IsCritical = roleInput.IsCritical ?? false,
+                    IsPredicateur = roleInput.IsPredicateur ?? false,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                };
 
-                    if (roleInput.Assignments is { Count: > 0 })
+                if (roleInput.Assignments is { Count: > 0 })
+                {
+                    foreach (var assignment in roleInput.Assignments)
                     {
-                        foreach (var assignment in roleInput.Assignments)
+                        newRole.Assignments.Add(new RoleAssignment
                         {
-                            newRole.Assignments.Add(new RoleAssignment
-                            {
-                                UserId = assignment.UserId,
-                                CreatedAt = now,
-                            });
-                        }
+                            UserId = assignment.UserId,
+                            CreatedAt = now,
+                        });
                     }
-
-                    dbContext.ActivityRoles.Add(newRole);
                 }
-            }
 
-            // Post-reconciliation validation: assignments.Count <= headcount for all roles
-            var allRoles = request.Roles
-                .Where(r => r.Id.HasValue)
-                .Select(r =>
-                {
-                    var existing = existingRoles.FirstOrDefault(er => er.Id == r.Id!.Value);
-                    return existing;
-                })
-                .Where(r => r is not null)
-                .ToList();
-
-            foreach (var role in allRoles)
-            {
-                if (role!.Assignments.Count > role.Headcount)
-                    throw new InvalidOperationException(
-                        $"Role '{role.RoleName}' has {role.Assignments.Count} assignments but headcount is {role.Headcount}.");
+                dbContext.ActivityRoles.Add(newRole);
             }
         }
 
-        await dbContext.SaveChangesAsync();
+        // Post-reconciliation validation: assignments.Count <= headcount on every retained role.
+        foreach (var roleInput in roleInputs.Where(r => r.Id.HasValue))
+        {
+            var existing = existingRoles.FirstOrDefault(er => er.Id == roleInput.Id!.Value);
+            if (existing is not null && existing.Assignments.Count > existing.Headcount)
+            {
+                throw new InvalidOperationException(
+                    $"Role '{existing.RoleName}' has {existing.Assignments.Count} assignments but headcount is {existing.Headcount}.");
+            }
+        }
+    }
 
-        var response = (await GetByIdAsync(activity.Id))!;
-
-        // Compute updatedFields — comma-separated changed field categories, null if nothing changed
+    /// <summary>
+    /// Returns a comma-separated string of changed field categories
+    /// ("title", "date", "department", "visibility", "description", "roles"),
+    /// or null if no relevant field changed.
+    /// </summary>
+    internal static string? ComputeChangedFields(ActivitySnapshot prev, Activity current, bool hasRoleChanges)
+    {
         var changedFields = new List<string>();
-        if (prevTitle != activity.Title) changedFields.Add("title");
-        if (prevDate != activity.Date || prevStartTime != activity.StartTime || prevEndTime != activity.EndTime) changedFields.Add("date");
-        if (prevDepartmentId != activity.DepartmentId) changedFields.Add("department");
-        if (prevVisibility != activity.Visibility) changedFields.Add("visibility");
-        if (prevDescription != activity.Description) changedFields.Add("description");
-        if (request.Roles is not null) changedFields.Add("roles");
-        var updatedFields = changedFields.Count > 0 ? string.Join(",", changedFields) : null;
+        if (prev.Title != current.Title) changedFields.Add("title");
+        if (prev.Date != current.Date || prev.StartTime != current.StartTime || prev.EndTime != current.EndTime) changedFields.Add("date");
+        if (prev.DepartmentId != current.DepartmentId) changedFields.Add("department");
+        if (prev.Visibility != current.Visibility) changedFields.Add("visibility");
+        if (prev.Description != current.Description) changedFields.Add("description");
+        if (hasRoleChanges) changedFields.Add("roles");
+        return changedFields.Count > 0 ? string.Join(",", changedFields) : null;
+    }
 
-        await notificationService.NotifyActivityUpdatedAsync(response, updatedFields);
-
-        return response;
+    /// <summary>
+    /// Captures the pre-update field values needed for change-set computation.
+    /// EF Core's <c>Entry.Properties</c> is intentionally NOT used here — the
+    /// post-update snapshot we compare against is the live entity, not the
+    /// EF property tracker.
+    /// </summary>
+    internal readonly record struct ActivitySnapshot(
+        string Title,
+        DateOnly Date,
+        TimeOnly StartTime,
+        TimeOnly EndTime,
+        int? DepartmentId,
+        ActivityVisibility Visibility,
+        string? Description)
+    {
+        public static ActivitySnapshot Capture(Activity activity) => new(
+            activity.Title,
+            activity.Date,
+            activity.StartTime,
+            activity.EndTime,
+            activity.DepartmentId,
+            activity.Visibility,
+            activity.Description);
     }
 
     public async Task<bool> DeleteAsync(int id)

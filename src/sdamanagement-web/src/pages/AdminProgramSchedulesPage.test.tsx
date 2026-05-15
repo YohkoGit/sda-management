@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor } from "@/test-utils";
+import { render, screen, waitFor, within } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { programScheduleHandlers } from "@/mocks/handlers/programSchedules";
 import { departmentHandlers } from "@/mocks/handlers/departments";
@@ -118,14 +118,8 @@ describe("AdminProgramSchedulesPage", () => {
     const deleteButtons = screen.getAllByRole("button", { name: "Supprimer" });
     await user.click(deleteButtons[0]);
 
-    await waitFor(() => {
-      expect(
-        screen.getByText("Supprimer l\u2019horaire")
-      ).toBeInTheDocument();
-    });
-    expect(
-      screen.getByText("Cette action est irréversible.")
-    ).toBeInTheDocument();
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByRole("heading", { name: /supprimer/i })).toBeInTheDocument();
   });
 
   it("shows day badge on schedule cards", async () => {

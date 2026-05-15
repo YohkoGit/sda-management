@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
-using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Services;
 using SixLabors.ImageSharp;
 using SdacAuth = SdaManagement.Api.Auth;
@@ -15,7 +14,7 @@ namespace SdaManagement.Api.Controllers;
 public class AvatarsController(
     IAvatarService avatarService,
     SdacAuth.IAuthorizationService auth,
-    ICurrentUserContext currentUser,
+    IUserDepartmentService userDepartments,
     AppDbContext db,
     IConfiguration configuration) : ControllerBase
 {
@@ -36,15 +35,10 @@ public class AvatarsController(
             });
 
         // Department scoping: OWNER bypasses, ADMIN must share a department
-        if (!auth.IsOwner())
+        if (!auth.IsOwner() &&
+            !await userDepartments.SharesDepartmentWithCurrentUserAsync(userId))
         {
-            var targetDeptIds = await db.Set<UserDepartment>()
-                .Where(ud => ud.UserId == userId)
-                .Select(ud => ud.DepartmentId)
-                .ToListAsync();
-
-            if (!targetDeptIds.Any(d => currentUser.DepartmentIds.Contains(d)))
-                return Forbid();
+            return Forbid();
         }
 
         // Validate file

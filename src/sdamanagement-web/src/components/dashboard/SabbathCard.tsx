@@ -69,9 +69,9 @@ export function SabbathCard() {
               className="h-1.5 w-1.5 rounded-full"
               style={{ backgroundColor: swatch }}
             />
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-              {data.departmentAbbreviation ?? "—"}
-            </span>
+            <Eyebrow asChild>
+              <span>{data.departmentAbbreviation ?? "—"}</span>
+            </Eyebrow>
           </span>
         </div>
       </div>

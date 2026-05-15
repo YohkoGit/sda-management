@@ -150,11 +150,11 @@ describe("AdminUsersPage — Bulk Create", () => {
     });
 
     // Remove rows until 1 left
-    const removeButtons = screen.getAllByLabelText("Supprimer la ligne");
+    const removeButtons = screen.getAllByRole("button", { name: /^Supprimer la ligne/i });
     await user.click(removeButtons[0]);
     expect(screen.getByText("2 / 30 lignes")).toBeInTheDocument();
 
-    await user.click(screen.getAllByLabelText("Supprimer la ligne")[0]);
+    await user.click(screen.getAllByRole("button", { name: /^Supprimer la ligne/i })[0]);
     expect(screen.getByText("1 / 30 lignes")).toBeInTheDocument();
 
     // Last row's remove button should be disabled
@@ -181,9 +181,9 @@ describe("AdminUsersPage — Bulk Create", () => {
     });
 
     // Remove 2 rows to leave 1
-    const removeButtons = screen.getAllByLabelText("Supprimer la ligne");
+    const removeButtons = screen.getAllByRole("button", { name: /^Supprimer la ligne/i });
     await user.click(removeButtons[0]);
-    await user.click(screen.getAllByLabelText("Supprimer la ligne")[0]);
+    await user.click(screen.getAllByRole("button", { name: /^Supprimer la ligne/i })[0]);
 
     // Fill the remaining row
     const firstNameInputs = screen.getAllByPlaceholderText("Prénom");
@@ -242,9 +242,9 @@ describe("AdminUsersPage — Bulk Create", () => {
     });
 
     // Remove to 1 row and fill with valid-looking data
-    const removeButtons = screen.getAllByLabelText("Supprimer la ligne");
+    const removeButtons = screen.getAllByRole("button", { name: /^Supprimer la ligne/i });
     await user.click(removeButtons[0]);
-    await user.click(screen.getAllByLabelText("Supprimer la ligne")[0]);
+    await user.click(screen.getAllByRole("button", { name: /^Supprimer la ligne/i })[0]);
 
     const firstNameInputs = screen.getAllByPlaceholderText("Prénom");
     const lastNameInputs = screen.getAllByPlaceholderText("Nom de famille");
@@ -303,9 +303,9 @@ describe("AdminUsersPage — Bulk Create", () => {
     });
 
     // Remove to 1 row and fill
-    const removeButtons = screen.getAllByLabelText("Supprimer la ligne");
+    const removeButtons = screen.getAllByRole("button", { name: /^Supprimer la ligne/i });
     await user.click(removeButtons[0]);
-    await user.click(screen.getAllByLabelText("Supprimer la ligne")[0]);
+    await user.click(screen.getAllByRole("button", { name: /^Supprimer la ligne/i })[0]);
 
     const firstNameInputs = screen.getAllByPlaceholderText("Prénom");
     const lastNameInputs = screen.getAllByPlaceholderText("Nom de famille");

@@ -66,9 +66,9 @@ export function AssignmentCard({ assignment, isFirst = false }: AssignmentCardPr
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: swatch }}
               />
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-                {assignment.departmentAbbreviation ?? "—"}
-              </span>
+              <Eyebrow asChild>
+                <span>{assignment.departmentAbbreviation ?? "—"}</span>
+              </Eyebrow>
             </span>
             <span className="font-mono text-sm tabular-nums text-[var(--ink-2)]">
               {timeRange}

@@ -1,14 +1,10 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 
-export interface SetupStepItem {
-  id: string;
-  status: string;
-}
+type Schemas = components["schemas"];
 
-export interface SetupProgressResponse {
-  steps: SetupStepItem[];
-  isSetupComplete: boolean;
-}
+export type SetupStepItem = NonNullable<Schemas["SetupStepItem"]>;
+export type SetupProgressResponse = NonNullable<Schemas["SetupProgressResponse"]>;
 
 export const setupProgressService = {
   getSetupProgress: () =>

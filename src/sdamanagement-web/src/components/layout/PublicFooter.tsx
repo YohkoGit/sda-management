@@ -63,9 +63,9 @@ export default function PublicFooter() {
 
         <div className="mt-12 flex flex-col items-start gap-2 border-t border-[var(--hairline)] pt-6 text-xs text-[var(--ink-3)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} {churchInfo?.churchName ?? t("app.churchName")}</p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--gilt-2)]">
-            ✣ Soli Deo gloria
-          </p>
+          <Eyebrow gilt asChild>
+            <p>✣ Soli Deo gloria</p>
+          </Eyebrow>
         </div>
       </div>
     </footer>

@@ -50,9 +50,9 @@ export default function ProgramTimesSection() {
                     {program.title}
                   </h3>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] capitalize">
-                      {t(`days.${program.dayOfWeek}`)}
-                    </span>
+                    <Eyebrow asChild className="capitalize">
+                      <span>{t(`days.${program.dayOfWeek}`)}</span>
+                    </Eyebrow>
                     {program.hostName && (
                       <span className="text-sm text-[var(--ink-3)]">
                         · <span className="italic">avec</span> {program.hostName}

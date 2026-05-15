@@ -333,7 +333,7 @@ export const activityHandlers = [
       specialType: (body.specialType as string | null) ?? null,
       isMeeting,
       ...(isMeeting ? {
-        meetingType: body.meetingType as string,
+        meetingType: body.meetingType as "physical" | "zoom",
         zoomLink: (body.zoomLink as string) || undefined,
         locationName: (body.locationName as string) || undefined,
         locationAddress: (body.locationAddress as string) || undefined,
@@ -398,7 +398,7 @@ export const activityHandlers = [
       specialType: (body.specialType as string | null) ?? null,
       isMeeting: isMeetingUpdate,
       ...(isMeetingUpdate ? {
-        meetingType: body.meetingType as string,
+        meetingType: body.meetingType as "physical" | "zoom",
         zoomLink: (body.zoomLink as string) || undefined,
         locationName: (body.locationName as string) || undefined,
         locationAddress: (body.locationAddress as string) || undefined,

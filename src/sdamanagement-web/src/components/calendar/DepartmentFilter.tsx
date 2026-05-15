@@ -63,7 +63,7 @@ export default function DepartmentFilter({
   );
 
   const chipBase =
-    "inline-flex shrink-0 items-center gap-1.5 rounded-[2px] border px-3 py-2 min-h-[2.5rem] font-mono text-[10px] uppercase tracking-[0.18em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gilt)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--parchment)]";
+    "eyebrow inline-flex shrink-0 items-center gap-1.5 rounded-[2px] border px-3 py-2 min-h-[2.5rem] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gilt)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--parchment)]";
 
   return (
     <div

@@ -90,8 +90,15 @@ public static class ServiceCollectionExtensions
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        // OpenAPI
-        services.AddOpenApi();
+        // OpenAPI — register response DTOs via a document transformer so they
+        // appear in components.schemas (controllers return untyped IActionResult),
+        // and narrow numeric type unions to a single primitive so the generated
+        // TS gets `number` instead of `number | string`.
+        services.AddOpenApi(options =>
+        {
+            options.AddSchemaTransformer<OpenApi.NumericTypeSchemaTransformer>();
+            options.AddDocumentTransformer<OpenApi.DtoSchemaTransformer>();
+        });
 
         // JWT Bearer Authentication — reads from access_token httpOnly cookie
         var jwtSecret = configuration["Jwt:Secret"]
@@ -175,6 +182,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISystemHealthService, SystemHealthService>();
         services.AddScoped<ISetupProgressService, SetupProgressService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserDepartmentService, UserDepartmentService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<IAvatarService, AvatarService>();
         services.AddScoped<IActivityService, ActivityService>();
         services.AddScoped<IActivityNotificationService, ActivityNotificationService>();

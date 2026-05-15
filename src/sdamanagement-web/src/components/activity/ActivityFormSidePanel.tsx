@@ -95,9 +95,9 @@ export function ActivityFormSidePanel({
               style={{ backgroundColor: swatch }}
               aria-hidden
             />
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-              {dept?.abbreviation ?? "—"}
-            </span>
+            <Eyebrow asChild>
+              <span>{dept?.abbreviation ?? "—"}</span>
+            </Eyebrow>
           </div>
           <div className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--ink-2)]">
             {previewDate} · {previewTime}

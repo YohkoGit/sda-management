@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eyebrow, Numerator, Rule } from "@/components/ui/typography";
+import { Eyebrow, Rule } from "@/components/ui/typography";
 import { useNextActivity, useChurchInfo } from "@/hooks/usePublicDashboard";
 import { formatActivityDate, formatTime } from "@/lib/dateFormatting";
 import { deptSwatchColor } from "@/lib/dept-color";
@@ -107,9 +107,9 @@ function ActivityFeatured({ activity }: { activity: PublicNextActivity }) {
                     color: activity.departmentColor ?? undefined,
                   }) }}
                 />
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-                  {activity.departmentAbbreviation ?? activity.departmentName}
-                </span>
+                <Eyebrow asChild>
+                  <span>{activity.departmentAbbreviation ?? activity.departmentName}</span>
+                </Eyebrow>
               </div>
             )}
           </div>

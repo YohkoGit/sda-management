@@ -1,100 +1,15 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 import type { CreateActivityFormData, UpdateActivityFormData } from "@/schemas/activitySchema";
 import type { MyAssignmentItem } from "@/types/assignment";
 
-export interface RoleAssignmentResponse {
-  id: number;
-  userId: number;
-  firstName: string;
-  lastName: string;
-  avatarUrl: string | null;
-  isGuest: boolean;
-}
+type Schemas = components["schemas"];
 
-export interface ActivityRoleResponse {
-  id: number;
-  roleName: string;
-  headcount: number;
-  sortOrder: number;
-  isCritical: boolean;
-  assignments: RoleAssignmentResponse[];
-}
-
-export interface ActivityResponse {
-  id: number;
-  title: string;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  description?: string | null;
-  date: string;
-  startTime: string;
-  endTime: string;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  departmentId?: number | null;
-  departmentName: string;
-  departmentAbbreviation: string;
-  departmentColor: string;
-  visibility: string;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  specialType?: string | null;
-  isMeeting: boolean;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  meetingType?: string | null;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  zoomLink?: string | null;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  locationName?: string | null;
-  /** Omitted from JSON when null (WhenWritingNull) — runtime value is undefined, not null */
-  locationAddress?: string | null;
-  roles: ActivityRoleResponse[];
-  staffingStatus: string;
-  concurrencyToken: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ActivityListItem {
-  id: number;
-  title: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  departmentId?: number | null;
-  departmentName: string;
-  departmentColor: string;
-  visibility: string;
-  specialType?: string | null;
-  isMeeting: boolean;
-  meetingType?: string | null;
-  locationName?: string | null;
-  roleCount: number;
-  totalHeadcount: number;
-  assignedCount: number;
-  staffingStatus: string;
-  createdAt: string;
-}
-
-export interface DashboardActivityItem {
-  id: number;
-  title: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  departmentId: number | null;
-  departmentName: string;
-  departmentAbbreviation: string;
-  departmentColor: string;
-  visibility: string;
-  specialType: string | null;
-  isMeeting: boolean;
-  meetingType?: string | null;
-  locationName?: string | null;
-  predicateurName: string | null;
-  predicateurAvatarUrl: string | null;
-  roleCount: number;
-  totalHeadcount: number;
-  assignedCount: number;
-  staffingStatus: string;
-}
+export type RoleAssignmentResponse = NonNullable<Schemas["RoleAssignmentResponse"]>;
+export type ActivityRoleResponse = NonNullable<Schemas["ActivityRoleResponse"]>;
+export type ActivityResponse = NonNullable<Schemas["ActivityResponse"]>;
+export type ActivityListItem = NonNullable<Schemas["ActivityListItem"]>;
+export type DashboardActivityItem = NonNullable<Schemas["DashboardActivityItem"]>;
 
 export const activityService = {
   getByDepartment: (departmentId: number) =>

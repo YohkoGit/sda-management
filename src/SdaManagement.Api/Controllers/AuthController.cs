@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 using SdaManagement.Api.Auth;
-using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Dtos.Auth;
 using SdaManagement.Api.Services;
@@ -18,9 +16,8 @@ namespace SdaManagement.Api.Controllers;
 [ApiController]
 [EnableRateLimiting("auth")]
 public class AuthController(
-    AppDbContext dbContext,
+    IAuthService authService,
     ITokenService tokenService,
-    IPasswordService passwordService,
     ICurrentUserContext currentUserContext,
     IConfiguration configuration,
     IAvatarService avatarService) : ApiControllerBase
@@ -34,17 +31,7 @@ public class AuthController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        var normalizedEmail = request.Email.ToLowerInvariant();
-        var user = await dbContext.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-
-        // Anti-enumeration: non-existent emails return "password" (same as users with passwords)
-        // Only "set-password" when user exists with no password set (first login)
-        var flow = user is not null && user.PasswordHash is null
-            ? "set-password"
-            : "password";
-
+        var flow = await authService.DetermineFlowAsync(request.Email);
         return Ok(new InitiateAuthResponse { Flow = flow });
     }
 
@@ -57,14 +44,8 @@ public class AuthController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        var normalizedEmail = request.Email.ToLowerInvariant();
-        var user = await dbContext.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-
-        // Anti-enumeration: same 401 for "email not found" and "wrong password"
-        if (user is null || user.PasswordHash is null ||
-            !passwordService.VerifyPassword(request.Password, user.PasswordHash))
+        var user = await authService.AuthenticateAsync(request.Email, request.Password);
+        if (user is null)
         {
             return Unauthorized(new ProblemDetails
             {
@@ -90,32 +71,28 @@ public class AuthController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        var normalizedEmail = request.Email.ToLowerInvariant();
-        var user = await dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+        var outcome = await authService.SetInitialPasswordAsync(request.Email, request.NewPassword);
+        switch (outcome.Code)
+        {
+            case SetPasswordResultCode.UserNotFound:
+                return NotFound(new ProblemDetails
+                {
+                    Type = "urn:sdac:not-found",
+                    Title = "Not Found",
+                    Status = 404,
+                    Detail = "User not found.",
+                });
+            case SetPasswordResultCode.PasswordAlreadySet:
+                return BadRequest(new ProblemDetails
+                {
+                    Type = "urn:sdac:password-already-set",
+                    Title = "Bad Request",
+                    Status = 400,
+                    Detail = "Password has already been set. Use login instead.",
+                });
+        }
 
-        if (user is null)
-            return NotFound(new ProblemDetails
-            {
-                Type = "urn:sdac:not-found",
-                Title = "Not Found",
-                Status = 404,
-                Detail = "User not found.",
-            });
-
-        if (user.PasswordHash is not null)
-            return BadRequest(new ProblemDetails
-            {
-                Type = "urn:sdac:password-already-set",
-                Title = "Bad Request",
-                Status = 400,
-                Detail = "Password has already been set. Use login instead.",
-            });
-
-        user.PasswordHash = passwordService.HashPassword(request.NewPassword);
-        user.UpdatedAt = DateTime.UtcNow;
-        await dbContext.SaveChangesAsync();
-
+        var user = outcome.User!;
         var (accessToken, refreshToken) = await tokenService.GenerateTokenPairAsync(user);
         tokenService.SetTokenCookies(HttpContext, accessToken, refreshToken);
 
@@ -131,31 +108,9 @@ public class AuthController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        var normalizedEmail = request.Email.ToLowerInvariant();
-        var user = await dbContext.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-
-        // Anti-enumeration: always return 200 with identical response shape.
-        // For non-existent emails, generate a fake token (never stored) so the
-        // response body is indistinguishable from a real reset.
-        if (user is null)
-            return Ok(new { token = passwordService.GenerateResetToken() });
-
-        var rawToken = passwordService.GenerateResetToken();
-        var tokenHash = passwordService.HashResetToken(rawToken);
-
-        dbContext.PasswordResetTokens.Add(new PasswordResetToken
-        {
-            UserId = user.Id,
-            TokenHash = tokenHash,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-            CreatedAt = DateTime.UtcNow,
-        });
-        await dbContext.SaveChangesAsync();
-
+        var token = await authService.RequestPasswordResetAsync(request.Email);
         // MVP: return token directly (no email delivery)
-        return Ok(new { token = rawToken });
+        return Ok(new { token });
     }
 
     [HttpPost("password-reset/confirm")]
@@ -167,15 +122,8 @@ public class AuthController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        // SHA-256 enables direct DB lookup — no table scan needed
-        var tokenHash = passwordService.HashResetToken(request.Token);
-        var matchingToken = await dbContext.PasswordResetTokens
-            .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash
-                && t.UsedAt == null
-                && t.ExpiresAt > DateTime.UtcNow);
-
-        if (matchingToken is null)
+        var success = await authService.ConfirmPasswordResetAsync(request.Token, request.NewPassword);
+        if (!success)
             return BadRequest(new ProblemDetails
             {
                 Type = "urn:sdac:invalid-reset-token",
@@ -183,12 +131,6 @@ public class AuthController(
                 Status = 400,
                 Detail = "Reset token is invalid, expired, or has already been used.",
             });
-
-        // Update password and mark token as used
-        matchingToken.User.PasswordHash = passwordService.HashPassword(request.NewPassword);
-        matchingToken.User.UpdatedAt = DateTime.UtcNow;
-        matchingToken.UsedAt = DateTime.UtcNow;
-        await dbContext.SaveChangesAsync();
 
         return Ok(new { message = "Password has been reset successfully." });
     }
@@ -212,21 +154,14 @@ public class AuthController(
         if (string.IsNullOrEmpty(email))
             return RedirectToFrontend("/?error=auth_failed");
 
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var googleFirstName = authResult.Principal.FindFirstValue(ClaimTypes.GivenName);
+        var googleLastName = authResult.Principal.FindFirstValue(ClaimTypes.Surname);
+
+        var user = await authService.ResolveGoogleUserAsync(email, googleFirstName, googleLastName);
         if (user is null)
         {
             await HttpContext.SignOutAsync("GoogleOAuthTemp");
             return RedirectToFrontend("/?error=user_not_found");
-        }
-
-        var googleFirstName = authResult.Principal.FindFirstValue(ClaimTypes.GivenName);
-        var googleLastName = authResult.Principal.FindFirstValue(ClaimTypes.Surname);
-        if (!string.IsNullOrEmpty(googleFirstName) && user.FirstName == "Owner")
-        {
-            user.FirstName = googleFirstName;
-            user.LastName = googleLastName ?? user.LastName;
-            user.UpdatedAt = DateTime.UtcNow;
-            await dbContext.SaveChangesAsync();
         }
 
         var (accessToken, refreshToken) = await tokenService.GenerateTokenPairAsync(user);
@@ -271,24 +206,8 @@ public class AuthController(
         if (!currentUserContext.IsAuthenticated)
             return Unauthorized();
 
-        var user = await dbContext.Users
-            .Where(u => u.Id == currentUserContext.UserId)
-            .Select(u => new AuthMeResponse
-            {
-                UserId = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Role = u.Role.ToString().ToUpper(),
-                DepartmentIds = u.UserDepartments.Select(ud => ud.DepartmentId).ToList(),
-            })
-            .FirstOrDefaultAsync();
-
-        if (user is null)
-            return Unauthorized();
-
-        user.AvatarUrl = avatarService.GetAvatarUrl(user.UserId);
-        return Ok(user);
+        var response = await authService.GetMeAsync(currentUserContext.UserId);
+        return response is null ? Unauthorized() : Ok(response);
     }
 
     private AuthMeResponse ToAuthMeResponse(User user) => new()

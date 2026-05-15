@@ -2,10 +2,23 @@ import { describe, it, expect, beforeAll, vi, beforeEach } from "vitest";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import userEvent from "@testing-library/user-event";
-import { render, screen, futureDate } from "@/test-utils";
+import { render, screen, waitFor, within, futureDate } from "@/test-utils";
 import { createActivitySchema, type CreateActivityFormData } from "@/schemas/activitySchema";
 import RoleRosterEditor from "./RoleRosterEditor";
-import type { AssignableOfficer } from "@/services/userService";
+import { userService, type AssignableOfficer } from "@/services/userService";
+
+vi.mock("@/services/userService", async () => {
+  const actual = await vi.importActual<typeof import("@/services/userService")>(
+    "@/services/userService"
+  );
+  return {
+    ...actual,
+    userService: {
+      ...actual.userService,
+      createGuest: vi.fn(),
+    },
+  };
+});
 
 const mockOfficers: AssignableOfficer[] = [
   {
@@ -234,7 +247,7 @@ describe("RoleRosterEditor", () => {
     await user.click(removeBtn);
 
     // Confirmation dialog should appear
-    expect(screen.getByText("Supprimer le rôle ?")).toBeInTheDocument();
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
     expect(
       screen.getByText(/Supprimer ce rôle supprimera également 2 assignation/)
     ).toBeInTheDocument();
@@ -250,7 +263,8 @@ describe("RoleRosterEditor", () => {
     );
 
     await user.click(screen.getByLabelText(/Supprimer le rôle/));
-    await user.click(screen.getByRole("button", { name: "Supprimer" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: /supprimer/i }));
 
     expect(screen.queryByDisplayValue("Ancien")).not.toBeInTheDocument();
   });
@@ -443,7 +457,7 @@ describe("RoleRosterEditor", () => {
     await user.click(removeBtn);
 
     // Should show confirmation dialog because the role has assignments
-    expect(screen.getByText("Supprimer le rôle ?")).toBeInTheDocument();
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
   });
 
   it("shows multiple assignment chips wrapping in flex container", () => {
@@ -566,6 +580,64 @@ describe("RoleRosterEditor", () => {
     expect(screen.queryByText("(Invité)")).not.toBeInTheDocument();
     // No guest data-testid
     expect(screen.queryByTestId("guest-assignment-chip")).not.toBeInTheDocument();
+  });
+
+  // Regression test for the inline-guest creation bug (fixed in 7e331df):
+  // when an admin creates a guest via the inline form, the guest's userId
+  // must be appended to roles[index].assignments so the activity submit
+  // includes the new guest.
+  it("creating a guest via inline form appends them to the role's assignments", async () => {
+    const createGuestMock = vi.mocked(userService.createGuest);
+    createGuestMock.mockResolvedValue({
+      data: {
+        userId: 999,
+        firstName: "Pasteur",
+        lastName: "Damien",
+        isGuest: true,
+      },
+      status: 201,
+      statusText: "Created",
+      headers: {},
+      config: {} as never,
+    });
+
+    const user = userEvent.setup();
+    render(
+      <TestWrapper
+        defaultRoles={[{ roleName: "Predicateur", headcount: 1 }]}
+      />
+    );
+
+    // Open the picker
+    await user.click(screen.getByRole("button", { name: /assigner/i }));
+
+    // Search for a name that won't match any existing officer
+    const searchInput = screen.getByPlaceholderText("Rechercher un membre...");
+    await user.type(searchInput, "Pasteur Damien");
+
+    // Click "Add guest"
+    await user.click(screen.getByTestId("add-guest-button"));
+
+    // Submit the guest form
+    await user.click(screen.getByRole("button", { name: "Créer" }));
+
+    // userService.createGuest must have been called with the typed name
+    await waitFor(() => {
+      expect(createGuestMock).toHaveBeenCalledWith({
+        name: "Pasteur Damien",
+        phone: undefined,
+      });
+    });
+
+    // The new guest must appear as an assignment chip (proves setValue
+    // pushed the userId into roles[0].assignments).
+    await waitFor(() => {
+      expect(screen.getByTestId("guest-assignment-chip")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Pasteur Damien")).toBeInTheDocument();
+    expect(screen.getByText("(Invité)")).toBeInTheDocument();
+    // Headcount badge now reflects the new assignment.
+    expect(screen.getByText("1/1")).toBeInTheDocument();
   });
 
   it("shows guest chip after guest creation via initialGuestOfficers (edit mode)", () => {

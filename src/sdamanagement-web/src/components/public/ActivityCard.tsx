@@ -74,12 +74,11 @@ export default function ActivityCard({
                 className="h-1.5 w-1.5 rounded-full"
                 style={{ backgroundColor: swatch }}
               />
-              <span
-                className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]"
-                title={activity.departmentName ?? undefined}
-              >
-                {activity.departmentAbbreviation}
-              </span>
+              <Eyebrow asChild>
+                <span title={activity.departmentName ?? undefined}>
+                  {activity.departmentAbbreviation}
+                </span>
+              </Eyebrow>
             </span>
           )}
           {activity.specialType && (

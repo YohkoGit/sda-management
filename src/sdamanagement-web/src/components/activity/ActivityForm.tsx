@@ -232,22 +232,26 @@ export function ActivityForm({
           {(["public", "authenticated"] as const).map((option) => {
             const active = visibility === option;
             return (
-              <button
+              <Eyebrow
                 key={option}
-                type="button"
-                onClick={() => setValue("visibility", option, { shouldDirty: true })}
+                asChild
                 className={[
-                  "px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors",
+                  "px-4 py-2.5 transition-colors",
                   active
                     ? "bg-[var(--ink)] text-[var(--parchment)]"
                     : "bg-[var(--parchment-2)] text-[var(--ink-2)] hover:bg-[var(--parchment-3)]",
                 ].join(" ")}
-                aria-pressed={active}
               >
-                {option === "public"
-                  ? t("pages.adminActivities.form.visibilityPublic")
-                  : t("pages.adminActivities.form.visibilityAuthenticated")}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setValue("visibility", option, { shouldDirty: true })}
+                  aria-pressed={active}
+                >
+                  {option === "public"
+                    ? t("pages.adminActivities.form.visibilityPublic")
+                    : t("pages.adminActivities.form.visibilityAuthenticated")}
+                </button>
+              </Eyebrow>
             );
           })}
         </div>

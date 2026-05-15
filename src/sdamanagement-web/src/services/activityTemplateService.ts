@@ -1,32 +1,12 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 import type { ActivityTemplateFormData } from "@/schemas/activityTemplateSchema";
 
-export interface TemplateRoleResponse {
-  id: number;
-  roleName: string;
-  defaultHeadcount: number;
-  sortOrder: number;
-  isCritical: boolean;
-  isPredicateur: boolean;
-}
+type Schemas = components["schemas"];
 
-export interface ActivityTemplateResponse {
-  id: number;
-  name: string;
-  description: string | null;
-  roles: TemplateRoleResponse[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ActivityTemplateListItem {
-  id: number;
-  name: string;
-  description: string | null;
-  roleSummary: string;
-  roleCount: number;
-  roles: TemplateRoleResponse[];
-}
+export type TemplateRoleResponse = NonNullable<Schemas["TemplateRoleResponse"]>;
+export type ActivityTemplateResponse = NonNullable<Schemas["ActivityTemplateResponse"]>;
+export type ActivityTemplateListItem = NonNullable<Schemas["ActivityTemplateListItem"]>;
 
 export const activityTemplateService = {
   getAll: () =>

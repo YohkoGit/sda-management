@@ -1,17 +1,21 @@
 import * as React from "react"
+import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 /**
  * Eyebrow — micro-label / kicker text in IBM Plex Mono uppercase.
  * Apply `.eyebrow` (ink-3) by default, or pass `gilt` for the candle-gold variant.
+ * Use `asChild` to apply the eyebrow style to a different element (span, button, Link, etc).
  */
 export function Eyebrow({
   className,
   gilt = false,
+  asChild = false,
   ...props
-}: React.ComponentProps<"div"> & { gilt?: boolean }) {
+}: React.ComponentProps<"div"> & { gilt?: boolean; asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : "div"
   return (
-    <div
+    <Comp
       data-slot="eyebrow"
       className={cn("eyebrow", gilt && "eyebrow-gilt", className)}
       {...props}

@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Eyebrow } from "@/components/ui/typography";
 import type { CalendarViewType } from "./calendar-utils";
 
 const VIEW_OPTIONS: CalendarViewType[] = ["day", "week", "month-grid", "year"];
@@ -37,22 +38,26 @@ export default function ViewSwitcher({
       {VIEW_OPTIONS.map((view) => {
         const isActive = view === activeView;
         return (
-          <button
+          <Eyebrow
             key={view}
-            role="tab"
-            type="button"
-            aria-selected={isActive}
-            onClick={() => onViewChange(view)}
+            asChild
             className={[
-              "px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors",
+              "px-4 py-2.5 transition-colors",
               isActive
                 ? "bg-[var(--ink)] text-[var(--parchment)]"
                 : "text-[var(--ink-2)] hover:bg-[var(--parchment-3)]",
             ].join(" ")}
           >
-            <span className="hidden sm:inline">{t(VIEW_KEYS[view])}</span>
-            <span className="sm:hidden">{t(VIEW_ABBR_KEYS[view])}</span>
-          </button>
+            <button
+              role="tab"
+              type="button"
+              aria-selected={isActive}
+              onClick={() => onViewChange(view)}
+            >
+              <span className="hidden sm:inline">{t(VIEW_KEYS[view])}</span>
+              <span className="sm:hidden">{t(VIEW_ABBR_KEYS[view])}</span>
+            </button>
+          </Eyebrow>
         );
       })}
     </div>

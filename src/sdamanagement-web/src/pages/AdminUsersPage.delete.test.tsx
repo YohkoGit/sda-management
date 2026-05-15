@@ -159,7 +159,7 @@ describe("AdminUsersPage — Delete", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer l'utilisateur")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
 
@@ -191,7 +191,7 @@ describe("AdminUsersPage — Delete", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer l'utilisateur")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
 
@@ -223,7 +223,7 @@ describe("AdminUsersPage — Delete", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer l'utilisateur")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
 
@@ -256,7 +256,7 @@ describe("AdminUsersPage — Delete", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer l'utilisateur")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
 
@@ -290,7 +290,7 @@ describe("AdminUsersPage — Delete", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer l'utilisateur")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
 
@@ -322,7 +322,7 @@ describe("AdminUsersPage — Delete", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Supprimer l'utilisateur")
+        screen.getByRole("alertdialog")
       ).toBeInTheDocument();
     });
 

@@ -1,28 +1,11 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 
-export interface HealthCheckItem {
-  name: string;
-  status: string;
-  description: string | null;
-  duration: string;
-}
+type Schemas = components["schemas"];
 
-export interface SetupStatusResponse {
-  churchConfigExists: boolean;
-  departmentCount: number;
-  templateCount: number;
-  scheduleCount: number;
-  userCount: number;
-}
-
-export interface SystemHealthResponse {
-  status: string;
-  checks: HealthCheckItem[];
-  version: string;
-  uptimeSeconds: number;
-  environment: string;
-  setupStatus: SetupStatusResponse;
-}
+export type HealthCheckItem = NonNullable<Schemas["HealthCheckItem"]>;
+export type SetupStatusResponse = NonNullable<Schemas["SetupStatusResponse"]>;
+export type SystemHealthResponse = NonNullable<Schemas["SystemHealthResponse"]>;
 
 export const systemHealthService = {
   getSystemHealth: () =>

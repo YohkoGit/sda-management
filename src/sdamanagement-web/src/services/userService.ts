@@ -1,64 +1,36 @@
 import api from "@/lib/api";
+import type { components } from "@/api-generated/schema";
 import type { CreateUserFormData, UpdateUserFormData } from "@/schemas/userSchema";
 
-export interface UserDepartmentBadge {
-  id: number;
-  name: string;
-  abbreviation: string;
-  color: string;
-}
+/**
+ * Type aliases over OpenAPI-generated schemas. The codegen's nullability is
+ * looser than the hand-rolled definitions used to be — every property is `?`
+ * because the emitter can't tell required from optional. Treat call-site
+ * narrowing as the cost of having a single source of truth.
+ */
+type Schemas = components["schemas"];
 
-export interface UserListItem {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  avatarUrl?: string;
-  departments: UserDepartmentBadge[];
-  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
-  createdAt: string;
-}
+export type UserDepartmentBadge = NonNullable<Schemas["UserDepartmentBadge"]>;
+export type UserListItem = NonNullable<Schemas["UserListItem"]>;
+export type UserResponse = NonNullable<Schemas["UserResponse"]>;
+export type GuestCreatedResponse = NonNullable<Schemas["GuestCreatedResponse"]>;
+export type BulkCreateUsersResponse = NonNullable<Schemas["BulkCreateUsersResponse"]>;
+/**
+ * FE-only augmentation: `isGuest` is set client-side after creating a guest
+ * via the inline form; the backend's AssignableOfficerResponse doesn't carry
+ * it. Keeps the role-roster code able to differentiate styling.
+ */
+export type AssignableOfficer = NonNullable<Schemas["AssignableOfficerResponse"]> & {
+  isGuest?: boolean;
+};
 
-export interface UserResponse {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  avatarUrl?: string;
-  isGuest: boolean;
-  departments: UserDepartmentBadge[];
-  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
-  createdAt: string;
-  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
-  updatedAt: string;
-}
-
+/**
+ * Generic paged response wrapper. Backend emits a closed instantiation
+ * `PagedUserListItem`; this helper keeps the call sites idiomatic.
+ */
 export interface PagedResponse<T> {
   items: T[];
   nextCursor: string | null;
-}
-
-export interface BulkCreateUsersResponse {
-  created: UserResponse[];
-  count: number;
-}
-
-export interface AssignableOfficer {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  avatarUrl: string | null;
-  departments: { id: number; name: string; abbreviation: string; color: string }[];
-  isGuest?: boolean;
-}
-
-export interface GuestCreatedResponse {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  isGuest: boolean;
 }
 
 export const userService = {

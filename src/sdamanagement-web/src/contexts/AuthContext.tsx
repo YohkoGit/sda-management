@@ -16,13 +16,22 @@ import type { UserRole } from "@/types/auth";
 
 export type { UserRole } from "@/types/auth";
 
+export interface AuthDepartmentBadge {
+  id: number;
+  name: string;
+  abbreviation: string;
+  color: string;
+}
+
 export interface AuthUser {
   userId: number;
   email: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  avatarUrl?: string;
   departmentIds?: number[];
+  departments?: AuthDepartmentBadge[];
 }
 
 interface AuthContextType {

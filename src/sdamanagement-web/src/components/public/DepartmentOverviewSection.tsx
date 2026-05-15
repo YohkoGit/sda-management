@@ -101,9 +101,9 @@ export default function DepartmentOverviewSection() {
                       </p>
                     )}
                   </div>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)]">
-                    {dept.abbreviation}
-                  </span>
+                  <Eyebrow asChild>
+                    <span>{dept.abbreviation}</span>
+                  </Eyebrow>
                 </li>
               );
             })}

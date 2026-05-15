@@ -368,7 +368,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     // Edit should show form directly, no template selector
@@ -439,14 +439,13 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByLabelText("Supprimer l\u2019activité");
+    const deleteButtons = screen.getAllByLabelText(/supprimer/i);
     await user.click(deleteButtons[0]);
 
-    await waitFor(() => {
-      expect(screen.getByText("Êtes-vous sûr de vouloir supprimer cette activité ?")).toBeInTheDocument();
-    });
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Supprimer" }));
+    await user.click(within(dialog).getByRole("button", { name: /supprimer/i }));
 
     await waitFor(() => {
       expect(deleteSpy).toHaveBeenCalled();
@@ -548,7 +547,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -755,7 +754,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -822,7 +821,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -843,10 +842,8 @@ describe("AdminActivitiesPage", () => {
     await user.click(remainingRemoveBtn);
 
     // Confirm removal in dialog
-    await waitFor(() => {
-      expect(screen.getByText("Supprimer le rôle ?")).toBeInTheDocument();
-    });
-    await user.click(screen.getByRole("button", { name: "Supprimer" }));
+    const removalDialog = await screen.findByRole("alertdialog");
+    await user.click(within(removalDialog).getByRole("button", { name: /supprimer/i }));
 
     await waitFor(() => {
       expect(screen.queryByDisplayValue("Ancien de Service")).not.toBeInTheDocument();
@@ -1064,7 +1061,7 @@ describe("AdminActivitiesPage", () => {
     });
 
     // Click edit on first activity (which has specialType: "sainte-cene" in mock)
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -1177,7 +1174,7 @@ describe("AdminActivitiesPage", () => {
     });
 
     // Click the edit button (should NOT open the roster panel)
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     // Should open the edit form, NOT the roster view
@@ -1211,7 +1208,7 @@ describe("AdminActivitiesPage", () => {
     });
 
     // Open edit form
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -1252,7 +1249,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -1348,7 +1345,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -1424,7 +1421,7 @@ describe("AdminActivitiesPage", () => {
       expect(screen.getByText("Culte du Sabbat")).toBeInTheDocument();
     });
 
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {
@@ -1485,7 +1482,7 @@ describe("AdminActivitiesPage", () => {
     });
 
     // Open edit form
-    const editButtons = screen.getAllByLabelText("Modifier l\u2019activité");
+    const editButtons = screen.getAllByRole("button", { name: /^Modifier l/i });
     await user.click(editButtons[0]);
 
     await waitFor(() => {

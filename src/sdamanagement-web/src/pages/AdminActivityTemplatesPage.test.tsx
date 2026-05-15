@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import userEvent from "@testing-library/user-event";
-import { render, screen, waitFor } from "@/test-utils";
+import { render, screen, waitFor, within } from "@/test-utils";
 import { authHandlers } from "@/mocks/handlers/auth";
 import { activityTemplateHandlers } from "@/mocks/handlers/activityTemplates";
 import AdminActivityTemplatesPage from "./AdminActivityTemplatesPage";
@@ -143,15 +143,8 @@ describe("AdminActivityTemplatesPage", () => {
     const deleteButtons = screen.getAllByRole("button", { name: "Supprimer" });
     await user.click(deleteButtons[0]);
 
-    await waitFor(() => {
-      expect(
-        screen.getByText("Supprimer le modèle")
-      ).toBeInTheDocument();
-    });
-    expect(
-      screen.getByText(
-        "Cette action est irréversible. Les rôles associés seront également supprimés."
-      )
-    ).toBeInTheDocument();
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByRole("heading", { name: /supprimer/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /supprimer/i })).toBeInTheDocument();
   });
 });

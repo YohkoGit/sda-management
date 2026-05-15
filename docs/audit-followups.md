@@ -10,23 +10,30 @@ Last sweep state: **252 unit + 481 integration backend tests, 618 frontend tests
 
 ## 1. OpenAPI codegen (DTO duplication)
 
-**Problem.** `UserResponse`, `PagedResponse<T>`, `AssignableOfficer`, etc. are
-hand-defined in both backend (`src/SdaManagement.Api/Dtos/`) and frontend
-(`src/sdamanagement-web/src/services/*.ts`). `AddOpenApi()` is registered in
-`Program.cs` but no client is generated. Drift is already visible — e.g.
-`UserResponse.CreatedAt` was `DateTime` on BE and `string` on FE before the
-recent `DateTimeOffset` fix.
+**Status.** DONE.
 
-**What to do.**
-- Wire NSwag or `openapi-typescript` against the dev OpenAPI document.
-- Generate the FE client into `src/sdamanagement-web/src/api-generated/`.
-- Delete the hand-rolled `services/*.ts` types and call sites that duplicate
-  generated shapes.
-- Wire generation into the FE build script (`npm run build`) and a CI check.
+**What landed.**
+- `openapi-typescript` installed as a devDep.
+- `npm run generate:api` → fetches `http://localhost:5000/openapi/v1.json` and
+  writes `src/sdamanagement-web/src/api-generated/schema.ts`.
+- `npm run generate:api:check` → CI-safe smoke check.
+- Two ASP.NET OpenAPI transformers added to make the doc consumable:
+  - `DtoSchemaTransformer` — registers all `SdaManagement.Api.Dtos.*` types
+    as `components.schemas` entries (controllers return untyped `IActionResult`
+    so the emitter wouldn't see them otherwise).
+  - `NumericTypeSchemaTransformer` — strips the `string` half of
+    `"type": ["integer", "string"]` numeric unions, and rebuilds each
+    schema's `required` array based on which properties are non-nullable.
+- All 10 service files (`activityService`, `userService`, `departmentService`,
+  `activityTemplateService`, `programScheduleService`, `configService`,
+  `setupProgressService`, `systemHealthService`) and `types/public.ts` now
+  re-export types directly from `@/api-generated/schema`. Hand-rolled
+  duplicates deleted.
 
-**Scope.** 1–2 days. Touches build config + many call sites.
-
-**Why deferred.** Disruptive to every FE service file; needed a focused PR.
+**What's left (small).**
+- Wire `generate:api` into CI as a drift detector (e.g. fail if regenerating
+  produces a non-empty diff). The infrastructure is in place; this is just a
+  CI job change.
 
 ---
 

@@ -265,13 +265,11 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <button
-                type="button"
-                className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] hover:text-[var(--ink)] hover:underline"
-                onClick={() => navigate("/forgot-password")}
-              >
-                {t("auth.login.forgotPassword")}
-              </button>
+              <Eyebrow asChild className="mt-6 hover:text-[var(--ink)] hover:underline">
+                <button type="button" onClick={() => navigate("/forgot-password")}>
+                  {t("auth.login.forgotPassword")}
+                </button>
+              </Eyebrow>
             </div>
           )}
 
@@ -338,13 +336,11 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <button
-                type="button"
-                className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] hover:text-[var(--ink)] hover:underline"
-                onClick={handleBack}
-              >
-                ← {t("auth.login.back")}
-              </button>
+              <Eyebrow asChild className="mt-6 hover:text-[var(--ink)] hover:underline">
+                <button type="button" onClick={handleBack}>
+                  ← {t("auth.login.back")}
+                </button>
+              </Eyebrow>
             </div>
           )}
 
@@ -442,13 +438,11 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <button
-                type="button"
-                className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--ink-3)] hover:text-[var(--ink)] hover:underline"
-                onClick={handleBack}
-              >
-                ← {t("auth.login.back")}
-              </button>
+              <Eyebrow asChild className="mt-6 hover:text-[var(--ink)] hover:underline">
+                <button type="button" onClick={handleBack}>
+                  ← {t("auth.login.back")}
+                </button>
+              </Eyebrow>
             </div>
           )}
         </div>
