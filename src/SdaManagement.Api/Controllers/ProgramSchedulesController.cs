@@ -16,7 +16,7 @@ namespace SdaManagement.Api.Controllers;
 [EnableRateLimiting("auth")]
 public class ProgramSchedulesController(
     IProgramScheduleService scheduleService,
-    SdacAuth.IAuthorizationService auth) : ControllerBase
+    SdacAuth.IAuthorizationService auth) : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -121,11 +121,4 @@ public class ProgramSchedulesController(
         return deleted ? NoContent() : NotFound();
     }
 
-    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
-        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
-        {
-            Type = "urn:sdac:validation-error",
-            Title = "Validation Error",
-            Status = 400,
-        });
 }

@@ -13,7 +13,7 @@ namespace SdaManagement.Api.Controllers;
 public class ConfigController(
     IConfigService configService,
     SdacAuth.IAuthorizationService auth,
-    ISanitizationService sanitizer) : ControllerBase
+    ISanitizationService sanitizer) : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetPublicConfig()
@@ -61,11 +61,4 @@ public class ConfigController(
         return Ok(result);
     }
 
-    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
-        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
-        {
-            Type = "urn:sdac:validation-error",
-            Title = "Validation Error",
-            Status = 400,
-        });
 }

@@ -17,7 +17,7 @@ namespace SdaManagement.Api.Controllers;
 public class ActivitiesController(
     IActivityService activityService,
     SdacAuth.IAuthorizationService auth,
-    SdacAuth.ICurrentUserContext currentUser) : ControllerBase
+    SdacAuth.ICurrentUserContext currentUser) : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? departmentId, [FromQuery] string? visibility = null)
@@ -189,12 +189,4 @@ public class ActivitiesController(
         activity.DepartmentId.HasValue
             ? auth.CanManage(activity.DepartmentId.Value)
             : auth.IsOwner();
-
-    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
-        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
-        {
-            Type = "urn:sdac:validation-error",
-            Title = "Validation Error",
-            Status = 400,
-        });
 }

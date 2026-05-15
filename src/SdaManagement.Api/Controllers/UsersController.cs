@@ -21,7 +21,7 @@ public class UsersController(
     IUserService userService,
     SdacAuth.IAuthorizationService auth,
     ICurrentUserContext currentUser,
-    AppDbContext db) : ControllerBase
+    AppDbContext db) : ApiControllerBase
 {
     [HttpGet("assignable-officers")]
     [DisableRateLimiting]
@@ -275,14 +275,6 @@ public class UsersController(
         var deleted = await userService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }
-
-    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
-        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
-        {
-            Type = "urn:sdac:validation-error",
-            Title = "Validation Error",
-            Status = 400,
-        });
 
     private static string? ExtractConflictingEmail(string? detail)
     {

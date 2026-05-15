@@ -16,7 +16,7 @@ namespace SdaManagement.Api.Controllers;
 [EnableRateLimiting("auth")]
 public class ActivityTemplatesController(
     IActivityTemplateService templateService,
-    SdacAuth.IAuthorizationService auth) : ControllerBase
+    SdacAuth.IAuthorizationService auth) : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -101,11 +101,4 @@ public class ActivityTemplatesController(
         return deleted ? NoContent() : NotFound();
     }
 
-    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
-        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
-        {
-            Type = "urn:sdac:validation-error",
-            Title = "Validation Error",
-            Status = 400,
-        });
 }

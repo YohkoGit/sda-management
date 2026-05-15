@@ -23,7 +23,7 @@ public class AuthController(
     IPasswordService passwordService,
     ICurrentUserContext currentUserContext,
     IConfiguration configuration,
-    IAvatarService avatarService) : ControllerBase
+    IAvatarService avatarService) : ApiControllerBase
 {
     [HttpPost("initiate")]
     public async Task<IActionResult> Initiate(
@@ -308,12 +308,4 @@ public class AuthController(
             ? Redirect($"{frontendUrl}{path}")
             : Redirect(path);
     }
-
-    private BadRequestObjectResult ValidationError(FluentValidation.Results.ValidationResult validation) =>
-        BadRequest(new ValidationProblemDetails(validation.ToDictionary())
-        {
-            Type = "urn:sdac:validation-error",
-            Title = "Validation Error",
-            Status = 400,
-        });
 }
