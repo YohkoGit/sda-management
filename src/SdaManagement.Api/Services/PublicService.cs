@@ -14,6 +14,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
         var today = DateOnly.FromDateTime(DateTime.Now);
 
         var activity = await dbContext.Activities
+            .AsNoTracking()
             .Include(a => a.Department)
             .Include(a => a.Roles)
                 .ThenInclude(r => r.Assignments)
@@ -50,6 +51,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
         var fourWeeksOut = today.AddDays(28);
 
         var activities = await dbContext.Activities
+            .AsNoTracking()
             .Include(a => a.Department)
             .Include(a => a.Roles)
                 .ThenInclude(r => r.Assignments)
@@ -146,6 +148,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
             end = maxEnd;
 
         var activities = await dbContext.Activities
+            .AsNoTracking()
             .Include(a => a.Department)
             .Include(a => a.Roles)
                 .ThenInclude(r => r.Assignments)

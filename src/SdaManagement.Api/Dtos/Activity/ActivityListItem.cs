@@ -1,3 +1,5 @@
+using SdaManagement.Api.Data.Entities;
+
 namespace SdaManagement.Api.Dtos.Activity;
 
 public class ActivityListItem
@@ -13,7 +15,7 @@ public class ActivityListItem
     public string Visibility { get; init; } = string.Empty;
     public string? SpecialType { get; init; }
     public bool IsMeeting { get; init; }
-    public string? MeetingType { get; init; }
+    public MeetingType? MeetingType { get; init; }
     public string? LocationName { get; init; }
     public int RoleCount { get; init; }
     public int TotalHeadcount { get; init; }

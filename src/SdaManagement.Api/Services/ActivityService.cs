@@ -81,6 +81,7 @@ public class ActivityService(
     public async Task<ActivityResponse?> GetByIdAsync(int id)
     {
         var activity = await dbContext.Activities
+            .AsNoTracking()
             .Include(a => a.Department)
             .Include(a => a.Roles)
                 .ThenInclude(r => r.Assignments)
@@ -111,9 +112,9 @@ public class ActivityService(
             SpecialType = string.IsNullOrWhiteSpace(request.SpecialType) ? null : request.SpecialType,
             IsMeeting = isMeeting,
             MeetingType = isMeeting ? request.MeetingType : null,
-            ZoomLink = isMeeting && request.MeetingType == "zoom" ? request.ZoomLink : null,
-            LocationName = isMeeting && request.MeetingType == "physical" ? request.LocationName : null,
-            LocationAddress = isMeeting && request.MeetingType == "physical" ? request.LocationAddress : null,
+            ZoomLink = isMeeting && request.MeetingType == Data.Entities.MeetingType.Zoom ? request.ZoomLink : null,
+            LocationName = isMeeting && request.MeetingType == Data.Entities.MeetingType.Physical ? request.LocationName : null,
+            LocationAddress = isMeeting && request.MeetingType == Data.Entities.MeetingType.Physical ? request.LocationAddress : null,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -231,9 +232,9 @@ public class ActivityService(
         activity.SpecialType = string.IsNullOrWhiteSpace(request.SpecialType) ? null : request.SpecialType;
         activity.IsMeeting = isMeeting;
         activity.MeetingType = isMeeting ? request.MeetingType : null;
-        activity.ZoomLink = isMeeting && request.MeetingType == "zoom" ? request.ZoomLink : null;
-        activity.LocationName = isMeeting && request.MeetingType == "physical" ? request.LocationName : null;
-        activity.LocationAddress = isMeeting && request.MeetingType == "physical" ? request.LocationAddress : null;
+        activity.ZoomLink = isMeeting && request.MeetingType == Data.Entities.MeetingType.Zoom ? request.ZoomLink : null;
+        activity.LocationName = isMeeting && request.MeetingType == Data.Entities.MeetingType.Physical ? request.LocationName : null;
+        activity.LocationAddress = isMeeting && request.MeetingType == Data.Entities.MeetingType.Physical ? request.LocationAddress : null;
         activity.UpdatedAt = now;
 
         // Meetings: clear all existing roles
@@ -380,10 +381,13 @@ public class ActivityService(
     public async Task<List<MyAssignmentListItem>> GetMyAssignmentsAsync(int userId)
     {
         // Step A — Load entities via .Include() chain
-        // Cannot use .Select() projection because avatarService.GetAvatarUrl() is not translatable to SQL
-        // Note: no .AsNoTracking() because ActivityRole→Assignments creates a cycle back to RoleAssignment.
-        // Tracking queries handle cycles via identity map. Same pattern as GetByIdAsync().
+        // Cannot use .Select() projection because avatarService.GetAvatarUrl() is not translatable to SQL.
+        // Use AsNoTrackingWithIdentityResolution() because the Include path
+        // RoleAssignment -> ActivityRole -> Assignments cycles back to RoleAssignment;
+        // plain AsNoTracking() rejects cycles, while identity-resolution provides a per-query
+        // identity map that handles the cycle without entering the change tracker.
         var assignments = await dbContext.RoleAssignments
+            .AsNoTrackingWithIdentityResolution()
             .Include(ra => ra.ActivityRole)
                 .ThenInclude(ar => ar.Activity)
                     .ThenInclude(a => a.Department)
@@ -429,6 +433,7 @@ public class ActivityService(
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var query = dbContext.Activities
+            .AsNoTracking()
             .Include(a => a.Department)
             .Include(a => a.Roles)
                 .ThenInclude(r => r.Assignments)

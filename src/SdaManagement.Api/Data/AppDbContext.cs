@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SdaManagement.Api.Data.Entities;
 
 namespace SdaManagement.Api.Data;
@@ -157,7 +158,14 @@ public class AppDbContext : DbContext
             e.Property(a => a.Description).HasMaxLength(1000);
             e.Property(a => a.Visibility).HasConversion<int>();
             e.Property(a => a.IsMeeting).HasDefaultValue(false);
-            e.Property(a => a.MeetingType).HasMaxLength(20);
+            // Persist enum as lowercase string ("physical" / "zoom") to match existing DB rows
+            // and keep the column shape (text/varchar) unchanged — no migration needed.
+            // EF wraps the converter with NullableConverter for nullable properties at runtime.
+            e.Property(a => a.MeetingType)
+             .HasMaxLength(20)
+             .HasConversion(new ValueConverter<MeetingType, string>(
+                 v => v.ToString().ToLowerInvariant(),
+                 v => Enum.Parse<MeetingType>(v, ignoreCase: true)));
             e.Property(a => a.ZoomLink).HasMaxLength(500);
             e.Property(a => a.LocationName).HasMaxLength(150);
             e.Property(a => a.LocationAddress).HasMaxLength(300);

@@ -1,3 +1,5 @@
+using SdaManagement.Api.Data.Entities;
+
 namespace SdaManagement.Api.Dtos.Activity;
 
 public class DashboardActivityItem
@@ -14,7 +16,7 @@ public class DashboardActivityItem
     public string Visibility { get; init; } = string.Empty;
     public string? SpecialType { get; init; }
     public bool IsMeeting { get; init; }
-    public string? MeetingType { get; init; }
+    public MeetingType? MeetingType { get; init; }
     public string? LocationName { get; init; }
     public string? PredicateurName { get; init; }
     public string? PredicateurAvatarUrl { get; init; }

@@ -1,3 +1,5 @@
+using SdaManagement.Api.Data.Entities;
+
 namespace SdaManagement.Api.Dtos.Activity;
 
 public record CreateActivityRequest : IActivityRequest, IMeetingRequest
@@ -13,7 +15,7 @@ public record CreateActivityRequest : IActivityRequest, IMeetingRequest
     public int? TemplateId { get; init; }
     public List<ActivityRoleInput>? Roles { get; init; }
     public bool? IsMeeting { get; init; }
-    public string? MeetingType { get; init; }
+    public MeetingType? MeetingType { get; init; }
     public string? ZoomLink { get; init; }
     public string? LocationName { get; init; }
     public string? LocationAddress { get; init; }

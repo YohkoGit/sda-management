@@ -1,4 +1,5 @@
 using FluentValidation;
+using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Dtos.Activity;
 
 namespace SdaManagement.Api.Validators;
@@ -12,9 +13,8 @@ internal static class MeetingValidationRules
         validator.When(x => x.IsMeeting == true, () =>
         {
             validator.RuleFor(x => x.MeetingType)
-                .NotEmpty().WithMessage("MeetingType is required for meetings.")
-                .Must(mt => mt is "zoom" or "physical")
-                .WithMessage("MeetingType must be 'zoom' or 'physical'.");
+                .NotNull().WithMessage("MeetingType is required for meetings.")
+                .IsInEnum().WithMessage("MeetingType must be 'zoom' or 'physical'.");
 
             validator.RuleFor(x => x.Visibility)
                 .Must(v => v == "authenticated")
@@ -26,7 +26,7 @@ internal static class MeetingValidationRules
         });
 
         // Zoom meeting — explicit AND to avoid nested When() inheritance issue
-        validator.When(x => x.IsMeeting == true && x.MeetingType == "zoom", () =>
+        validator.When(x => x.IsMeeting == true && x.MeetingType == MeetingType.Zoom, () =>
         {
             validator.RuleFor(x => x.ZoomLink)
                 .NotEmpty().WithMessage("ZoomLink is required for Zoom meetings.")
@@ -42,7 +42,7 @@ internal static class MeetingValidationRules
         });
 
         // Physical meeting — explicit AND
-        validator.When(x => x.IsMeeting == true && x.MeetingType == "physical", () =>
+        validator.When(x => x.IsMeeting == true && x.MeetingType == MeetingType.Physical, () =>
         {
             validator.RuleFor(x => x.LocationName)
                 .NotEmpty().WithMessage("LocationName is required for physical meetings.")
@@ -58,7 +58,7 @@ internal static class MeetingValidationRules
         validator.When(x => x.IsMeeting != true, () =>
         {
             validator.RuleFor(x => x.MeetingType)
-                .Must(v => string.IsNullOrEmpty(v))
+                .Null()
                 .WithMessage("MeetingType must be null for non-meeting activities.");
             validator.RuleFor(x => x.ZoomLink)
                 .Must(v => string.IsNullOrEmpty(v))
