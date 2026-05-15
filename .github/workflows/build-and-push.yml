@@ -1,0 +1,51 @@
+name: Build & Push QA image
+
+# Builds the multistage Dockerfile and pushes two tags to GHCR on every push
+# to main (and manually via workflow_dispatch):
+#   - ghcr.io/yohkogit/sda-management:sha-<git-sha>   immutable, for prod promotion
+#   - ghcr.io/yohkogit/sda-management:qa              moving tag, berrysmart cron pulls this
+#
+# Test workflow is intentionally separate (keep deploy decoupled from slow tests).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-and-push-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/yohkogit/sda-management:sha-${{ github.sha }}
+            ghcr.io/yohkogit/sda-management:qa
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false

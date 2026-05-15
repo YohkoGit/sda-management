@@ -1,0 +1,31 @@
+# Internal reverse proxy. Cloudflare Tunnel terminates HTTPS at the edge
+# and forwards plain HTTP here on port 8080. No TLS in this file.
+
+:8080 {
+    encode gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options    "nosniff"
+        Referrer-Policy           "strict-origin-when-cross-origin"
+        Permissions-Policy        "geolocation=(), microphone=(), camera=()"
+        -Server
+    }
+
+    # Caddy's reverse_proxy handles WebSocket upgrades automatically — no
+    # separate matcher needed for SignalR's /hubs/notifications hub.
+    reverse_proxy api:8080 {
+        # cloudflared injects Cf-Connecting-IP with the real edge-client IP.
+        # Pass it through so the API and request logs see the actual visitor
+        # rather than the cloudflared container's internal IP.
+        header_up X-Real-IP        {http.request.header.Cf-Connecting-IP}
+        header_up X-Forwarded-For  {http.request.header.Cf-Connecting-IP}
+        header_up X-Forwarded-Proto https
+    }
+
+    log {
+        output stdout
+        format json
+        level  INFO
+    }
+}

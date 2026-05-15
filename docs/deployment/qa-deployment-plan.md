@@ -15,16 +15,21 @@ via **Cloudflare Tunnel** at `qa.sdac.yohko.ca`. Storage backend for avatars
 Prod deployment is deferred to the end of the cycle; the same Docker image
 will deploy there unchanged.
 
-Out of a 12-task plan, **6 are done**:
+Out of a 12-task plan, **11 are done** (only #1, #2, #3, #12 remain):
 - #4 IBlobStore abstraction — Local + S3
 - #5 AvatarService refactor — version column + blob-backed
 - #6 Multistage Dockerfile + local smoke validation (also added missing
   production wiring in `Program.cs`)
+- #7 GitHub Actions build-and-push workflow → GHCR
+- #8 berrysmart compose stack (api + postgres + caddy + cloudflared)
+- #9 Caddyfile + `.env.example` (full env-var contract)
+- #10 cron scripts (`backup-pg.sh` + `refresh.sh`) + `.gitattributes` for LF
+- #11 deployment runbook (`docs/deployment/qa-on-berrysmart.md`)
 - 3 production bug fixes the smoke surfaced (Alpine tzdata, /api fallthrough,
   startup migrations)
 
-Pending: Cloudflare bootstrap (#1, #2, #3 — user does in browser), CI/CD (#7),
-berrysmart compose stack (#8, #9, #10), runbook (#11), first deploy (#12).
+Pending: Cloudflare/Google bootstrap (#1, #2, #3 — user does in browser),
+then first deploy + verification smoke (#12).
 
 ---
 
@@ -141,6 +146,69 @@ Smoke run results (validated):
 - **`/api/*` fallthrough silent HTML** — added explicit `MapFallback` returning
   ProblemDetails 404 before the SPA fallback.
 - **Migrations not auto-applied** — `MigrateAsync` call added to `Program.cs`.
+
+### #7 — GitHub Actions build-and-push (`.github/workflows/build-and-push.yml`)
+Builds the multistage Dockerfile on push to `main` and `workflow_dispatch`,
+pushes two tags to GHCR:
+- `ghcr.io/yohkogit/sda-management:sha-<sha>` — immutable, for prod promotion
+- `ghcr.io/yohkogit/sda-management:qa` — moving tag berrysmart's cron pulls
+
+Uses `${{ secrets.GITHUB_TOKEN }}` with `packages: write` permission, Buildx
+with GHA layer cache (`type=gha`, `mode=max`), `provenance: false` to keep
+the GHCR package page clean. `concurrency` group prevents racing builds on
+back-to-back pushes.
+
+### #8 — berrysmart compose stack (`deploy/qa/docker-compose.yml`)
+Four services on the default network, no host ports:
+- `postgres` — postgres:17-alpine, env-driven via `.env`, healthcheck via
+  `pg_isready`, NVMe-backed `./postgres-data:/var/lib/postgresql/data`.
+- `api` — `ghcr.io/yohkogit/sda-management:qa`, `env_file: .env`, depends on
+  postgres healthy. Dockerfile already provides the `/health` HEALTHCHECK.
+  Includes `./avatars-volume:/app/data/blobs` as a fallback for the LocalDisk
+  provider (active store is R2).
+- `caddy` — caddy:2-alpine, mounts the Caddyfile read-only, healthchecks via
+  `wget --spider http://localhost:8080/health` (proxies to the API).
+- `cloudflared` — `cloudflare/cloudflared:latest`, `tunnel --no-autoupdate run`
+  with `TUNNEL_TOKEN` env var, depends on caddy healthy.
+
+Top-level `name: sdac-qa` sets the compose project name (renders containers
+as `sdac-qa-{service}-1`). Resource caps via `deploy.resources.limits`
+(api 2g/1.5cpu, postgres 1g/0.5cpu, caddy/cloudflared 128m/0.25cpu).
+
+### #9 — Caddyfile + `.env.example` (`deploy/qa/`)
+- **Caddyfile** — listens on `:8080` (HTTP only; tunnel handles TLS), security
+  headers (HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy,
+  `-Server`), gzip encoding, JSON access logs. Single `reverse_proxy api:8080`
+  with `header_up X-Real-IP {http.request.header.Cf-Connecting-IP}` so the API
+  sees the real edge-client IP rather than the cloudflared container IP.
+  WebSocket upgrades for SignalR are handled automatically by `reverse_proxy`.
+- **`.env.example`** — documents every required key including the full
+  R2/Blob/Jwt/Google/Tunnel/Postgres set. Comments explain rotation,
+  `__SAME_AS_POSTGRES_PASSWORD__` placeholder for the inline DB password,
+  and the `Cf-Connecting-IP` chain. `.env` is already gitignored at the
+  repo root (`.gitignore` lines 53–55).
+
+### #10 — Cron scripts (`deploy/qa/scripts/`)
+- **`backup-pg.sh`** — sources `.env` to know POSTGRES_USER/DB, runs
+  `pg_dump` via `docker compose exec -T postgres`, pipes through gzip to
+  `backups/sdac-qa-<UTC-ts>.sql.gz`, 14-day retention, size sanity check
+  (>1KB or exit 1 so cron emails the failure).
+- **`refresh.sh`** — `docker compose pull api` + `docker compose up -d api`,
+  both idempotent. Pinned to the `:qa` tag, not `latest` — respects
+  berrysmart's "no Watchtower" convention.
+- **`deploy/qa/.gitattributes`** — `* text eol=lf` to defeat the repo's
+  `core.autocrlf=true` for the deploy dir. Shell scripts with CRLF shebangs
+  would fail on Linux.
+
+### #11 — Deployment runbook (`docs/deployment/qa-on-berrysmart.md`)
+Sections: Prerequisites checklist (with checkboxes for #1/#2/#3 status),
+one-time bootstrap (SSH, clone, mkdir, copy stack files, fill `.env`,
+chmod 600, openssl secret gen, GHCR login), first deploy, cron installation,
+verification smoke (links to #12 in the plan), troubleshooting (tunnel
+inactive, redirect_uri_mismatch, R2 403, postgres won't start, MigrateAsync
+errors, Caddy 502, GHCR rate limit, tunnel down fallback), rotation
+procedures (JWT, R2, Google OAuth, Cloudflare Tunnel, Postgres password),
+backup and restore (with restore-from-dump steps), day-to-day ops cheatsheet.
 
 ---
 
@@ -797,5 +865,7 @@ Known issues / things to watch:
 
 ---
 
-*Last updated: 2026-05-15 — after task #6 completion. Update this file each
-time a task moves to "done" so the next person has accurate state.*
+*Last updated: 2026-05-15 — after tasks #7, #8, #9, #10, #11 completion (one
+sitting). Only user-side bootstrap (#1, #2, #3) and the first-deploy smoke
+(#12) remain. Update this file each time a task moves to "done" so the next
+person has accurate state.*

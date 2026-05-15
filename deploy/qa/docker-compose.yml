@@ -1,0 +1,87 @@
+# SDAC QA stack — runs on berrysmart, fronted by Cloudflare Tunnel.
+#
+# Public path: qa.sdac.yohko.ca  →  cloudflared  →  caddy:8080  →  api:8080
+# All four services share the default compose network; nothing is exposed on
+# berrysmart's host network. Postgres is only reachable from `api`.
+#
+# Run from ~/berrysmart/config/sdac-qa/ where the bind-mounted dirs live.
+# See deploy/qa/.env.example for required env vars and docs/deployment/qa-on-berrysmart.md
+# for the bootstrap runbook.
+
+name: sdac-qa
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+
+  api:
+    image: ghcr.io/yohkogit/sda-management:qa
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      # LocalDisk fallback for blob storage. Active store is R2 via
+      # BlobStorage__Provider=S3; this only matters if someone flips back.
+      # On first start, the `app` user (UID 1654 in aspnet:10-alpine) must own
+      # this dir — the runbook handles chown.
+      - ./avatars-volume:/app/data/blobs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Dockerfile already declares HEALTHCHECK on /health.
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.5'
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy-data:/data
+      - ./caddy-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: '0.25'
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      caddy:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: '0.25'

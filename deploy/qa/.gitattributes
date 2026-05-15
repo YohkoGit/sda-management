@@ -1,0 +1,6 @@
+# Force LF line endings on all files in this directory. Required because:
+#  - shell scripts run on Linux (berrysmart); CRLF breaks bash shebangs
+#  - Caddyfile / docker-compose.yml are read by Linux containers
+# The repo's global core.autocrlf=true would otherwise convert to CRLF on
+# checkout on Windows machines.
+* text eol=lf
