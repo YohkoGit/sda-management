@@ -658,6 +658,14 @@
       "or": "ou",
       "googleButton": "Continuer avec Google",
       "forgotPassword": "Mot de passe oubli\u00e9?",
+      "brand": {
+        "kicker": "\u00c9glise Adventiste \u00b7 2026",
+        "headline": "La maison de pri\u00e8re reste ouverte",
+        "tagline": "Connectez-vous pour consulter vos affectations, planifier le sabbat ou ajuster les minist\u00e8res de votre d\u00e9partement.",
+        "doxology": "\u2723 Soli Deo gloria",
+        "welcomeHeadline": "Bienvenue \u00e0 la maison",
+        "welcomeHelper": "Entrez votre adresse courriel pour continuer. Si vous \u00eates administrateur, vous pouvez aussi vous connecter via Google."
+      },
       "error": {
         "invalidCredentials": "Identifiants invalides"
       }
@@ -698,6 +706,10 @@
       "not-found": "Utilisateur introuvable",
       "password-already-set": "Le mot de passe a d\u00e9j\u00e0 \u00e9t\u00e9 d\u00e9fini. Utilisez la connexion.",
       "invalid-reset-token": "Le lien de r\u00e9initialisation est invalide ou expir\u00e9."
+    },
+    "errors": {
+      "userNotFound": "Contactez votre administrateur pour obtenir un acc\u00e8s.",
+      "authFailed": "L'authentification a \u00e9chou\u00e9. Veuillez r\u00e9essayer."
     }
   },
   "setup": {

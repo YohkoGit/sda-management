@@ -596,6 +596,14 @@ testI18n.use(initReactI18next).init({
             or: "Ou",
             googleButton: "Continuer avec Google",
             forgotPassword: "Mot de passe oublié?",
+            brand: {
+              kicker: "Église Adventiste · 2026",
+              headline: "La maison de prière reste ouverte",
+              tagline: "Connectez-vous pour consulter vos affectations, planifier le sabbat ou ajuster les ministères de votre département.",
+              doxology: "✣ Soli Deo gloria",
+              welcomeHeadline: "Bienvenue à la maison",
+              welcomeHelper: "Entrez votre adresse courriel pour continuer. Si vous êtes administrateur, vous pouvez aussi vous connecter via Google.",
+            },
             error: { invalidCredentials: "Identifiants invalides" },
           },
           setPassword: {
@@ -628,6 +636,10 @@ testI18n.use(initReactI18next).init({
           },
           error: {
             generic: "Une erreur est survenue. Veuillez réessayer.",
+          },
+          errors: {
+            userNotFound: "Contactez votre administrateur pour obtenir un accès.",
+            authFailed: "L'authentification a échoué. Veuillez réessayer.",
           },
         },
         setup: {

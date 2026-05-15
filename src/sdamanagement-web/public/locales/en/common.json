@@ -658,6 +658,14 @@
       "or": "or",
       "googleButton": "Continue with Google",
       "forgotPassword": "Forgot password?",
+      "brand": {
+        "kicker": "Adventist Church · 2026",
+        "headline": "The house of prayer remains open",
+        "tagline": "Sign in to view your assignments, plan the Sabbath, or tend to your department's ministries.",
+        "doxology": "✣ Soli Deo gloria",
+        "welcomeHeadline": "Welcome home",
+        "welcomeHelper": "Enter your email address to continue. Administrators may also sign in with Google."
+      },
       "error": {
         "invalidCredentials": "Invalid credentials"
       }
@@ -698,6 +706,10 @@
       "not-found": "User not found",
       "password-already-set": "Password has already been set. Use sign in.",
       "invalid-reset-token": "The reset link is invalid or expired."
+    },
+    "errors": {
+      "userNotFound": "Contact your administrator to request access.",
+      "authFailed": "Authentication failed. Please try again."
     }
   },
   "setup": {

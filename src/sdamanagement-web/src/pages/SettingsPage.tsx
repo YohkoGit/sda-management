@@ -2,14 +2,15 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { configService, type ChurchConfigResponse } from "@/services/configService";
 import { ChurchIdentityForm } from "@/components/settings/ChurchIdentityForm";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  const { isLoading: isAuthLoading } = useAuth();
+  const { isOwner } = useRole();
 
   const { data: configData, isLoading } = useQuery<ChurchConfigResponse | null>({
     queryKey: ["config"],

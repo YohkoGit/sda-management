@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { getDateLocale } from "@/lib/dateFormatting";
 import { Eyebrow } from "@/components/ui/typography";
+import type { UserRole } from "@/types/auth";
 
-function getRoleLabelKey(role: string): string {
-  switch (role?.toUpperCase()) {
+function getRoleLabelKey(role: UserRole | null): string {
+  switch (role) {
     case "ADMIN":
       return "pages.dashboard.role.admin";
     case "OWNER":
@@ -18,10 +20,11 @@ function getRoleLabelKey(role: string): string {
 export function DashboardGreeting() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const { role } = useRole();
   const locale = getDateLocale(i18n.language);
   const formattedDate = format(new Date(), "EEEE d MMMM · yyyy", { locale });
   const firstName = user?.firstName ?? "";
-  const roleLabel = t(getRoleLabelKey(user?.role ?? ""));
+  const roleLabel = t(getRoleLabelKey(role));
 
   return (
     <section className="flex flex-col gap-4 border-b border-[var(--hairline)] pb-8 sm:flex-row sm:items-end sm:justify-between">

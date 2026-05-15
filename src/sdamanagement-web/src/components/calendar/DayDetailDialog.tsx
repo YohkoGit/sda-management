@@ -73,8 +73,8 @@ export default function DayDetailDialog({
     setSelectedTemplate(null);
   }, [date, open]);
 
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+  const isOwner = user?.role === "OWNER";
+  const isAdmin = user?.role === "ADMIN";
   const canCreate = isOwner || isAdmin;
 
   const isPastDate = useMemo(() => {

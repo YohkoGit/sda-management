@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import {
   activityTemplateService,
   type ActivityTemplateListItem,
@@ -16,8 +17,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminActivityTemplatesPage() {
   const { t } = useTranslation();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  const { isLoading: isAuthLoading } = useAuth();
+  const { isOwner } = useRole();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: templates, isLoading } = useQuery<ActivityTemplateListItem[]>({

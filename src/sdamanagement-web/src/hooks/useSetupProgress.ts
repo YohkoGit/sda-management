@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import {
   setupProgressService,
   type SetupProgressResponse,
@@ -22,8 +22,7 @@ export interface EnrichedSetupStep {
 }
 
 export function useSetupProgress() {
-  const { user } = useAuth();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  const { isOwner } = useRole();
 
   const { data, isLoading, isError } = useQuery<SetupProgressResponse>({
     queryKey: ["setup-progress"],

@@ -57,9 +57,9 @@ const mockActivities: PublicActivityListItem[] = [
   },
 ];
 
-const adminUser = { role: "ADMIN", departmentIds: [1] };
-const ownerUser = { role: "OWNER", departmentIds: [1, 2] };
-const viewerUser = { role: "VIEWER", departmentIds: [] };
+const adminUser = { role: "ADMIN" as const, departmentIds: [1] };
+const ownerUser = { role: "OWNER" as const, departmentIds: [1, 2] };
+const viewerUser = { role: "VIEWER" as const, departmentIds: [] };
 
 const server = setupServer(
   ...authHandlers,

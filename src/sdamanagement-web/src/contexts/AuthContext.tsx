@@ -8,16 +8,20 @@ import {
 } from "react";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import api from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { stopConnection } from "@/lib/signalr";
+import type { UserRole } from "@/types/auth";
+
+export type { UserRole } from "@/types/auth";
 
 export interface AuthUser {
   userId: number;
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: UserRole;
   departmentIds?: number[];
 }
 
@@ -34,6 +38,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,17 +85,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const params = new URLSearchParams(window.location.search);
     const errorParam = params.get("error");
     if (errorParam === "user_not_found") {
-      const msg = "Contactez votre administrateur pour obtenir un accès.";
+      const msg = t("auth.errors.userNotFound");
       setError(msg);
       toast.error(msg, { duration: Infinity });
       window.history.replaceState({}, "", window.location.pathname);
     } else if (errorParam === "auth_failed") {
-      const msg = "L'authentification a échoué. Veuillez réessayer.";
+      const msg = t("auth.errors.authFailed");
       setError(msg);
       toast.error(msg, { duration: Infinity });
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const handleExpired = () => {

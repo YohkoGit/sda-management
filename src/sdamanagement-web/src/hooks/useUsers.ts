@@ -1,9 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { userService } from "@/services/userService";
 
 export function useUsers() {
-  const { user, isAuthenticated } = useAuth();
+  const { hasRole, isAuthenticated } = useRole();
 
   const {
     data,
@@ -22,9 +22,7 @@ export function useUsers() {
   });
 
   const users = data?.pages.flatMap((page) => page.items) ?? [];
-  const isAdminOrOwner =
-    user?.role?.toUpperCase() === "OWNER" ||
-    user?.role?.toUpperCase() === "ADMIN";
+  const isAdminOrOwner = hasRole("ADMIN", "OWNER");
 
   return {
     users,

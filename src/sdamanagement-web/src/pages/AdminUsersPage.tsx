@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { UserFormDialog, BulkUserFormDialog, DeleteUserDialog } from "@/components/user";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { useUsers } from "@/hooks/useUsers";
 import { queryClient } from "@/lib/queryClient";
 import { userService } from "@/services/userService";
@@ -24,6 +25,7 @@ const ROLE_BADGE_STYLES: Record<string, string> = {
 export default function AdminUsersPage() {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
+  const { isOwner } = useRole();
   const {
     users,
     fetchNextPage,
@@ -64,7 +66,7 @@ export default function AdminUsersPage() {
 
   const canUploadAvatar = (user: UserListItem) => {
     if (!authUser || !isAdminOrOwner) return false;
-    if (authUser.role?.toUpperCase() === "OWNER") return true;
+    if (isOwner) return true;
     // ADMIN can upload for users sharing a department
     return user.departments.some((d) =>
       authUser.departmentIds?.includes(d.id),
@@ -221,8 +223,8 @@ export default function AdminUsersPage() {
                     {t("pages.adminUsers.editButton")}
                   </Button>
                 )}
-                {authUser?.role?.toUpperCase() === "OWNER" &&
-                  user.id !== authUser.userId && (
+                {isOwner &&
+                  user.id !== authUser?.userId && (
                     <Button
                       variant="ghost"
                       size="icon"

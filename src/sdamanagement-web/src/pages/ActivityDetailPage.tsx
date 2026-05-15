@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Pencil, Video, MapPin } from "lucide-react";
 import { useActivity } from "@/hooks/useActivity";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { useModifiedBadgeStore } from "@/stores/modifiedBadgeStore";
 import { RoleSlotDisplay } from "@/components/activity-detail/RoleSlotDisplay";
 import { StaffingIndicator } from "@/components/activity/StaffingIndicator";
@@ -19,7 +19,7 @@ export default function ActivityDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
-  const { user } = useAuth();
+  const { isOwner, isAdmin, ownedDepartmentIds } = useRole();
 
   const activityId = id ? Number(id) : undefined;
   const { data: activity, isLoading, error, refetch } = useActivity(activityId);
@@ -80,10 +80,10 @@ export default function ActivityDetailPage() {
   const assignedCount = activity.roles.reduce((sum, r) => sum + r.assignments.length, 0);
 
   const canEdit =
-    user?.role?.toUpperCase() === "OWNER" ||
-    (user?.role?.toUpperCase() === "ADMIN" &&
+    isOwner ||
+    (isAdmin &&
       activity.departmentId != null &&
-      (user?.departmentIds ?? []).includes(activity.departmentId));
+      ownedDepartmentIds.includes(activity.departmentId));
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">

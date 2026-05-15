@@ -32,6 +32,7 @@ import {
 import { userService, type UserResponse, type UserListItem } from "@/services/userService";
 import { departmentService } from "@/services/departmentService";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 
 interface UserFormDialogProps {
   open: boolean;
@@ -42,8 +43,8 @@ interface UserFormDialogProps {
 export function UserFormDialog({ open, onOpenChange, editUser }: UserFormDialogProps) {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
+  const { isOwner, isAdmin } = useRole();
   const queryClient = useQueryClient();
-  const isOwner = authUser?.role?.toUpperCase() === "OWNER";
   const isEditMode = !!editUser;
   const isSelfEdit = isEditMode && editUser.id === authUser?.userId;
 
@@ -82,7 +83,6 @@ export function UserFormDialog({ open, onOpenChange, editUser }: UserFormDialogP
   });
 
   const allDepartments = departmentsData ?? [];
-  const isAdmin = authUser?.role?.toUpperCase() === "ADMIN";
   const departments = isAdmin && authUser?.departmentIds
     ? allDepartments.filter((d) => authUser.departmentIds!.includes(d.id))
     : allDepartments;

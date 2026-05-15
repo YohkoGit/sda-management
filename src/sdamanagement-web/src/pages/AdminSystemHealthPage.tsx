@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import {
   systemHealthService,
   type SystemHealthResponse,
@@ -17,8 +18,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminSystemHealthPage() {
   const { t } = useTranslation();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  const { isLoading: isAuthLoading } = useAuth();
+  const { isOwner } = useRole();
   const queryClient = useQueryClient();
 
   const { data, isLoading, isFetching } = useQuery<SystemHealthResponse>({

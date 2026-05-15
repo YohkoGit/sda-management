@@ -157,22 +157,21 @@ export default function LoginPage() {
         <div className="relative">
           <div className="flex flex-col">
             <span className="font-display text-3xl italic tracking-tight">Saint-Hubert</span>
-            <span className="eyebrow eyebrow-gilt mt-2">Église Adventiste · 2026</span>
+            <span className="eyebrow eyebrow-gilt mt-2">{t("auth.login.brand.kicker")}</span>
           </div>
         </div>
 
         <div className="relative max-w-lg">
           <h2 className="font-display text-5xl leading-[1.05] text-[var(--parchment)]">
-            La maison de prière reste ouverte<span className="text-[var(--gilt)]">.</span>
+            {t("auth.login.brand.headline")}<span className="text-[var(--gilt)]">.</span>
           </h2>
           <p className="mt-6 max-w-md text-base leading-relaxed text-[var(--parchment)]/70">
-            Connectez-vous pour consulter vos affectations, planifier le sabbat
-            ou ajuster les ministères de votre département.
+            {t("auth.login.brand.tagline")}
           </p>
         </div>
 
         <p className="relative font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--gilt-soft)]">
-          ✣ Soli Deo gloria
+          {t("auth.login.brand.doxology")}
         </p>
       </aside>
 
@@ -192,12 +191,11 @@ export default function LoginPage() {
           {step === "email" && (
             <div>
               <h1 className="mt-4 font-display text-4xl leading-tight text-[var(--ink)] lg:text-5xl">
-                Bienvenue à la maison
+                {t("auth.login.brand.welcomeHeadline")}
                 <span className="text-[var(--gilt-2)]">.</span>
               </h1>
               <p className="mt-4 max-w-sm text-sm text-[var(--ink-3)]">
-                Entrez votre adresse courriel pour continuer. Si vous êtes
-                administrateur, vous pouvez aussi vous connecter via Google.
+                {t("auth.login.brand.welcomeHelper")}
               </p>
 
               <Button

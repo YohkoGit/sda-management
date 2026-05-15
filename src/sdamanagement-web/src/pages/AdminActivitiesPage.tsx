@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, CalendarDays, Pencil, Trash2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
 import { useActivityCacheInvalidation } from "@/hooks/useActivityCacheInvalidation";
 import {
@@ -99,6 +100,7 @@ function RosterPanelContent({
 export default function AdminActivitiesPage() {
   const { t } = useTranslation();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { isOwner, isAdmin } = useRole();
   const invalidateActivityCache = useActivityCacheInvalidation();
   const {
     Root: FormWrapper,
@@ -108,8 +110,6 @@ export default function AdminActivitiesPage() {
     isMobile,
   } = useResponsiveDialog();
 
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
   const canAccess = isOwner || isAdmin;
 
   const [showCreateForm, setShowCreateForm] = useState(false);

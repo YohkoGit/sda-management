@@ -4,19 +4,18 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eyebrow } from "@/components/ui/typography";
-import { useAuth } from "@/contexts/AuthContext";
-import { hasRole } from "@/components/ProtectedRoute";
+import { useRole } from "@/hooks/useRole";
 import { useDashboardActivities } from "@/hooks/useDashboardActivities";
 import { deptSwatchColor } from "@/lib/dept-color";
 import { DashboardActivityCard } from "./DashboardActivityCard";
 
 export function DashboardUpcomingSection() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { isOwner, hasRole } = useRole();
   const { data, isLoading, isError, refetch } = useDashboardActivities();
 
-  const showStaffing = hasRole(user?.role ?? "", "ADMIN");
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  // "ADMIN or higher" — owners also see staffing
+  const showStaffing = hasRole("ADMIN", "OWNER");
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const deptBadges = useMemo(() => {
@@ -40,7 +39,7 @@ export function DashboardUpcomingSection() {
         </Eyebrow>
       );
     }
-    if (hasRole(user?.role ?? "", "ADMIN")) {
+    if (showStaffing) {
       if (deptBadges.length >= 5) {
         return (
           <Eyebrow className="mt-1">
@@ -87,7 +86,7 @@ export function DashboardUpcomingSection() {
           </h2>
           {renderSubtitle()}
         </div>
-        {hasRole(user?.role ?? "", "ADMIN") && (
+        {showStaffing && (
           <Link
             to="/admin/activities"
             className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--gilt-2)] hover:text-[var(--ink)] hover:underline"
@@ -130,7 +129,7 @@ export function DashboardUpcomingSection() {
           <p className="font-display text-xl italic text-[var(--ink-3)]">
             {t("pages.dashboard.upcoming.empty")}
           </p>
-          {hasRole(user?.role ?? "", "ADMIN") && (
+          {showStaffing && (
             <p className="mt-3 text-sm text-[var(--ink-3)]">
               {t("pages.dashboard.upcoming.emptyHintAdmin")}
             </p>

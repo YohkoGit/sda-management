@@ -30,6 +30,7 @@ import {
 import { userService } from "@/services/userService";
 import { departmentService } from "@/services/departmentService";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 
 const MAX_ROWS = 30;
 
@@ -49,9 +50,8 @@ interface BulkUserFormDialogProps {
 export function BulkUserFormDialog({ open, onOpenChange }: BulkUserFormDialogProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { isOwner, isAdmin } = useRole();
   const queryClient = useQueryClient();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
-  const isAdmin = user?.role?.toUpperCase() === "ADMIN";
 
   const {
     register,

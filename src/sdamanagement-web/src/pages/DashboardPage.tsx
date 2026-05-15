@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { SetupChecklist } from "@/components/setup";
 import { DashboardGreeting } from "@/components/dashboard/DashboardGreeting";
 import { MyAssignmentsSection } from "@/components/assignments/MyAssignmentsSection";
@@ -6,8 +6,7 @@ import { DashboardUpcomingSection } from "@/components/dashboard/DashboardUpcomi
 import { SabbathCard } from "@/components/dashboard/SabbathCard";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-  const isOwner = user?.role?.toUpperCase() === "OWNER";
+  const { isOwner } = useRole();
 
   return (
     <div className="mx-auto max-w-7xl">
