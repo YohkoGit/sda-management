@@ -328,12 +328,15 @@ public class AvatarEndpointTests : IntegrationTestBase
             .First(u => u.GetProperty("id").GetInt32() == _targetUserId)
             .GetProperty("avatarUrl").GetString();
 
-        // Brief delay to ensure different last-modified time
-        await Task.Delay(100);
-
         // Re-upload with different image
         using var content2 = CreateTestImageContent(width: 32, height: 32);
         await OwnerClient.PostAsync($"/api/avatars/{_targetUserId}", content2);
+
+        // Deterministically advance the file's last-write-time so the ETag and cache-bust
+        // querystring (both derived from File.GetLastWriteTimeUtc().Ticks in AvatarService)
+        // differ from the first upload. Avoids a flaky Task.Delay on fast filesystems.
+        var avatarFilePath = Path.Combine(Factory.AvatarTestPath, $"{_targetUserId}.webp");
+        File.SetLastWriteTimeUtc(avatarFilePath, DateTime.UtcNow.AddSeconds(1));
 
         var response2 = await AnonymousClient.GetAsync($"/api/avatars/{_targetUserId}");
         var etag2 = response2.Headers.ETag!.Tag;

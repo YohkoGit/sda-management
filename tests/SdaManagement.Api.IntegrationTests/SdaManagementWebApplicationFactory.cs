@@ -27,6 +27,12 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
 
     public string ConnectionString => _postgresContainer.GetConnectionString();
 
+    /// <summary>
+    /// Exposed for tests that need to manipulate avatar files on disk (e.g. setting
+    /// last-write-time to deterministically vary ETag/cache-bust between uploads).
+    /// </summary>
+    public string AvatarTestPath => _avatarTestPath;
+
     public async Task InitializeAsync()
     {
         await _postgresContainer.StartAsync();
