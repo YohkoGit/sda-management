@@ -16,6 +16,7 @@ export interface UserListItem {
   role: string;
   avatarUrl?: string;
   departments: UserDepartmentBadge[];
+  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
   createdAt: string;
 }
 
@@ -28,7 +29,9 @@ export interface UserResponse {
   avatarUrl?: string;
   isGuest: boolean;
   departments: UserDepartmentBadge[];
+  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
   createdAt: string;
+  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
   updatedAt: string;
 }
 

@@ -10,7 +10,9 @@ export interface ProgramScheduleResponse {
   hostName?: string | null;
   departmentId?: number | null;
   departmentName?: string | null;
+  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
   createdAt: string;
+  /** ISO 8601 instant with offset (e.g. "2026-01-01T00:00:00+00:00"). Wire shape is DateTimeOffset. */
   updatedAt: string;
 }
 

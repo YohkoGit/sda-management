@@ -277,6 +277,36 @@ public class UserEndpointTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task CreateUser_Response_CreatedAtIsIso8601WithOffset()
+    {
+        // Wire contract: createdAt/updatedAt are serialized as DateTimeOffset (ISO 8601 with offset),
+        // not as DateTime (which omits the timezone marker and is parsed as local on the FE).
+        // Regression guard: this prevents accidentally reverting the DTO back to DateTime.
+        var response = await OwnerClient.PostAsJsonAsync("/api/users",
+            ValidUserPayload(email: "iso-offset@test.com", departmentIds: [_deptJaId]));
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+
+        var createdAtRaw = doc.RootElement.GetProperty("createdAt").GetString();
+        var updatedAtRaw = doc.RootElement.GetProperty("updatedAt").GetString();
+
+        createdAtRaw.ShouldNotBeNull();
+        updatedAtRaw.ShouldNotBeNull();
+
+        // ISO 8601 instant marker — either "+00:00" (UTC offset) or "Z" (zulu)
+        (createdAtRaw.EndsWith("+00:00") || createdAtRaw.EndsWith("Z") || createdAtRaw.Contains("+") || createdAtRaw.Contains("-", StringComparison.Ordinal))
+            .ShouldBeTrue($"createdAt '{createdAtRaw}' should include a timezone offset");
+
+        // Round-trip via DateTimeOffset.Parse (would throw on a naïve DateTime string with no offset)
+        var parsed = DateTimeOffset.Parse(createdAtRaw, System.Globalization.CultureInfo.InvariantCulture);
+        parsed.Offset.ShouldBe(TimeSpan.Zero, $"createdAt offset should be UTC, got {parsed.Offset}");
+        parsed.ShouldBeGreaterThan(DateTimeOffset.UtcNow.AddMinutes(-5));
+        parsed.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow.AddMinutes(5));
+    }
+
+    [Fact]
     public async Task GetUserById_AsAdminForUserOutsideScope_Returns403()
     {
         // Create a user in MIFEM only (admin has JA)

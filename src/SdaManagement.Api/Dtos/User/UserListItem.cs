@@ -9,5 +9,5 @@ public class UserListItem
     public string Role { get; init; } = string.Empty;
     public string? AvatarUrl { get; set; }
     public List<UserDepartmentBadge> Departments { get; init; } = [];
-    public DateTime CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
 }

@@ -7,11 +7,18 @@ namespace SdaManagement.Api.Services;
 
 public class PublicService(AppDbContext dbContext, IAvatarService avatarService) : IPublicService
 {
+    // The church is in Saint-Hubert, Quebec — civil "today" must be evaluated against
+    // America/Toronto regardless of where the server runs. Using DateTime.Now would
+    // depend on server-local time and produce off-by-X-hours bugs once deployed.
+    private static readonly TimeZoneInfo QuebecTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+
+    private static DateOnly QuebecToday() =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, QuebecTimeZone));
+
     public async Task<PublicNextActivityResponse?> GetNextActivityAsync()
     {
-        // TODO: If hosted outside America/Toronto timezone (e.g., Azure US West),
-        // replace with: TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Toronto"))
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = QuebecToday();
 
         var activity = await dbContext.Activities
             .AsNoTracking()
@@ -45,9 +52,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
 
     public async Task<List<PublicActivityListItem>> GetUpcomingActivitiesAsync()
     {
-        // TODO: If hosted outside America/Toronto timezone (e.g., Azure US West),
-        // replace with: TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Toronto"))
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = QuebecToday();
         var fourWeeksOut = today.AddDays(28);
 
         var activities = await dbContext.Activities
@@ -100,9 +105,7 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
 
     public async Task<List<PublicDepartmentResponse>> GetPublicDepartmentsAsync()
     {
-        // TODO: If hosted outside America/Toronto timezone (e.g., Azure US West),
-        // replace with: TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Toronto"))
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = QuebecToday();
 
         var departments = await dbContext.Departments
             .AsNoTracking()

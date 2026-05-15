@@ -261,6 +261,31 @@ public class ProgramScheduleEndpointTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task CreateSchedule_Response_CreatedAtIsIso8601WithOffset()
+    {
+        // Wire contract: createdAt/updatedAt are serialized as DateTimeOffset (ISO 8601 with offset),
+        // not as DateTime (which omits the timezone marker and is parsed as local on the FE).
+        // Regression guard: this prevents accidentally reverting the DTO back to DateTime.
+        var response = await OwnerClient.PostAsJsonAsync("/api/program-schedules",
+            ValidSchedulePayload(title: "ISO Offset Probe", dayOfWeek: 6));
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+
+        var createdAtRaw = doc.RootElement.GetProperty("createdAt").GetString();
+        var updatedAtRaw = doc.RootElement.GetProperty("updatedAt").GetString();
+
+        createdAtRaw.ShouldNotBeNull();
+        updatedAtRaw.ShouldNotBeNull();
+
+        // Round-trip via DateTimeOffset.Parse — fails for naïve DateTime strings without offset
+        var parsed = DateTimeOffset.Parse(createdAtRaw, System.Globalization.CultureInfo.InvariantCulture);
+        parsed.Offset.ShouldBe(TimeSpan.Zero, $"createdAt offset should be UTC, got {parsed.Offset}");
+        parsed.ShouldBeGreaterThan(DateTimeOffset.UtcNow.AddMinutes(-5));
+    }
+
+    [Fact]
     public async Task GetScheduleById_NotFound_Returns404()
     {
         var response = await ViewerClient.GetAsync("/api/program-schedules/99999");
