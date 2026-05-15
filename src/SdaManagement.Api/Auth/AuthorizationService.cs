@@ -4,9 +4,7 @@ namespace SdaManagement.Api.Auth;
 
 public class AuthorizationService(ICurrentUserContext ctx) : IAuthorizationService
 {
-    public bool CanView() => ctx.IsAuthenticated;
     public bool IsOwner() => ctx.Role == UserRole.Owner;
-    public bool IsAuthenticated() => ctx.IsAuthenticated;
 
     public bool CanManage(int departmentId)
     {

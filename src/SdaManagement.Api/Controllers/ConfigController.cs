@@ -2,9 +2,9 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SdaManagement.Api.Auth;
 using SdaManagement.Api.Dtos.Config;
 using SdaManagement.Api.Services;
-using SdacAuth = SdaManagement.Api.Auth;
 
 namespace SdaManagement.Api.Controllers;
 
@@ -12,7 +12,6 @@ namespace SdaManagement.Api.Controllers;
 [ApiController]
 public class ConfigController(
     IConfigService configService,
-    SdacAuth.IAuthorizationService auth,
     ISanitizationService sanitizer) : ApiControllerBase
 {
     [HttpGet]
@@ -23,27 +22,21 @@ public class ConfigController(
     }
 
     [HttpGet("admin")]
-    [Authorize]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOnly)]
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> GetAdminConfig()
     {
-        if (!auth.IsOwner())
-            return Forbid();
-
         var config = await configService.GetConfigAsync();
         return config is not null ? Ok(config) : NotFound();
     }
 
     [HttpPut]
-    [Authorize]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOnly)]
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> UpdateConfig(
         [FromBody] UpdateChurchConfigRequest request,
         [FromServices] IValidator<UpdateChurchConfigRequest> validator)
     {
-        if (!auth.IsOwner())
-            return Forbid();
-
         var sanitized = request with
         {
             ChurchName = sanitizer.Sanitize(request.ChurchName),
@@ -60,5 +53,4 @@ public class ConfigController(
         var result = await configService.UpsertConfigAsync(sanitized);
         return Ok(result);
     }
-
 }

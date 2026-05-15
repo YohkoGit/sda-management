@@ -20,20 +20,6 @@ public class AuthorizationServiceTests
     }
 
     [Fact]
-    public void CanView_WhenAnonymous_ReturnsFalse()
-    {
-        var sut = new AuthorizationService(MakeContext());
-        sut.CanView().ShouldBeFalse();
-    }
-
-    [Fact]
-    public void CanView_WhenViewer_ReturnsTrue()
-    {
-        var sut = new AuthorizationService(MakeContext(isAuthenticated: true, role: UserRole.Viewer));
-        sut.CanView().ShouldBeTrue();
-    }
-
-    [Fact]
     public void CanManage_WhenAdmin_WithOwnDept_ReturnsTrue()
     {
         var sut = new AuthorizationService(

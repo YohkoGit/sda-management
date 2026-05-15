@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data.Entities;
 using SdaManagement.Api.Dtos.Activity;
 using SdaManagement.Api.Services;
@@ -17,22 +18,17 @@ namespace SdaManagement.Api.Controllers;
 public class ActivitiesController(
     IActivityService activityService,
     SdacAuth.IAuthorizationService auth,
-    SdacAuth.ICurrentUserContext currentUser) : ApiControllerBase
+    SdacAuth.ICurrentUserContext currentUser,
+    Microsoft.AspNetCore.Authorization.IAuthorizationService authz) : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? departmentId, [FromQuery] string? visibility = null)
     {
-        if (departmentId.HasValue)
-        {
-            // Read: any authenticated user can filter by department. Write: requires CanManage(departmentId).
-            if (!auth.CanView())
-                return Forbid();
-        }
-        else
-        {
-            if (!auth.IsOwner())
-                return Forbid();
-        }
+        // GetAll has dual paths: per-department list (any authenticated user)
+        // vs full-list (OWNER only). Class-level [Authorize] covers authentication;
+        // only the full-list branch needs an extra role check.
+        if (!departmentId.HasValue && !auth.IsOwner())
+            return Forbid();
 
         if (!string.IsNullOrEmpty(visibility) &&
             !Enum.TryParse<ActivityVisibility>(visibility, ignoreCase: true, out _))
@@ -51,9 +47,6 @@ public class ActivitiesController(
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboardActivities()
     {
-        if (!auth.CanView())
-            return Forbid();
-
         var activities = await activityService.GetDashboardActivitiesAsync(
             currentUser.Role, currentUser.DepartmentIds);
         return Ok(activities);
@@ -62,9 +55,6 @@ public class ActivitiesController(
     [HttpGet("my-assignments")]
     public async Task<IActionResult> GetMyAssignments()
     {
-        if (!auth.CanView())
-            return Forbid();
-
         var assignments = await activityService.GetMyAssignmentsAsync(currentUser.UserId);
         return Ok(assignments);
     }
@@ -72,9 +62,6 @@ public class ActivitiesController(
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
-        if (!auth.CanView())
-            return Forbid();
-
         var activity = await activityService.GetByIdAsync(id);
         if (activity is null)
             return NotFound();
@@ -87,7 +74,8 @@ public class ActivitiesController(
         [FromBody] CreateActivityRequest request,
         [FromServices] IValidator<CreateActivityRequest> validator)
     {
-        if (!auth.CanManage(request.DepartmentId))
+        var deptCheck = await authz.AuthorizeAsync(User, request.DepartmentId, AuthorizationPolicies.CanManageDepartment);
+        if (!deptCheck.Succeeded)
             return Forbid();
 
         var validation = await validator.ValidateAsync(request);
@@ -99,7 +87,7 @@ public class ActivitiesController(
             var activity = await activityService.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = activity.Id }, activity);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
             return BadRequest(new ProblemDetails
             {
@@ -133,11 +121,12 @@ public class ActivitiesController(
         if (existing is null)
             return NotFound();
 
-        if (!HasActivityAccess(existing))
+        if (!await HasActivityAccessAsync(existing))
             return Forbid();
 
         // Also verify auth on the target department (may differ if reassigning)
-        if (!auth.CanManage(request.DepartmentId))
+        var deptCheck = await authz.AuthorizeAsync(User, request.DepartmentId, AuthorizationPolicies.CanManageDepartment);
+        if (!deptCheck.Succeeded)
             return Forbid();
 
         var validation = await validator.ValidateAsync(request);
@@ -178,15 +167,22 @@ public class ActivitiesController(
         if (activity is null)
             return NotFound();
 
-        if (!HasActivityAccess(activity))
+        if (!await HasActivityAccessAsync(activity))
             return Forbid();
 
         await activityService.DeleteAsync(id);
         return NoContent();
     }
 
-    private bool HasActivityAccess(ActivityResponse activity) =>
-        activity.DepartmentId.HasValue
-            ? auth.CanManage(activity.DepartmentId.Value)
-            : auth.IsOwner();
+    // Department-scoped activities require CanManageDepartment;
+    // department-less (church-wide) activities require OWNER.
+    private async Task<bool> HasActivityAccessAsync(ActivityResponse activity)
+    {
+        if (!activity.DepartmentId.HasValue)
+            return auth.IsOwner();
+
+        var result = await authz.AuthorizeAsync(
+            User, activity.DepartmentId.Value, AuthorizationPolicies.CanManageDepartment);
+        return result.Succeeded;
+    }
 }

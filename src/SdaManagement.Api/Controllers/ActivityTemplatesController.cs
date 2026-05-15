@@ -2,9 +2,9 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SdaManagement.Api.Auth;
 using SdaManagement.Api.Dtos.ActivityTemplate;
 using SdaManagement.Api.Services;
-using SdacAuth = SdaManagement.Api.Auth;
 
 namespace SdaManagement.Api.Controllers;
 
@@ -12,9 +12,7 @@ namespace SdaManagement.Api.Controllers;
 [ApiController]
 [Authorize]
 [EnableRateLimiting("auth")]
-public class ActivityTemplatesController(
-    IActivityTemplateService templateService,
-    SdacAuth.IAuthorizationService auth) : ApiControllerBase
+public class ActivityTemplatesController(IActivityTemplateService templateService) : ApiControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -31,13 +29,11 @@ public class ActivityTemplatesController(
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOnly)]
     public async Task<IActionResult> Create(
         [FromBody] CreateActivityTemplateRequest request,
         [FromServices] IValidator<CreateActivityTemplateRequest> validator)
     {
-        if (!auth.IsOwner())
-            return Forbid();
-
         var validation = await validator.ValidateAsync(request);
         if (!validation.IsValid)
             return ValidationError(validation);
@@ -47,14 +43,12 @@ public class ActivityTemplatesController(
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOnly)]
     public async Task<IActionResult> Update(
         int id,
         [FromBody] UpdateActivityTemplateRequest request,
         [FromServices] IValidator<UpdateActivityTemplateRequest> validator)
     {
-        if (!auth.IsOwner())
-            return Forbid();
-
         var validation = await validator.ValidateAsync(request);
         if (!validation.IsValid)
             return ValidationError(validation);
@@ -64,13 +58,10 @@ public class ActivityTemplatesController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOnly)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!auth.IsOwner())
-            return Forbid();
-
         var deleted = await templateService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }
-
 }

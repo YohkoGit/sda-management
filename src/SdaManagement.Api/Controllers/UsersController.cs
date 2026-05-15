@@ -26,9 +26,6 @@ public class UsersController(
     [DisableRateLimiting]
     public async Task<IActionResult> GetAssignableOfficers([FromQuery] string? search = null)
     {
-        if (!auth.IsAuthenticated())
-            return Forbid();
-
         var items = await userService.GetAssignableOfficersAsync(search);
         return Ok(new { items, nextCursor = (string?)null });
     }
@@ -38,9 +35,6 @@ public class UsersController(
         [FromQuery] string? cursor = null,
         [FromQuery] int limit = 20)
     {
-        if (!auth.IsAuthenticated())
-            return Forbid();
-
         limit = Math.Clamp(limit, 1, 100);
 
         // Validate cursor format before passing to service (H1 fix)
@@ -67,9 +61,6 @@ public class UsersController(
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
-        if (!auth.IsAuthenticated())
-            return Forbid();
-
         var user = await userService.GetByIdAsync(id);
         if (user is null)
             return NotFound();
@@ -86,16 +77,11 @@ public class UsersController(
     }
 
     [HttpPost("bulk")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrOwner)]
     public async Task<IActionResult> BulkCreate(
         [FromBody] BulkCreateUsersRequest request,
         [FromServices] IValidator<BulkCreateUsersRequest> validator)
     {
-        if (!auth.IsAuthenticated())
-            return Forbid();
-
-        if (currentUser.Role < UserRole.Admin)
-            return Forbid();
-
         var validation = await validator.ValidateAsync(request);
         if (!validation.IsValid)
             return ValidationError(validation);
@@ -114,16 +100,11 @@ public class UsersController(
     }
 
     [HttpPost("guests")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrOwner)]
     public async Task<IActionResult> CreateGuest(
         [FromBody] CreateGuestRequest request,
         [FromServices] IValidator<CreateGuestRequest> validator)
     {
-        if (!auth.IsAuthenticated())
-            return Forbid();
-
-        if (currentUser.Role < UserRole.Admin)
-            return Forbid();
-
         var validation = await validator.ValidateAsync(request);
         if (!validation.IsValid)
             return ValidationError(validation);
@@ -133,16 +114,11 @@ public class UsersController(
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrOwner)]
     public async Task<IActionResult> Create(
         [FromBody] CreateUserRequest request,
         [FromServices] IValidator<CreateUserRequest> validator)
     {
-        if (!auth.IsAuthenticated())
-            return Forbid();
-
-        if (currentUser.Role < UserRole.Admin)
-            return Forbid();
-
         var validation = await validator.ValidateAsync(request);
         if (!validation.IsValid)
             return ValidationError(validation);
@@ -163,17 +139,12 @@ public class UsersController(
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrOwner)]
     public async Task<IActionResult> Update(
         int id,
         [FromBody] UpdateUserRequest request,
         [FromServices] IValidator<UpdateUserRequest> validator)
     {
-        if (!auth.IsAuthenticated())
-            return Unauthorized();
-
-        if (currentUser.Role < UserRole.Admin)
-            return Forbid();
-
         // Self-role-change guard (ALL roles) — before validation per spec
         if (id == currentUser.UserId &&
             !request.Role.Equals(currentUser.Role.ToString(), StringComparison.OrdinalIgnoreCase))
@@ -213,14 +184,9 @@ public class UsersController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicies.OwnerOnly)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!auth.IsAuthenticated())
-            return Unauthorized();
-
-        if (!auth.IsOwner())
-            return Forbid();
-
         if (id == currentUser.UserId)
             return Forbid();
 

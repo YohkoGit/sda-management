@@ -20,16 +20,10 @@ public class AvatarsController(
     IConfiguration configuration) : ControllerBase
 {
     [HttpPost("{userId:int}")]
-    [Authorize]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrOwner)]
     [RequestFormLimits(MultipartBodyLengthLimit = 524288)]
     public async Task<IActionResult> Upload(int userId, [FromForm] IFormFile file)
     {
-        if (!auth.IsAuthenticated())
-            return Unauthorized();
-
-        if (currentUser.Role < UserRole.Admin)
-            return Forbid();
-
         // Verify target user exists (exclude guests — avatars are for real accounts only)
         var targetUser = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsGuest);
         if (targetUser is null)

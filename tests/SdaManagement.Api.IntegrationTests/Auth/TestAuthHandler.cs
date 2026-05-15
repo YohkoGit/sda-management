@@ -52,7 +52,8 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, testUserId),
-            new Claim(ClaimTypes.Role, role),
+            // Role claim is uppercased to mirror production TokenService.GenerateAccessToken
+            new Claim(ClaimTypes.Role, role.ToUpperInvariant()),
             new Claim(ClaimTypes.Name, $"Test {role} User"),
             // Email is the unique identifier per architecture. Story 1.3's ICurrentUserContext
             // will use this claim to look up the authenticated user.
