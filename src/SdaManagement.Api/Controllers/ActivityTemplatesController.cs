@@ -2,8 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using SdaManagement.Api.Dtos.ActivityTemplate;
 using SdaManagement.Api.Services;
 using SdacAuth = SdaManagement.Api.Auth;
@@ -44,21 +42,8 @@ public class ActivityTemplatesController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var template = await templateService.CreateAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = template.Id }, template);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "An activity template with this name already exists.",
-            });
-        }
+        var template = await templateService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = template.Id }, template);
     }
 
     [HttpPut("{id:int}")]
@@ -74,21 +59,8 @@ public class ActivityTemplatesController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var template = await templateService.UpdateAsync(id, request);
-            return template is not null ? Ok(template) : NotFound();
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "An activity template with this name already exists.",
-            });
-        }
+        var template = await templateService.UpdateAsync(id, request);
+        return template is not null ? Ok(template) : NotFound();
     }
 
     [HttpDelete("{id:int}")]

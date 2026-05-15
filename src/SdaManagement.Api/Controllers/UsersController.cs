@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Data.Entities;
@@ -110,25 +109,8 @@ public class UsersController(
                 return Forbid();
         }
 
-        try
-        {
-            var created = await userService.BulkCreateAsync(request.Users);
-            return StatusCode(201, new BulkCreateUsersResponse { Created = created, Count = created.Count });
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" } pgEx)
-        {
-            var conflictingEmail = ExtractConflictingEmail(pgEx.Detail);
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = conflictingEmail is not null
-                    ? $"A user with email '{conflictingEmail}' already exists."
-                    : "One or more emails already exist.",
-                Extensions = { ["conflictingEmail"] = conflictingEmail },
-            });
-        }
+        var created = await userService.BulkCreateAsync(request.Users);
+        return StatusCode(201, new BulkCreateUsersResponse { Created = created, Count = created.Count });
     }
 
     [HttpPost("guests")]
@@ -176,21 +158,8 @@ public class UsersController(
                 return Forbid();
         }
 
-        try
-        {
-            var user = await userService.CreateAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A user with this email already exists.",
-            });
-        }
+        var user = await userService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
     }
 
     [HttpPut("{id:int}")]
@@ -274,12 +243,5 @@ public class UsersController(
 
         var deleted = await userService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
-    }
-
-    private static string? ExtractConflictingEmail(string? detail)
-    {
-        if (detail is null) return null;
-        var match = System.Text.RegularExpressions.Regex.Match(detail, @"\(email\)=\((.+?)\)");
-        return match.Success ? match.Groups[1].Value : null;
     }
 }

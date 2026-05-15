@@ -2,8 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using SdaManagement.Api.Dtos.ProgramSchedule;
 using SdaManagement.Api.Services;
 using SdacAuth = SdaManagement.Api.Auth;
@@ -44,30 +42,17 @@ public class ProgramSchedulesController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var schedule = await scheduleService.CreateAsync(request);
-            if (schedule is null)
-                return BadRequest(new ProblemDetails
-                {
-                    Type = "urn:sdac:validation-error",
-                    Title = "Validation Error",
-                    Status = 400,
-                    Detail = "The specified department does not exist.",
-                });
-
-            return CreatedAtAction(nameof(GetById), new { id = schedule.Id }, schedule);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
+        var schedule = await scheduleService.CreateAsync(request);
+        if (schedule is null)
+            return BadRequest(new ProblemDetails
             {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A program schedule with this title and day already exists.",
+                Type = "urn:sdac:validation-error",
+                Title = "Validation Error",
+                Status = 400,
+                Detail = "The specified department does not exist.",
             });
-        }
+
+        return CreatedAtAction(nameof(GetById), new { id = schedule.Id }, schedule);
     }
 
     [HttpPut("{id:int}")]
@@ -86,29 +71,16 @@ public class ProgramSchedulesController(
         if (await scheduleService.GetByIdAsync(id) is null)
             return NotFound();
 
-        try
-        {
-            var schedule = await scheduleService.UpdateAsync(id, request);
-            if (schedule is null)
-                return BadRequest(new ProblemDetails
-                {
-                    Type = "urn:sdac:validation-error",
-                    Title = "Validation Error",
-                    Status = 400,
-                    Detail = "The specified department does not exist.",
-                });
-            return Ok(schedule);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
+        var schedule = await scheduleService.UpdateAsync(id, request);
+        if (schedule is null)
+            return BadRequest(new ProblemDetails
             {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A program schedule with this title and day already exists.",
+                Type = "urn:sdac:validation-error",
+                Title = "Validation Error",
+                Status = 400,
+                Detail = "The specified department does not exist.",
             });
-        }
+        return Ok(schedule);
     }
 
     [HttpDelete("{id:int}")]

@@ -2,8 +2,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using SdaManagement.Api.Dtos.Department;
 using SdaManagement.Api.Services;
 using SdacAuth = SdaManagement.Api.Auth;
@@ -60,21 +58,8 @@ public class DepartmentsController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var department = await departmentService.CreateAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = department.Id }, department);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A department with this abbreviation or color already exists.",
-            });
-        }
+        var department = await departmentService.CreateAsync(request);
+        return CreatedAtAction(nameof(GetById), new { id = department.Id }, department);
     }
 
     [HttpPut("{id:int}")]
@@ -90,21 +75,8 @@ public class DepartmentsController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var department = await departmentService.UpdateAsync(id, request);
-            return department is not null ? Ok(department) : NotFound();
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A department with this abbreviation or color already exists.",
-            });
-        }
+        var department = await departmentService.UpdateAsync(id, request);
+        return department is not null ? Ok(department) : NotFound();
     }
 
     [HttpDelete("{id:int}")]
@@ -130,23 +102,10 @@ public class DepartmentsController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var subMinistry = await departmentService.AddSubMinistryAsync(departmentId, request);
-            return subMinistry is not null
-                ? CreatedAtAction(nameof(GetById), new { id = departmentId }, subMinistry)
-                : NotFound();
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A sub-ministry with this name already exists in this department.",
-            });
-        }
+        var subMinistry = await departmentService.AddSubMinistryAsync(departmentId, request);
+        return subMinistry is not null
+            ? CreatedAtAction(nameof(GetById), new { id = departmentId }, subMinistry)
+            : NotFound();
     }
 
     [HttpPut("{departmentId:int}/sub-ministries/{id:int}")]
@@ -163,21 +122,8 @@ public class DepartmentsController(
         if (!validation.IsValid)
             return ValidationError(validation);
 
-        try
-        {
-            var subMinistry = await departmentService.UpdateSubMinistryAsync(departmentId, id, request);
-            return subMinistry is not null ? Ok(subMinistry) : NotFound();
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            return Conflict(new ProblemDetails
-            {
-                Type = "urn:sdac:conflict",
-                Title = "Resource Conflict",
-                Status = 409,
-                Detail = "A sub-ministry with this name already exists in this department.",
-            });
-        }
+        var subMinistry = await departmentService.UpdateSubMinistryAsync(departmentId, id, request);
+        return subMinistry is not null ? Ok(subMinistry) : NotFound();
     }
 
     [HttpDelete("{departmentId:int}/sub-ministries/{id:int}")]
