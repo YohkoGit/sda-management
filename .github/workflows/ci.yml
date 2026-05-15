@@ -1,0 +1,84 @@
+name: CI
+
+# Tests run on PRs and on push to main. Decoupled from build-and-push.yml so
+# slow tests don't gate the QA image. CI failure on main is a signal — the
+# image may have already been pushed but the next refresh on berrysmart
+# will pull a healthier tag once the regression is fixed.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: .NET tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Cache NuGet manually — no packages.lock.json in the repo, so
+      # setup-dotnet's built-in cache doesn't apply. Key on csproj contents.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Unit tests
+        run: >
+          dotnet test tests/SdaManagement.Api.UnitTests/SdaManagement.Api.UnitTests.csproj
+          --configuration Release
+          --logger "console;verbosity=normal"
+
+      # Integration tests use Testcontainers.PostgreSql — Docker is preinstalled
+      # on ubuntu-latest runners so postgres:17 spins up per test fixture.
+      - name: Integration tests
+        run: >
+          dotnet test tests/SdaManagement.Api.IntegrationTests/SdaManagement.Api.IntegrationTests.csproj
+          --configuration Release
+          --logger "console;verbosity=normal"
+
+  web:
+    name: Web tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/sdamanagement-web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: src/sdamanagement-web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # Mirrors `npm run build`'s pre-flight: catches the "eyebrow micro-label
+      # without the required font-black + tracking-wide classes" footgun.
+      - name: Eyebrow usage check
+        run: npm run check:eyebrow
+
+      - name: Type-check
+        run: npx tsc -b
+
+      - name: Vitest
+        run: npx vitest run
