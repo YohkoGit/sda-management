@@ -10,6 +10,7 @@ public class User
     public bool IsGuest { get; set; }
     public string? Phone { get; set; }
     public string? PasswordHash { get; set; }
+    public int AvatarVersion { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }

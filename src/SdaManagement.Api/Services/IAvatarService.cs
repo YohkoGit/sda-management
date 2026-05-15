@@ -2,8 +2,13 @@ namespace SdaManagement.Api.Services;
 
 public interface IAvatarService
 {
-    Task SaveAvatarAsync(int userId, Stream imageStream);
-    Task<(Stream Stream, DateTime LastModifiedUtc)?> GetAvatarStreamAsync(int userId);
-    bool HasAvatarFile(int userId);
-    string? GetAvatarUrl(int userId);
+    Task SaveAvatarAsync(int userId, Stream imageStream, CancellationToken cancellationToken = default);
+
+    Task<AvatarReadResult?> GetAvatarAsync(int userId, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAvatarAsync(int userId, CancellationToken cancellationToken = default);
+
+    string? GetAvatarUrl(int userId, int avatarVersion);
 }
+
+public sealed record AvatarReadResult(Stream Content, int Version);

@@ -1,71 +1,63 @@
-using Microsoft.Extensions.Caching.Memory;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
+using Microsoft.EntityFrameworkCore;
+using SdaManagement.Api.Data;
+using SdaManagement.Api.Storage;
 
 namespace SdaManagement.Api.Services;
 
-public class AvatarService(IConfiguration configuration, IMemoryCache cache) : IAvatarService
+public class AvatarService(
+    AppDbContext db,
+    IBlobStore blobStore,
+    IConfiguration configuration) : IAvatarService
 {
-    private readonly string _avatarPath = configuration["AvatarStorage:Path"] ?? "data/avatars";
     private readonly int _maxDimension = configuration.GetValue("AvatarStorage:MaxDimension", 256);
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
 
-    private static string CacheKey(int userId) => $"avatar-url:{userId}";
+    private static string Key(int userId) => $"avatars/{userId}.webp";
 
-    public async Task SaveAvatarAsync(int userId, Stream imageStream)
+    public async Task SaveAvatarAsync(int userId, Stream imageStream, CancellationToken cancellationToken = default)
     {
-        Directory.CreateDirectory(_avatarPath);
+        // Buffer the normalized image so the blob store gets a forward-readable stream
+        // (R2/S3 require Position=0 at upload; ImageSharp's output stream isn't seekable).
+        await using var normalized = new MemoryStream();
+        await ImageProcessor.NormalizeToWebpAsync(
+            imageStream, normalized, _maxDimension, cancellationToken: cancellationToken);
+        normalized.Position = 0;
 
-        using var image = await Image.LoadAsync(imageStream);
+        await blobStore.PutAsync(Key(userId), normalized, "image/webp", cancellationToken);
 
-        image.Mutate(x => x.Resize(new ResizeOptions
-        {
-            Size = new Size(_maxDimension, _maxDimension),
-            Mode = ResizeMode.Max,
-        }));
-
-        var filePath = Path.Combine(_avatarPath, $"{userId}.webp");
-        await image.SaveAsWebpAsync(filePath, new WebpEncoder { Quality = 80 });
-
-        // Invalidate the cached URL — file mtime ticks change on save, so the cached
-        // versioned URL is stale and would point to the previous bytes via CDN/browser cache.
-        cache.Remove(CacheKey(userId));
+        // Bumping the version is what invalidates cached avatar URLs on the client side
+        // (every URL embeds the version as a cache-bust query parameter).
+        await db.Users
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(u => u.AvatarVersion, u => u.AvatarVersion + 1),
+                cancellationToken);
     }
 
-    public Task<(Stream Stream, DateTime LastModifiedUtc)?> GetAvatarStreamAsync(int userId)
+    public async Task<AvatarReadResult?> GetAvatarAsync(int userId, CancellationToken cancellationToken = default)
     {
-        var filePath = Path.Combine(_avatarPath, $"{userId}.webp");
-        if (!File.Exists(filePath))
-            return Task.FromResult<(Stream, DateTime)?>(null);
+        var version = await db.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.AvatarVersion)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var lastModified = File.GetLastWriteTimeUtc(filePath);
-        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        return Task.FromResult<(Stream, DateTime)?>((stream, lastModified));
+        if (version == 0)
+            return null;
+
+        var blob = await blobStore.GetAsync(Key(userId), cancellationToken);
+        if (blob is null)
+            return null;
+
+        return new AvatarReadResult(blob.Content, version);
     }
 
-    public bool HasAvatarFile(int userId)
+    public async Task<bool> HasAvatarAsync(int userId, CancellationToken cancellationToken = default)
     {
-        var filePath = Path.Combine(_avatarPath, $"{userId}.webp");
-        return File.Exists(filePath);
+        return await db.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.AvatarVersion)
+            .FirstOrDefaultAsync(cancellationToken) > 0;
     }
 
-    public string? GetAvatarUrl(int userId)
-    {
-        // List-projection callers (GetUsersAsync, GetAssignableOfficersAsync) invoke this
-        // once per row — cache for 60s to collapse N filesystem syscalls per request.
-        // Sentinel: store an empty string to represent "no file exists" so we cache misses
-        // too (otherwise we'd hit the filesystem on every list refresh of nonexistent avatars).
-        return cache.GetOrCreate(CacheKey(userId), entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = CacheTtl;
-
-            var filePath = Path.Combine(_avatarPath, $"{userId}.webp");
-            if (!File.Exists(filePath))
-                return null;
-
-            var ticks = File.GetLastWriteTimeUtc(filePath).Ticks;
-            return $"/api/avatars/{userId}?v={ticks}";
-        });
-    }
+    public string? GetAvatarUrl(int userId, int avatarVersion)
+        => avatarVersion == 0 ? null : $"/api/avatars/{userId}?v={avatarVersion}";
 }

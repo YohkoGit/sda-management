@@ -13,6 +13,7 @@ using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Exceptions;
 using SdaManagement.Api.Services;
+using SdaManagement.Api.Storage;
 using SdaManagement.Api.Validators;
 
 namespace SdaManagement.Api.Extensions;
@@ -184,7 +185,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserDepartmentService, UserDepartmentService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddSingleton<IAvatarService, AvatarService>();
+        services.AddScoped<IAvatarService, AvatarService>();
+        RegisterBlobStore(services, configuration);
         services.AddScoped<IActivityService, ActivityService>();
         services.AddScoped<IActivityNotificationService, ActivityNotificationService>();
         services.AddScoped<IPublicService, PublicService>();
@@ -201,5 +203,22 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssemblyContaining<InitiateAuthRequestValidator>();
 
         return services;
+    }
+
+    private static void RegisterBlobStore(IServiceCollection services, IConfiguration configuration)
+    {
+        var provider = configuration["BlobStorage:Provider"] ?? "LocalDisk";
+        switch (provider)
+        {
+            case "LocalDisk":
+                services.AddSingleton<IBlobStore, LocalDiskBlobStore>();
+                break;
+            case "S3":
+                services.AddSingleton<IBlobStore, S3BlobStore>();
+                break;
+            default:
+                throw new InvalidOperationException(
+                    $"Unknown BlobStorage:Provider '{provider}'. Expected 'LocalDisk' or 'S3'.");
+        }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SdaManagement.Api.Auth;
 using SdaManagement.Api.Data;
 using SdaManagement.Api.Extensions;
@@ -23,9 +24,13 @@ builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
-// Seed database on startup (OWNER account)
+// Apply EF migrations + seed OWNER. Integration tests skip this block by running
+// MigrateAsync() against the test container's own scope before requests land.
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
     await seeder.SeedAsync();
 
@@ -53,6 +58,10 @@ app.UseSerilogRequestLogging();
 // 2. Global exception handler → ProblemDetails
 app.UseExceptionHandler();
 
+// 2b. Serve SPA static assets (Vite-built bundle copied to wwwroot/ in the runtime image)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // 3. CORS
 app.UseCors();
 
@@ -79,6 +88,15 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 
 // 9. Health checks
 app.MapHealthChecks("/health");
+
+// 10. SPA fallback — unmatched routes return index.html so React Router can
+// handle client-side navigation. Must be last so all API/hub/health routes win first.
+// /api/* gets a JSON 404 instead of HTML so typo'd API paths don't silently look like the SPA.
+app.MapFallback("/api/{**path}", () => Results.Problem(
+    type: "urn:sdac:not-found",
+    title: "Not Found",
+    statusCode: StatusCodes.Status404NotFound));
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

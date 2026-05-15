@@ -6,6 +6,7 @@ obj/
 *.user
 *.suo
 *.userosscache
+*.lscache
 *.sln.docstats
 [Dd]ebug/
 [Rr]elease/
@@ -62,8 +63,9 @@ Thumbs.db
 desktop.ini
 
 # =========================
-# Avatar Storage
+# Local blob storage (LocalDisk provider) + legacy avatar dir
 # =========================
+data/blobs/
 data/avatars/
 
 # =========================

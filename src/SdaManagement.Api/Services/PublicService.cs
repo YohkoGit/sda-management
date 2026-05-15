@@ -5,7 +5,7 @@ using SdaManagement.Api.Dtos.Public;
 
 namespace SdaManagement.Api.Services;
 
-public class PublicService(AppDbContext dbContext, IAvatarService avatarService) : IPublicService
+public class PublicService(AppDbContext dbContext) : IPublicService
 {
     // The church is in Saint-Hubert, Quebec — civil "today" must be evaluated against
     // America/Toronto regardless of where the server runs. Using DateTime.Now would
@@ -181,13 +181,15 @@ public class PublicService(AppDbContext dbContext, IAvatarService avatarService)
         }).ToList();
     }
 
-    private (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
+    private static (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
     {
         var role = activity.Roles.FirstOrDefault(r => r.IsPredicateur);
         if (role is null) return (null, null);
         var assignment = role.Assignments.FirstOrDefault();
         if (assignment?.User is not { } user) return (null, null);
-        return ($"{user.FirstName} {user.LastName}",
-                avatarService.GetAvatarUrl(assignment.UserId));
+        var avatarUrl = user.AvatarVersion == 0
+            ? null
+            : $"/api/avatars/{user.Id}?v={user.AvatarVersion}";
+        return ($"{user.FirstName} {user.LastName}", avatarUrl);
     }
 }

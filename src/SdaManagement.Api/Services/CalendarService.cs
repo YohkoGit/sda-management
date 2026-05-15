@@ -5,7 +5,7 @@ using SdaManagement.Api.Dtos.Public;
 
 namespace SdaManagement.Api.Services;
 
-public class CalendarService(AppDbContext dbContext, IAvatarService avatarService) : ICalendarService
+public class CalendarService(AppDbContext dbContext) : ICalendarService
 {
     public async Task<List<PublicActivityListItem>> GetCalendarActivitiesAsync(
         DateOnly start, DateOnly end, List<int>? departmentIds = null)
@@ -54,13 +54,15 @@ public class CalendarService(AppDbContext dbContext, IAvatarService avatarServic
         }).ToList();
     }
 
-    private (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
+    private static (string? Name, string? AvatarUrl) ExtractPredicateur(Activity activity)
     {
         var role = activity.Roles.FirstOrDefault(r => r.IsPredicateur);
         if (role is null) return (null, null);
         var assignment = role.Assignments.FirstOrDefault();
         if (assignment?.User is not { } user) return (null, null);
-        return ($"{user.FirstName} {user.LastName}",
-                avatarService.GetAvatarUrl(assignment.UserId));
+        var avatarUrl = user.AvatarVersion == 0
+            ? null
+            : $"/api/avatars/{user.Id}?v={user.AvatarVersion}";
+        return ($"{user.FirstName} {user.LastName}", avatarUrl);
     }
 }

@@ -43,10 +43,9 @@ public class ActivityServiceConcurrencyTests : IntegrationTestBase
         sanitizer.Sanitize(Arg.Any<string?>()).Returns(ci => ci.Arg<string?>() ?? "");
         sanitizer.SanitizeNullable(Arg.Any<string?>()).Returns(ci => ci.Arg<string?>());
 
-        var avatarService = Substitute.For<IAvatarService>();
         var notificationService = Substitute.For<IActivityNotificationService>();
 
-        return new ActivityService(db, sanitizer, avatarService, notificationService);
+        return new ActivityService(db, sanitizer, notificationService);
     }
 
     private async Task<int> SeedActivity()

@@ -85,16 +85,15 @@ public class AvatarsController(
     [AllowAnonymous]
     public async Task<IActionResult> Get(int userId)
     {
-        var result = await avatarService.GetAvatarStreamAsync(userId);
+        var result = await avatarService.GetAvatarAsync(userId);
         if (result is null)
             return NotFound();
 
-        var (stream, lastModified) = result.Value;
-        var etag = $"\"{lastModified.Ticks}\"";
+        var etag = $"\"{result.Version}\"";
 
         if (Request.Headers.IfNoneMatch.ToString() == etag)
         {
-            stream.Dispose();
+            result.Content.Dispose();
             return StatusCode(304);
         }
 
@@ -102,6 +101,6 @@ public class AvatarsController(
         Response.Headers.CacheControl = "public, max-age=86400";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
 
-        return File(stream, "image/webp");
+        return File(result.Content, "image/webp");
     }
 }

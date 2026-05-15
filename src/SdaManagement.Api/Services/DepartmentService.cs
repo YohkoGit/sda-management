@@ -7,7 +7,7 @@ using SdaManagement.Api.Exceptions;
 
 namespace SdaManagement.Api.Services;
 
-public class DepartmentService(AppDbContext dbContext, ISanitizationService sanitizer, IAvatarService avatarService) : IDepartmentService
+public class DepartmentService(AppDbContext dbContext, ISanitizationService sanitizer) : IDepartmentService
 {
     public async Task<List<DepartmentListItem>> GetAllAsync()
     {
@@ -111,7 +111,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
 
     public async Task<DepartmentResponse?> GetByIdAsync(int id)
     {
-        var result = await dbContext.Departments
+        return await dbContext.Departments
             .Where(d => d.Id == id)
             .Select(d => new DepartmentResponse
             {
@@ -129,20 +129,15 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
                         LeadUserId = s.LeadUserId,
                         LeadFirstName = s.Lead != null ? s.Lead.FirstName : null,
                         LeadLastName = s.Lead != null ? s.Lead.LastName : null,
+                        LeadAvatarUrl = s.Lead != null && s.Lead.AvatarVersion != 0
+                            ? "/api/avatars/" + s.Lead.Id + "?v=" + s.Lead.AvatarVersion
+                            : null,
                     })
                     .ToList(),
                 CreatedAt = d.CreatedAt,
                 UpdatedAt = d.UpdatedAt,
             })
             .FirstOrDefaultAsync();
-
-        if (result != null)
-        {
-            foreach (var sm in result.SubMinistries.Where(sm => sm.LeadUserId.HasValue))
-                sm.LeadAvatarUrl = avatarService.GetAvatarUrl(sm.LeadUserId!.Value);
-        }
-
-        return result;
     }
 
     private static string DeriveAbbreviation(string name)
@@ -240,7 +235,9 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
                     LeadUserId = s.LeadUserId,
                     LeadFirstName = s.Lead?.FirstName,
                     LeadLastName = s.Lead?.LastName,
-                    LeadAvatarUrl = s.LeadUserId.HasValue ? avatarService.GetAvatarUrl(s.LeadUserId.Value) : null,
+                    LeadAvatarUrl = s.Lead is { AvatarVersion: > 0 }
+                        ? $"/api/avatars/{s.Lead.Id}?v={s.Lead.AvatarVersion}"
+                        : null,
                 })
                 .ToList(),
             CreatedAt = department.CreatedAt,
@@ -333,7 +330,7 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
         return user;
     }
 
-    private SubMinistryResponse BuildSubMinistryResponse(SubMinistry subMinistry, User? lead = null)
+    private static SubMinistryResponse BuildSubMinistryResponse(SubMinistry subMinistry, User? lead = null)
     {
         return new SubMinistryResponse
         {
@@ -342,7 +339,9 @@ public class DepartmentService(AppDbContext dbContext, ISanitizationService sani
             LeadUserId = subMinistry.LeadUserId,
             LeadFirstName = lead?.FirstName,
             LeadLastName = lead?.LastName,
-            LeadAvatarUrl = lead != null ? avatarService.GetAvatarUrl(lead.Id) : null,
+            LeadAvatarUrl = lead is { AvatarVersion: > 0 }
+                ? $"/api/avatars/{lead.Id}?v={lead.AvatarVersion}"
+                : null,
         };
     }
 }

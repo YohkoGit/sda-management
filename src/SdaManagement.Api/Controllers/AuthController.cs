@@ -217,7 +217,7 @@ public class AuthController(
         FirstName = user.FirstName,
         LastName = user.LastName,
         Role = user.Role.ToString().ToUpperInvariant(),
-        AvatarUrl = avatarService.GetAvatarUrl(user.Id),
+        AvatarUrl = avatarService.GetAvatarUrl(user.Id, user.AvatarVersion),
     };
 
     private IActionResult RedirectToFrontend(string path)

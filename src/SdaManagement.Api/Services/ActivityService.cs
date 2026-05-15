@@ -8,7 +8,6 @@ namespace SdaManagement.Api.Services;
 public class ActivityService(
     AppDbContext dbContext,
     ISanitizationService sanitizer,
-    IAvatarService avatarService,
     IActivityNotificationService notificationService) : IActivityService
 {
     public async Task<List<ActivityListItem>> GetAllAsync(int? departmentId, string? visibility = null)
@@ -410,12 +409,9 @@ public class ActivityService(
 
     public async Task<List<MyAssignmentListItem>> GetMyAssignmentsAsync(int userId)
     {
-        // Step A — Load entities via .Include() chain
-        // Cannot use .Select() projection because avatarService.GetAvatarUrl() is not translatable to SQL.
-        // Use AsNoTrackingWithIdentityResolution() because the Include path
-        // RoleAssignment -> ActivityRole -> Assignments cycles back to RoleAssignment;
-        // plain AsNoTracking() rejects cycles, while identity-resolution provides a per-query
-        // identity map that handles the cycle without entering the change tracker.
+        // AsNoTrackingWithIdentityResolution() handles the cycle in the Include chain
+        // (RoleAssignment -> ActivityRole -> Assignments back to RoleAssignment) which
+        // plain AsNoTracking() would reject.
         var assignments = await dbContext.RoleAssignments
             .AsNoTrackingWithIdentityResolution()
             .Include(ra => ra.ActivityRole)
@@ -431,7 +427,6 @@ public class ActivityService(
             .Take(50)
             .ToListAsync();
 
-        // Step B — Map to DTOs after materialization
         return assignments.Select(ra => new MyAssignmentListItem
         {
             ActivityId = ra.ActivityRole.Activity.Id,
@@ -451,7 +446,9 @@ public class ActivityService(
                     UserId = a.UserId,
                     FirstName = a.User.FirstName,
                     LastName = a.User.LastName,
-                    AvatarUrl = avatarService.GetAvatarUrl(a.UserId),
+                    AvatarUrl = a.User.AvatarVersion == 0
+                        ? null
+                        : $"/api/avatars/{a.UserId}?v={a.User.AvatarVersion}",
                     IsGuest = a.User.IsGuest,
                 })
                 .ToList(),
@@ -513,8 +510,8 @@ public class ActivityService(
                 PredicateurName = predicateur is not null
                     ? $"{predicateur.FirstName} {predicateur.LastName}"
                     : null,
-                PredicateurAvatarUrl = predicateur is not null
-                    ? avatarService.GetAvatarUrl(predicateur.Id)
+                PredicateurAvatarUrl = predicateur is { AvatarVersion: > 0 }
+                    ? $"/api/avatars/{predicateur.Id}?v={predicateur.AvatarVersion}"
                     : null,
                 RoleCount = activity.Roles.Count,
                 TotalHeadcount = totalHeadcount,
@@ -620,7 +617,9 @@ public class ActivityService(
                         UserId = ra.UserId,
                         FirstName = ra.User.FirstName,
                         LastName = ra.User.LastName,
-                        AvatarUrl = avatarService.GetAvatarUrl(ra.UserId),
+                        AvatarUrl = ra.User.AvatarVersion == 0
+                            ? null
+                            : $"/api/avatars/{ra.UserId}?v={ra.User.AvatarVersion}",
                         IsGuest = ra.User.IsGuest,
                     }).ToList(),
                 })

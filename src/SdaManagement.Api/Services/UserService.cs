@@ -7,7 +7,7 @@ using SdaManagement.Api.Dtos.User;
 
 namespace SdaManagement.Api.Services;
 
-public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvatarService avatarService) : IUserService
+public class UserService(AppDbContext db, ISanitizationService sanitizer) : IUserService
 {
     public async Task<PagedResponse<UserListItem>> GetUsersAsync(
         string? cursor, int limit, IReadOnlyList<int>? departmentFilter)
@@ -37,6 +37,9 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                 LastName = u.LastName,
                 Email = u.Email,
                 Role = u.Role.ToString(),
+                AvatarUrl = u.AvatarVersion == 0
+                    ? null
+                    : "/api/avatars/" + u.Id + "?v=" + u.AvatarVersion,
                 Departments = u.UserDepartments
                     .Select(ud => new UserDepartmentBadge
                     {
@@ -49,10 +52,6 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                 CreatedAt = u.CreatedAt,
             })
             .ToListAsync();
-
-        // Set AvatarUrl post-materialization (file system call can't be in EF .Select())
-        foreach (var item in items)
-            item.AvatarUrl = avatarService.GetAvatarUrl(item.Id);
 
         string? nextCursor = items.Count > limit
             ? EncodeCursor(items[limit - 1].LastName, items[limit - 1].Id)
@@ -67,7 +66,7 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
 
     public async Task<UserResponse?> GetByIdAsync(int id)
     {
-        var user = await db.Users
+        return await db.Users
             .Where(u => u.Id == id && !u.IsGuest)
             .Select(u => new UserResponse
             {
@@ -77,6 +76,9 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                 Email = u.Email,
                 Role = u.Role.ToString(),
                 IsGuest = u.IsGuest,
+                AvatarUrl = u.AvatarVersion == 0
+                    ? null
+                    : "/api/avatars/" + u.Id + "?v=" + u.AvatarVersion,
                 Departments = u.UserDepartments
                     .Select(ud => new UserDepartmentBadge
                     {
@@ -90,11 +92,6 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                 UpdatedAt = u.UpdatedAt,
             })
             .FirstOrDefaultAsync();
-
-        if (user is not null)
-            user.AvatarUrl = avatarService.GetAvatarUrl(user.Id);
-
-        return user;
     }
 
     public async Task<UserResponse> CreateAsync(CreateUserRequest request)
@@ -290,7 +287,7 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                 EF.Functions.ILike(u.LastName, pattern));
         }
 
-        var items = await query
+        return await query
             .OrderBy(u => u.LastName)
             .ThenBy(u => u.FirstName)
             .Take(200)
@@ -299,6 +296,9 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                 UserId = u.Id,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
+                AvatarUrl = u.AvatarVersion == 0
+                    ? null
+                    : "/api/avatars/" + u.Id + "?v=" + u.AvatarVersion,
                 Departments = u.UserDepartments
                     .Select(ud => new OfficerDepartmentBadge
                     {
@@ -310,12 +310,6 @@ public class UserService(AppDbContext db, ISanitizationService sanitizer, IAvata
                     .ToList(),
             })
             .ToListAsync();
-
-        // Set AvatarUrl post-materialization (file system call can't be in EF .Select())
-        foreach (var item in items)
-            item.AvatarUrl = avatarService.GetAvatarUrl(item.UserId);
-
-        return items;
     }
 
     public async Task<GuestCreatedResponse> CreateGuestAsync(CreateGuestRequest request)

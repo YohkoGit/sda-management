@@ -219,7 +219,7 @@ public class DatabaseSeeder(
         var adminUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == "admin.test@sdac.local");
         if (adminUser == null) return;
 
-        if (avatarService.HasAvatarFile(adminUser.Id))
+        if (await avatarService.HasAvatarAsync(adminUser.Id))
         {
             logger.LogDebug("Dev avatar already exists for user {Id}", adminUser.Id);
             return;

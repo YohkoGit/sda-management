@@ -124,32 +124,36 @@ public class AuthService(
 
     public async Task<AuthMeResponse?> GetMeAsync(int userId)
     {
-        var response = await dbContext.Users
+        var row = await dbContext.Users
             .Where(u => u.Id == userId)
-            .Select(u => new AuthMeResponse
+            .Select(u => new
             {
-                UserId = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Role = u.Role.ToString().ToUpper(),
-                DepartmentIds = u.UserDepartments.Select(ud => ud.DepartmentId).ToList(),
-                Departments = u.UserDepartments
-                    .Select(ud => new UserDepartmentBadge
-                    {
-                        Id = ud.Department.Id,
-                        Name = ud.Department.Name,
-                        Abbreviation = ud.Department.Abbreviation,
-                        Color = ud.Department.Color,
-                    })
-                    .ToList(),
+                Response = new AuthMeResponse
+                {
+                    UserId = u.Id,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Role = u.Role.ToString().ToUpper(),
+                    DepartmentIds = u.UserDepartments.Select(ud => ud.DepartmentId).ToList(),
+                    Departments = u.UserDepartments
+                        .Select(ud => new UserDepartmentBadge
+                        {
+                            Id = ud.Department.Id,
+                            Name = ud.Department.Name,
+                            Abbreviation = ud.Department.Abbreviation,
+                            Color = ud.Department.Color,
+                        })
+                        .ToList(),
+                },
+                AvatarVersion = u.AvatarVersion,
             })
             .FirstOrDefaultAsync();
 
-        if (response is null)
+        if (row is null)
             return null;
 
-        response.AvatarUrl = avatarService.GetAvatarUrl(response.UserId);
-        return response;
+        row.Response.AvatarUrl = avatarService.GetAvatarUrl(row.Response.UserId, row.AvatarVersion);
+        return row.Response;
     }
 }

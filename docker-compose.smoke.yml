@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sdamanagement
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d sdamanagement"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sdamanagement;Username=dev;Password=dev"
+      Jwt__Secret: "smoke-test-jwt-secret-minimum-32-chars-please-ok"
+      Google__ClientId: "smoke-client-id.apps.googleusercontent.com"
+      Google__ClientSecret: "smoke-client-secret"
+      Cors__AllowedOrigins__0: "http://localhost:8080"
+      FrontendUrl: "http://localhost:8080"
+      BlobStorage__Provider: LocalDisk
+      BlobStorage__LocalDisk__BasePath: /app/data/blobs
+      OwnerEmail: ""
+      SeedDevData: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"

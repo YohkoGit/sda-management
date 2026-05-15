@@ -328,15 +328,10 @@ public class AvatarEndpointTests : IntegrationTestBase
             .First(u => u.GetProperty("id").GetInt32() == _targetUserId)
             .GetProperty("avatarUrl").GetString();
 
-        // Re-upload with different image
+        // Re-upload with different image — version column auto-bumps on save, so ETag
+        // and cache-bust querystring differ without filesystem time manipulation.
         using var content2 = CreateTestImageContent(width: 32, height: 32);
         await OwnerClient.PostAsync($"/api/avatars/{_targetUserId}", content2);
-
-        // Deterministically advance the file's last-write-time so the ETag and cache-bust
-        // querystring (both derived from File.GetLastWriteTimeUtc().Ticks in AvatarService)
-        // differ from the first upload. Avoids a flaky Task.Delay on fast filesystems.
-        var avatarFilePath = Path.Combine(Factory.AvatarTestPath, $"{_targetUserId}.webp");
-        File.SetLastWriteTimeUtc(avatarFilePath, DateTime.UtcNow.AddSeconds(1));
 
         var response2 = await AnonymousClient.GetAsync($"/api/avatars/{_targetUserId}");
         var etag2 = response2.Headers.ETag!.Tag;

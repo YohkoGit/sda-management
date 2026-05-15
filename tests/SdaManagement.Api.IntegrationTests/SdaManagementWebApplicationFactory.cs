@@ -22,16 +22,10 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
         .WithPassword("testpass")
         .Build();
 
-    private readonly string _avatarTestPath = Path.Combine(
-        Path.GetTempPath(), $"sdac-test-avatars-{Guid.NewGuid()}");
+    private readonly string _blobTestPath = Path.Combine(
+        Path.GetTempPath(), $"sdac-test-blobs-{Guid.NewGuid()}");
 
     public string ConnectionString => _postgresContainer.GetConnectionString();
-
-    /// <summary>
-    /// Exposed for tests that need to manipulate avatar files on disk (e.g. setting
-    /// last-write-time to deterministically vary ETag/cache-bust between uploads).
-    /// </summary>
-    public string AvatarTestPath => _avatarTestPath;
 
     public async Task InitializeAsync()
     {
@@ -71,8 +65,9 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
                 ["OwnerEmail"] = "",
                 // Skip SeedDevDataAsync — tables don't exist until InitializeAsync runs migrations
                 ["SeedDevData"] = "false",
-                // Story 3.5: Avatar storage in isolated temp directory
-                ["AvatarStorage:Path"] = _avatarTestPath,
+                // Blob storage in isolated temp directory (LocalDisk provider for tests)
+                ["BlobStorage:Provider"] = "LocalDisk",
+                ["BlobStorage:LocalDisk:BasePath"] = _blobTestPath,
             });
         });
 
@@ -117,9 +112,9 @@ public class SdaManagementWebApplicationFactory : WebApplicationFactory<Program>
     // the path used for fixture cleanup.
     async Task IAsyncLifetime.DisposeAsync()
     {
-        // Clean up avatar test directory
-        if (Directory.Exists(_avatarTestPath))
-            Directory.Delete(_avatarTestPath, true);
+        // Clean up blob test directory
+        if (Directory.Exists(_blobTestPath))
+            Directory.Delete(_blobTestPath, true);
 
         // DisposeAsync() already stops and removes the container — StopAsync() beforehand is redundant
         await _postgresContainer.DisposeAsync();

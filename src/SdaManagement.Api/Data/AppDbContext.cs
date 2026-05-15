@@ -31,6 +31,7 @@ public class AppDbContext : DbContext
             e.HasKey(u => u.Id);
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.Role).HasConversion<int>();
+            e.Property(u => u.AvatarVersion).HasDefaultValue(0);
             e.Property(u => u.CreatedAt).HasDefaultValueSql("now()");
             e.Property(u => u.UpdatedAt).HasDefaultValueSql("now()");
             e.HasQueryFilter(u => u.DeletedAt == null);
