@@ -29,8 +29,17 @@ documented in `qa-deployment-plan.md` (sections #1, #2, #3).
 - [ ] **GHCR PAT** for berrysmart with scope `read:packages` only. Save as
       "SDAC QA / GHCR PAT". (Issued at <https://github.com/settings/tokens>.)
 - [ ] **SSH access to berrysmart** (Tailscale or LAN) working.
-- [ ] **CI build green** — `gh run list --workflow build-and-push.yml` shows
-      a successful run; `ghcr.io/yohkogit/sda-management:qa` is pullable.
+- [ ] **`qa` branch pushed to `origin`** with a green `build-and-push.yml` run.
+      The QA image is published by **pushing to the `qa` branch** (not main).
+      Verify: `gh run list --workflow build-and-push.yml --branch qa` shows a
+      successful run, and `docker pull ghcr.io/yohkogit/sda-management:qa`
+      works from any machine with `read:packages` on GHCR.
+
+> **Promotion flow**: `main` is the integration branch (CI tests only). To
+> deploy to QA, fast-forward or merge `main` into `qa` and push — the
+> `build-and-push.yml` workflow publishes `:qa` + `:qa-<sha>`. To promote
+> the same code to prod (once a prod host exists), merge `qa` into `release`
+> and push — that publishes `:prod` + `:prod-<sha>`.
 
 ---
 

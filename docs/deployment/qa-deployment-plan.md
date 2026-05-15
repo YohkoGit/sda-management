@@ -47,6 +47,7 @@ unless something specific has changed:
 | Reverse proxy | Caddy in compose | Internal TLS termination, structured logs, security headers | n/a |
 | Image refresh | Cron pull-and-restart, every 5 min (pins to `:qa` tag, not Watchtower) | Respects berrysmart's "no Watchtower" convention | `reference_berrysmart_homeserver.md` |
 | Build location | GitHub Actions → GHCR | N150 is slow at .NET compile; GHCR is free for private repos | n/a |
+| Branch model | `main` (integration, CI only) → `qa` branch (publishes `:qa` + `:qa-<sha>`) → `release` branch (publishes `:prod` + `:prod-<sha>`) | One trigger per environment; explicit promotion via merge; immutable SHA tags for rollback | n/a |
 | Avatar refactor scope | Fork B (version column in DB) | Removes sync I/O from hot list-endpoint paths; cleaner abstraction | n/a |
 | Cover image storage | Same `IBlobStore` abstraction, separate per-kind service when story arrives | Foundation laid, specific cover service deferred (no speculative scope) | n/a |
 | Secrets in QA | `.env` file at `~/berrysmart/config/sdac-qa/.env`, mode 600 | Tier-1 sufficient for QA; prod will use a real secret store | n/a |
@@ -148,15 +149,21 @@ Smoke run results (validated):
 - **Migrations not auto-applied** — `MigrateAsync` call added to `Program.cs`.
 
 ### #7 — GitHub Actions build-and-push (`.github/workflows/build-and-push.yml`)
-Builds the multistage Dockerfile on push to `main` and `workflow_dispatch`,
-pushes two tags to GHCR:
-- `ghcr.io/yohkogit/sda-management:sha-<sha>` — immutable, for prod promotion
-- `ghcr.io/yohkogit/sda-management:qa` — moving tag berrysmart's cron pulls
+Branch-per-environment trigger:
+- Push to `qa` branch      → `ghcr.io/yohkogit/sda-management:qa`   + `:qa-<sha>`
+- Push to `release` branch → `ghcr.io/yohkogit/sda-management:prod` + `:prod-<sha>`
+- `main` does **not** trigger a build (ci.yml runs tests there).
+- `workflow_dispatch` allowed; fails fast if dispatched from a branch other
+  than qa/release.
+
+A computed `tag_prefix` step inspects `github.ref_name` and emits `qa` or
+`prod`. Moving tags (`:qa`, `:prod`) are what deployment hosts pull on cron
+refresh; immutable SHA tags exist for rollback (`docker pull ...:qa-<old-sha>`).
 
 Uses `${{ secrets.GITHUB_TOKEN }}` with `packages: write` permission, Buildx
 with GHA layer cache (`type=gha`, `mode=max`), `provenance: false` to keep
 the GHCR package page clean. `concurrency` group prevents racing builds on
-back-to-back pushes.
+back-to-back pushes to the same branch.
 
 ### #8 — berrysmart compose stack (`deploy/qa/docker-compose.yml`)
 Four services on the default network, no host ports:
@@ -327,18 +334,20 @@ have client ID + secret saved.
 
 ---
 
-### #7 — GitHub Actions build-and-push workflow (CLAUDE)
+### #7 — GitHub Actions build-and-push workflow (CLAUDE) — DONE
 
 **File**: `.github/workflows/build-and-push.yml`
 
-**Behavior**:
-- Triggers: push to `main`, manual `workflow_dispatch`
-- Build the multistage Dockerfile
-- Push to GHCR with tags:
-  - `ghcr.io/yohkogit/sda-management:sha-<git-sha>` — immutable, used for prod
-    promotion later
-  - `ghcr.io/yohkogit/sda-management:qa` — moving tag, berrysmart's cron
-    pulls this one
+**Behavior**: branch-per-environment.
+- Push to `qa`      → `:qa`   + `:qa-<sha>`
+- Push to `release` → `:prod` + `:prod-<sha>`
+- `main` → no image build (ci.yml runs tests).
+- `workflow_dispatch` allowed; fails fast from any other branch.
+
+A `case "${{ github.ref_name }}"` step derives `tag_prefix` (qa|prod) and
+feeds it to `docker/build-push-action`'s `tags:` list. The cron on
+deployment hosts always pulls the moving tag (`:qa` on berrysmart, `:prod`
+on the prod host once that exists). SHA-suffixed tags are the rollback path.
 
 **Auth**: uses `${{ secrets.GITHUB_TOKEN }}` (auto-injected) with
 `packages: write` permission. No long-lived PAT required for the workflow
@@ -348,47 +357,14 @@ itself. Berrysmart side needs a PAT scoped `read:packages` for the pull
 **Caching**: Buildx layer cache via `cache-from`/`cache-to: type=gha`. Saves
 ~1–2 minutes per build by reusing the npm-restore and dotnet-restore layers.
 
-**Skeleton**:
-```yaml
-name: Build & Push QA image
+**Optional follow-up** (resolved — landed as `.github/workflows/ci.yml`):
+parallel `dotnet test` + web (eyebrow + tsc + vitest) jobs on PRs to main
+and pushes to main. Decoupled from deploy on purpose.
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  packages: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ghcr.io/yohkogit/sda-management:sha-${{ github.sha }}
-            ghcr.io/yohkogit/sda-management:qa
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-```
-
-**Optional follow-up** (not part of #7 scope): a separate `ci.yml` that runs
-`dotnet test` + `npm test` on PRs. Keep deploy decoupled from slow tests.
-
-**Definition of done**: pushing a commit to `main` produces a green workflow
-run that pushes both tags to GHCR. Verify by `docker pull ghcr.io/yohkogit/sda-management:qa`
-from anywhere.
+**Definition of done**: pushing a commit to `qa` produces a green workflow
+run that pushes `:qa` + `:qa-<sha>` to GHCR. Verify by
+`docker pull ghcr.io/yohkogit/sda-management:qa` from anywhere. Same for
+`release` → `:prod` once that branch is in use.
 
 ---
 
@@ -759,7 +735,9 @@ path. This is intentional: the existing media stack on berrysmart already uses
 | API container | `sdac-qa-api-1` |
 | Postgres container | `sdac-qa-postgres-1` |
 | GHCR image | `ghcr.io/yohkogit/sda-management` |
-| Image tags | `:sha-<commit>`, `:qa` |
+| Image tags (QA) | `:qa` (moving) + `:qa-<commit-sha>` (immutable) |
+| Image tags (prod) | `:prod` (moving) + `:prod-<commit-sha>` (immutable) |
+| Deploy trigger branches | `qa` (publishes `:qa`), `release` (publishes `:prod`) |
 | R2 bucket | `sdac-qa-images` |
 | Blob key prefix (avatars) | `avatars/{userId}.webp` |
 | Blob key prefix (future covers) | `covers/{kind}/{id}.webp` (not yet implemented) |
