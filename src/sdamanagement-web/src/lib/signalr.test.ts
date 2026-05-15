@@ -28,6 +28,7 @@ import {
   startConnection,
   getConnection,
   createConnection,
+  onConnectionReady,
 } from "./signalr";
 
 beforeEach(() => {
@@ -251,6 +252,107 @@ describe("signalr", () => {
       const mockConnection = { state: "Connected" };
       setConnection(mockConnection as any);
       expect(getConnection()).toBe(mockConnection);
+    });
+  });
+
+  describe("onConnectionReady", () => {
+    // Each test tracks unsubscribers so module-level subscriber state doesn't leak.
+    let unsubs: Array<() => void> = [];
+    const subscribe = (cb: (c: any) => void) => {
+      const u = onConnectionReady(cb);
+      unsubs.push(u);
+      return u;
+    };
+
+    beforeEach(() => {
+      // Drain any leftover subscribers from earlier tests just in case
+      unsubs.forEach((u) => u());
+      unsubs = [];
+    });
+
+    it("fires the callback synchronously when a connection already exists", () => {
+      const mockConnection = { state: "Connected" };
+      setConnection(mockConnection as any);
+
+      const cb = vi.fn();
+      subscribe(cb);
+
+      expect(cb).toHaveBeenCalledOnce();
+      expect(cb).toHaveBeenCalledWith(mockConnection);
+    });
+
+    it("fires the callback when a connection is installed later via setConnection", () => {
+      const cb = vi.fn();
+      subscribe(cb);
+      expect(cb).not.toHaveBeenCalled();
+
+      const mockConnection = { state: "Disconnected" };
+      setConnection(mockConnection as any);
+
+      expect(cb).toHaveBeenCalledOnce();
+      expect(cb).toHaveBeenCalledWith(mockConnection);
+    });
+
+    it("does not fire again when setConnection is called with the same connection still present", () => {
+      const cb = vi.fn();
+      const mockConnection = { state: "Disconnected" };
+      setConnection(mockConnection as any);
+      subscribe(cb);
+      cb.mockClear();
+
+      // setConnection from non-null to a non-null connection should NOT re-notify
+      setConnection({ state: "Connected" } as any);
+      expect(cb).not.toHaveBeenCalled();
+    });
+
+    it("fires again after a clear/reinstall cycle", () => {
+      const cb = vi.fn();
+      subscribe(cb);
+
+      const conn1 = { state: "Disconnected" };
+      setConnection(conn1 as any);
+      expect(cb).toHaveBeenCalledTimes(1);
+
+      setConnection(null);
+      const conn2 = { state: "Disconnected" };
+      setConnection(conn2 as any);
+
+      expect(cb).toHaveBeenCalledTimes(2);
+      expect(cb).toHaveBeenLastCalledWith(conn2);
+    });
+
+    it("returns an unsubscribe function that prevents future notifications", () => {
+      const cb = vi.fn();
+      const unsub = subscribe(cb);
+
+      unsub();
+
+      setConnection({ state: "Disconnected" } as any);
+      expect(cb).not.toHaveBeenCalled();
+    });
+
+    it("isolates throwing subscribers (other subscribers still fire)", () => {
+      const goodCb = vi.fn();
+      const badCb = vi.fn(() => {
+        throw new Error("boom");
+      });
+      subscribe(badCb);
+      subscribe(goodCb);
+
+      expect(() =>
+        setConnection({ state: "Disconnected" } as any),
+      ).not.toThrow();
+      expect(badCb).toHaveBeenCalledOnce();
+      expect(goodCb).toHaveBeenCalledOnce();
+    });
+
+    it("startConnection notifies subscribers when it creates the first connection", async () => {
+      const cb = vi.fn();
+      subscribe(cb);
+
+      await startConnection();
+
+      expect(cb).toHaveBeenCalledOnce();
     });
   });
 });

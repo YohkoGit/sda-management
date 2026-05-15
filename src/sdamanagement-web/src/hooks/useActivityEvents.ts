@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getConnection } from "@/lib/signalr";
+import { getConnection, onConnectionReady } from "@/lib/signalr";
 import { queryClient } from "@/lib/queryClient";
 import { useModifiedBadgeStore } from "@/stores/modifiedBadgeStore";
 import type {
@@ -7,6 +7,10 @@ import type {
   ActivityDeletedNotification,
 } from "@/types/signalr-events";
 
+// Mirrors the canonical key set from useActivityCacheInvalidation.
+// Kept inline here to avoid a hook -> non-hook coupling: useActivityEvents is
+// called from a component, but the invalidation runs inside SignalR callbacks
+// outside the React render cycle, so we use the module-level queryClient.
 function invalidateActivityQueries(): void {
   void queryClient.invalidateQueries({ queryKey: ["activities"] });
   void queryClient.invalidateQueries({ queryKey: ["activity"] });
@@ -63,29 +67,23 @@ export function useActivityEvents(): void {
     // Cleanup expired badges from localStorage on app load
     useModifiedBadgeStore.getState().cleanupExpired();
 
-    // Attempt immediate registration (connection may already be connected)
-    registerHandlers();
-
-    // KEY: SignalR .on() can be called BEFORE .start() completes —
-    // handlers are queued on the HubConnection object and fire once connected.
-    // But if getConnection() returns null (connection not yet created by startConnection()),
-    // we need a fallback. Poll briefly for the connection to become available.
-    const intervalId = setInterval(() => {
-      if (getConnection()) {
-        registerHandlers();
-        clearInterval(intervalId);
+    // Subscribe via signalr.ts. The callback fires synchronously if a
+    // connection already exists, and otherwise fires when startConnection()
+    // installs one. SignalR allows .on() before .start() completes —
+    // handlers are queued on the HubConnection and fire once connected.
+    // This replaces the previous setInterval(getConnection, 100) poll.
+    const unsubscribe = onConnectionReady((conn) => {
+      registerHandlers();
+      // Re-register on reconnect (HubConnection has no onreconnected removal API,
+      // so guard with a WeakSet to avoid duplicate callbacks under Strict Mode).
+      if (!reconnectRegistered.has(conn)) {
+        conn.onreconnected(() => registerHandlers());
+        reconnectRegistered.add(conn);
       }
-    }, 100);
-
-    // Re-register on reconnect as a safety net (once per connection instance)
-    const conn = getConnection();
-    if (conn && !reconnectRegistered.has(conn)) {
-      conn.onreconnected(() => registerHandlers());
-      reconnectRegistered.add(conn);
-    }
+    });
 
     return () => {
-      clearInterval(intervalId);
+      unsubscribe();
       const c = getConnection();
       if (c) {
         c.off("ActivityCreated", handleActivityCreated);

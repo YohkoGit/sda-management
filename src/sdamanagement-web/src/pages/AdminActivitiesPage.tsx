@@ -1,10 +1,11 @@
 import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, CalendarDays, Pencil, Trash2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
+import { useActivityCacheInvalidation } from "@/hooks/useActivityCacheInvalidation";
 import {
   activityService,
   type ActivityListItem,
@@ -34,18 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,8 +99,14 @@ function RosterPanelContent({
 export default function AdminActivitiesPage() {
   const { t } = useTranslation();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
+  const invalidateActivityCache = useActivityCacheInvalidation();
+  const {
+    Root: FormWrapper,
+    Content: FormContent,
+    Header: FormHeader,
+    Title: FormTitle,
+    isMobile,
+  } = useResponsiveDialog();
 
   const isOwner = user?.role?.toUpperCase() === "OWNER";
   const isAdmin = user?.role?.toUpperCase() === "ADMIN";
@@ -170,8 +165,7 @@ export default function AdminActivitiesPage() {
         endTime: data.endTime + ":00",
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["activities"] });
-      queryClient.invalidateQueries({ queryKey: ["activity"] });
+      void invalidateActivityCache.invalidateAll();
       setShowCreateForm(false);
       setCreateStep("template");
       setSelectedTemplate(null);
@@ -194,8 +188,7 @@ export default function AdminActivitiesPage() {
         endTime: data.endTime.length === 5 ? data.endTime + ":00" : data.endTime,
       }, force),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["activities"] });
-      queryClient.invalidateQueries({ queryKey: ["activity"] });
+      void invalidateActivityCache.invalidateAll();
       setEditActivity(null);
       toast.success(t("pages.adminActivities.toast.updated"));
     },
@@ -216,8 +209,7 @@ export default function AdminActivitiesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => activityService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["activities"] });
-      queryClient.invalidateQueries({ queryKey: ["activity"] });
+      void invalidateActivityCache.invalidateAll();
       setDeleteTarget(null);
       toast.success(t("pages.adminActivities.toast.deleted"));
     },
@@ -298,11 +290,6 @@ export default function AdminActivitiesPage() {
   }
 
   const isEmpty = !activities || activities.length === 0;
-
-  const FormWrapper = isMobile ? Sheet : Dialog;
-  const FormContent = isMobile ? SheetContent : DialogContent;
-  const FormHeader = isMobile ? SheetHeader : DialogHeader;
-  const FormTitle = isMobile ? SheetTitle : DialogTitle;
 
   return (
     <div>

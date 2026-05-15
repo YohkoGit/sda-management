@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useActivityEvents } from "./useActivityEvents";
 
@@ -6,9 +6,14 @@ let mockOn: ReturnType<typeof vi.fn>;
 let mockOff: ReturnType<typeof vi.fn>;
 let mockOnreconnected: ReturnType<typeof vi.fn>;
 let mockConnection: { on: typeof mockOn; off: typeof mockOff; onreconnected: typeof mockOnreconnected };
+// Captures the latest subscriber passed to onConnectionReady so tests can
+// simulate deferred connection arrival.
+let pendingReadyCallback: ((conn: unknown) => void) | null = null;
+let unsubscribeSpy: ReturnType<typeof vi.fn>;
 
 vi.mock("@/lib/signalr", () => ({
   getConnection: vi.fn(),
+  onConnectionReady: vi.fn(),
 }));
 
 vi.mock("@/lib/queryClient", () => ({
@@ -28,24 +33,29 @@ vi.mock("@/stores/modifiedBadgeStore", () => ({
   },
 }));
 
-import { getConnection } from "@/lib/signalr";
+import { getConnection, onConnectionReady } from "@/lib/signalr";
 import { queryClient } from "@/lib/queryClient";
 
 const mockedGetConnection = vi.mocked(getConnection);
+const mockedOnConnectionReady = vi.mocked(onConnectionReady);
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.useFakeTimers();
   // Fresh mock connection per test — ensures WeakSet guard doesn't persist across tests
   mockOn = vi.fn();
   mockOff = vi.fn();
   mockOnreconnected = vi.fn();
   mockConnection = { on: mockOn, off: mockOff, onreconnected: mockOnreconnected };
   mockedGetConnection.mockReturnValue(mockConnection as never);
-});
-
-afterEach(() => {
-  vi.useRealTimers();
+  pendingReadyCallback = null;
+  unsubscribeSpy = vi.fn();
+  // Default: invoke callback synchronously with the mock connection (mimicking
+  // signalr.ts behavior when a connection already exists at subscribe time).
+  mockedOnConnectionReady.mockImplementation(((cb: (conn: unknown) => void) => {
+    pendingReadyCallback = cb;
+    cb(mockConnection);
+    return unsubscribeSpy as unknown as () => void;
+  }) as never);
 });
 
 describe("useActivityEvents", () => {
@@ -133,26 +143,42 @@ describe("useActivityEvents", () => {
 
   it("handles null connection gracefully", () => {
     mockedGetConnection.mockReturnValue(null);
+    // Subscribe defers: never fires the callback. Hook must still mount cleanly.
+    mockedOnConnectionReady.mockImplementation(((cb: (conn: unknown) => void) => {
+      pendingReadyCallback = cb;
+      return unsubscribeSpy as unknown as () => void;
+    }) as never);
 
     expect(() => renderHook(() => useActivityEvents())).not.toThrow();
   });
 
-  it("registers handlers via interval when connection becomes available later", () => {
-    // Start with null connection
+  it("registers handlers via onConnectionReady subscription when connection arrives later", () => {
+    // Start with no connection yet — subscribe but don't fire callback
     mockedGetConnection.mockReturnValue(null);
+    mockedOnConnectionReady.mockImplementation(((cb: (conn: unknown) => void) => {
+      pendingReadyCallback = cb;
+      return unsubscribeSpy as unknown as () => void;
+    }) as never);
+
     renderHook(() => useActivityEvents());
 
     // No handlers registered yet
     expect(mockOn).not.toHaveBeenCalled();
+    expect(pendingReadyCallback).not.toBeNull();
 
-    // Connection becomes available
+    // Connection becomes available — signalr.ts would now fire the callback
     mockedGetConnection.mockReturnValue(mockConnection as never);
-    vi.advanceTimersByTime(100);
+    pendingReadyCallback!(mockConnection as never);
 
-    // Now handlers should be registered
     expect(mockOn).toHaveBeenCalledWith("ActivityCreated", expect.any(Function));
     expect(mockOn).toHaveBeenCalledWith("ActivityUpdated", expect.any(Function));
     expect(mockOn).toHaveBeenCalledWith("ActivityDeleted", expect.any(Function));
+  });
+
+  it("unsubscribes from onConnectionReady on unmount", () => {
+    const { unmount } = renderHook(() => useActivityEvents());
+    unmount();
+    expect(unsubscribeSpy).toHaveBeenCalled();
   });
 
   it("registers onreconnected callback", () => {

@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useActivityCacheInvalidation } from "@/hooks/useActivityCacheInvalidation";
+import { useResponsiveDialog } from "@/hooks/useResponsiveDialog";
 import { parseISO, isToday, isFuture } from "date-fns";
 import { Plus, CalendarDays, Pencil, Trash2, Video, MapPin, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -32,18 +34,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eyebrow, Numerator, Serial } from "@/components/ui/typography";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -54,8 +44,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { formatActivityDate, formatTime } from "@/lib/dateFormatting";
+import { formatTime } from "@/lib/dateFormatting";
 import { deptSwatchColor } from "@/lib/dept-color";
 import type { AxiosError } from "axios";
 
@@ -86,7 +75,14 @@ export default function DepartmentDetailPage() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isMobile = useIsMobile();
+  const invalidateActivityCache = useActivityCacheInvalidation();
+  const {
+    Root: FormWrapper,
+    Content: FormContent,
+    Header: FormHeader,
+    Title: FormTitle,
+    isMobile,
+  } = useResponsiveDialog();
 
   const [showCreateActivity, setShowCreateActivity] = useState(false);
   const [showCreateMeeting, setShowCreateMeeting] = useState(false);
@@ -157,11 +153,12 @@ export default function DepartmentDetailPage() {
   const canManage = isAdminWithScope || isOwner;
 
   const invalidateAll = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["activities", { departmentId }] });
-    queryClient.invalidateQueries({ queryKey: ["activities"] });
-    queryClient.invalidateQueries({ queryKey: ["activity"] });
-    queryClient.invalidateQueries({ queryKey: ["departments", "with-staffing"] });
-  }, [queryClient, departmentId]);
+    if (departmentId !== undefined) {
+      void invalidateActivityCache.invalidateDepartment(departmentId);
+    } else {
+      void invalidateActivityCache.invalidateAll();
+    }
+  }, [invalidateActivityCache, departmentId]);
 
   const createMutation = useMutation({
     mutationFn: (data: CreateActivityFormData) =>
@@ -273,11 +270,6 @@ export default function DepartmentDetailPage() {
       </div>
     );
   }
-
-  const FormWrapper = isMobile ? Sheet : Dialog;
-  const FormContent = isMobile ? SheetContent : DialogContent;
-  const FormHeader = isMobile ? SheetHeader : DialogHeader;
-  const FormTitle = isMobile ? SheetTitle : DialogTitle;
 
   const swatch = deptSwatchColor({
     abbreviation: department?.abbreviation ?? undefined,

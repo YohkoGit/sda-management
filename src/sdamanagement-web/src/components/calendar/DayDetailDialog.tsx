@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useActivityCacheInvalidation } from "@/hooks/useActivityCacheInvalidation";
 import { activityService } from "@/services/activityService";
 import { departmentService, type DepartmentListItem } from "@/services/departmentService";
 import type { ActivityTemplateListItem } from "@/services/activityTemplateService";
@@ -61,7 +62,7 @@ export default function DayDetailDialog({
 }: DayDetailDialogProps) {
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
+  const invalidateActivityCache = useActivityCacheInvalidation();
 
   const [step, setStep] = useState<DialogStep>("detail");
   const [selectedTemplate, setSelectedTemplate] = useState<ActivityTemplateListItem | null>(null);
@@ -125,8 +126,7 @@ export default function DayDetailDialog({
         endTime: data.endTime + ":00",
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "calendar"] });
-      queryClient.invalidateQueries({ queryKey: ["activities"] });
+      void invalidateActivityCache.invalidateAll();
       onCreated();
       onOpenChange(false);
       toast.success(t("pages.adminActivities.toast.created"));
